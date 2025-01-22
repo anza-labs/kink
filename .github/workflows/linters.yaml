@@ -1,9 +1,7 @@
 name: linters
-
 on:
   pull_request:
-    branches: [ "*" ]
-
+    branches: ["*"]
 jobs:
   commitlint:
     runs-on: ubuntu-latest
@@ -15,14 +13,12 @@ jobs:
         with:
           configFile: .commitlintrc.mjs
           token: ${{ secrets.GITHUB_TOKEN }}
-
   hadolint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - run: |
           make hadolint
-
   generators:
     runs-on: ubuntu-latest
     steps:
@@ -32,5 +28,7 @@ jobs:
           go-version-file: ./go.mod
       - run: |
           make generate manifests diff
+      - run: |
+          make fmt diff
       - run: |
           make api-docs diff

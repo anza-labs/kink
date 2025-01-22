@@ -1,17 +1,14 @@
 site_name: Kubernetes in Kubernetes
 repo_url: https://github.com/anza-labs/kink
-
 copyright: >-
-  Copyright &copy;
-  <script>
-    document.write(new Date().getFullYear())
-  </script>
-  Anza Labs
+  Copyright &copy; <script>
 
+
+    document.write(new Date().getFullYear())
+  </script> Anza Labs
 plugins:
   - search
   - mkdocs-nav-weight
-
 markdown_extensions:
   - admonition
   - attr_list
@@ -33,22 +30,18 @@ markdown_extensions:
       line_spans: __span
       pygments_lang_class: true
   - tables
-
 theme:
   name: material
   language: en
   logo: assets/logo.png
   favicon: assets/logo.png
-
   custom_dir: docs/overrides
-
   features:
     - navigation.tabs
     - header.autohide
     - search.suggest
     - search.highlight
     - content.code.copy
-
   palette:
     # Palette toggle for light mode
     - media: "(prefers-color-scheme: light)"
@@ -56,21 +49,16 @@ theme:
       toggle:
         icon: material/weather-sunny
         name: Switch to dark mode
-
     # Palette toggle for dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
       toggle:
         icon: material/weather-night
         name: Switch to light mode
-
 extra:
   version:
     provider: mike
   consent:
     title: Cookie consent
     description: >-
-      We use cookies to recognize your repeated visits and preferences, as well
-      as to measure the effectiveness of our documentation and whether users
-      find what they're searching for. With your consent, you're helping us to
-      make our documentation better.
+      We use cookies to recognize your repeated visits and preferences, as well as to measure the effectiveness of our documentation and whether users find what they're searching for. With your consent, you're helping us to make our documentation better.

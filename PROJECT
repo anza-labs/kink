@@ -17,6 +17,11 @@ resources:
   kind: KinkCluster
   path: github.com/anza-labs/kink/api/v1alpha1
   version: v1alpha1
+  webhooks:
+    conversion: true
+    defaulting: true
+    validation: true
+    webhookVersion: v1
 - api:
     crdVersion: v1
     namespaced: true
@@ -26,4 +31,37 @@ resources:
   kind: KinkMachine
   path: github.com/anza-labs/kink/api/v1alpha1
   version: v1alpha1
+  webhooks:
+    conversion: true
+    defaulting: true
+    validation: true
+    webhookVersion: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: cluster.x-k8s.io
+  group: infrastructure
+  kind: KinkMachineTemplate
+  path: github.com/anza-labs/kink/api/v1alpha1
+  version: v1alpha1
+  webhooks:
+    conversion: true
+    defaulting: true
+    validation: true
+    webhookVersion: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: cluster.x-k8s.io
+  group: infrastructure
+  kind: KinkClusterTemplate
+  path: github.com/anza-labs/kink/api/v1alpha1
+  version: v1alpha1
+  webhooks:
+    conversion: true
+    defaulting: true
+    validation: true
+    webhookVersion: v1
 version: "3"

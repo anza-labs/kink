@@ -1,9 +1,7 @@
 name: kube
-
 on:
   pull_request:
-    branches: [ '*' ]
-
+    branches: ['*']
 jobs:
   kube-linter:
     runs-on: ubuntu-latest

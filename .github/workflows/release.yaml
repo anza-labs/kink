@@ -1,22 +1,22 @@
 name: release
-
 on:
   push:
     tags:
       - 'v*'
     branches:
       - "main"
-
 permissions:
   contents: write
   packages: write
-
 jobs:
   changelog:
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: ./go.mod
       - id: semver_parser
         uses: release-kit/semver@v2
         with:
@@ -28,6 +28,8 @@ jobs:
           tag: ${{ github.ref_name }}
           excludeTypes: ""
           excludeScopes: ""
+      - run: |
+          make build-installer VERSION=${{ github.ref_name }} TAG=${{ github.ref_name }}
       - uses: ncipollo/release-action@v1.14.0
         with:
           allowUpdates: true
@@ -37,7 +39,7 @@ jobs:
           name: ${{ github.ref_name }}
           body: ${{ steps.changelog.outputs.changes }}
           token: ${{ github.token }}
-
+          artifacts: "dist/**/*.yaml"
   image:
     runs-on: ubuntu-latest
     steps:
