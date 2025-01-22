@@ -69,3 +69,21 @@ jobs:
             org.opencontainers.image.source="https://github.com/anza-labs/kink"
             org.opencontainers.image.base.name="gcr.io/distroless/static:nonroot"
             org.opencontainers.image.created=${{ github.event.created_at }}
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: fregante/setup-git-user@v2
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: ./go.mod
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+          check-latest: true
+      - run: |
+          pip install -r docs/requirements.txt
+      - run: |
+          make publish VERSION=${{ github.ref_name }}
