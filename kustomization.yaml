@@ -1,0 +1,10 @@
+images:
+- name: controller
+  newName: ghcr.io/anza-labs/kink-controller
+  newTag: v0.0.1
+namePrefix: kink-
+namespace: kink-system
+resources:
+- ./config/crd
+- ./config/manager
+- ./config/rbac
