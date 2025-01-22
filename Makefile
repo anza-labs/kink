@@ -69,12 +69,8 @@ test-e2e: chainsaw ## Run the e2e tests against a k8s instance using Kyverno Cha
 lint: golangci-lint ## Run golangci-lint linter.
 	$(GOLANGCI_LINT) run
 
-.PHONY: fmt
-fmt: yamlfmt ## Run yaml formatter.
-	$(YAMLFMT) .
-
 .PHONY: lint-fix
-lint-fix: golangci-lint fmt ## Run golangci-lint linter and perform fixes.
+lint-fix: golangci-lint ## Run golangci-lint linter and perform fixes.
 	$(GOLANGCI_LINT) run --fix
 
 .PHONY: lint-manifests
@@ -217,7 +213,6 @@ GOLANGCI_LINT  ?= $(LOCALBIN)/golangci-lint
 KIND           ?= $(LOCALBIN)/kind
 KUBE_LINTER    ?= $(LOCALBIN)/kube-linter
 KUSTOMIZE      ?= $(LOCALBIN)/kustomize
-YAMLFMT        ?= $(LOCALBIN)/yamlfmt
 
 ## Tool Versions
 ADDLICENSE_VERSION       ?= $(shell grep 'github.com/google/addlicense '       ./go.mod | cut -d ' ' -f 2)
@@ -230,14 +225,13 @@ GOLANGCI_LINT_VERSION    ?= $(shell grep 'github.com/golangci/golangci-lint '  .
 KIND_VERSION             ?= $(shell grep 'sigs.k8s.io/kind '                   ./go.mod | cut -d ' ' -f 2)
 KUBE_LINTER_VERSION      ?= $(shell grep 'golang.stackrox.io/kube-linter '     ./go.mod | cut -d ' ' -f 2)
 KUSTOMIZE_VERSION        ?= $(shell grep 'sigs.k8s.io/kustomize/kustomize/v5 ' ./go.mod | cut -d ' ' -f 2)
-YAMLFMT_VERSION          ?= $(shell grep 'github.com/google/yamlfmt '          ./go.mod | cut -d ' ' -f 2)
 
 ## Compoenent Versions
 CERT_MANAGER_VERSION ?= v1.16.2
 KAMAJI_VERSION       ?= v0.13.0
 
 .PHONY: tools
-tools: addlicense chainsaw clusterctl controller-gen crd-ref-docs ctlptl golangci-lint kind kube-linter kustomize yamlfmt ## Install all tools.
+tools: addlicense chainsaw clusterctl controller-gen crd-ref-docs ctlptl golangci-lint kind kube-linter kustomize ## Install all tools.
 
 .PHONY: addlicense
 addlicense: $(ADDLICENSE)-$(ADDLICENSE_VERSION) ## Download addlicense locally if necessary.
@@ -288,12 +282,6 @@ $(KUBE_LINTER)-$(KUBE_LINTER_VERSION): $(LOCALBIN)
 kustomize: $(KUSTOMIZE)-$(KUSTOMIZE_VERSION) ## Download kustomize locally if necessary.
 $(KUSTOMIZE)-$(KUSTOMIZE_VERSION): $(LOCALBIN)
 	$(call go-install-tool,$(KUSTOMIZE),sigs.k8s.io/kustomize/kustomize/v5,$(KUSTOMIZE_VERSION))
-
-.PHONY: yamlfmt
-yamlfmt: $(YAMLFMT)-$(YAMLFMT_VERSION) ## Download kustomize locally if necessary.
-$(YAMLFMT)-$(YAMLFMT_VERSION): $(LOCALBIN)
-	$(call go-install-tool,$(YAMLFMT),github.com/google/yamlfmt/cmd/yamlfmt,$(YAMLFMT_VERSION))
-
 
 # go-install-tool will 'go install' any package with custom target and name of binary, if it doesn't exist
 # $1 - target path with name of binary

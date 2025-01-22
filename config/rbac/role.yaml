@@ -1,51 +1,52 @@
+---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: manager-role
 rules:
-  - apiGroups:
-      - cluster.x-k8s.io
-    resources:
-      - clusters
-      - clusters/status
-      - machines
-      - machines/status
-    verbs:
-      - get
-      - list
-      - watch
-  - apiGroups:
-      - infrastructure.cluster.x-k8s.io
-    resources:
-      - kinkclusters
-      - kinkclustertemplates
-      - kinkmachines
-      - kinkmachinetemplates
-    verbs:
-      - create
-      - delete
-      - get
-      - list
-      - patch
-      - update
-      - watch
-  - apiGroups:
-      - infrastructure.cluster.x-k8s.io
-    resources:
-      - kinkclusters/finalizers
-      - kinkclustertemplates/finalizers
-      - kinkmachines/finalizers
-      - kinkmachinetemplates/finalizers
-    verbs:
-      - update
-  - apiGroups:
-      - infrastructure.cluster.x-k8s.io
-    resources:
-      - kinkclusters/status
-      - kinkclustertemplates/status
-      - kinkmachines/status
-      - kinkmachinetemplates/status
-    verbs:
-      - get
-      - patch
-      - update
+- apiGroups:
+  - cluster.x-k8s.io
+  resources:
+  - clusters
+  - clusters/status
+  - machines
+  - machines/status
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - infrastructure.cluster.x-k8s.io
+  resources:
+  - kinkclusters
+  - kinkclustertemplates
+  - kinkmachines
+  - kinkmachinetemplates
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - infrastructure.cluster.x-k8s.io
+  resources:
+  - kinkclusters/finalizers
+  - kinkclustertemplates/finalizers
+  - kinkmachines/finalizers
+  - kinkmachinetemplates/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - infrastructure.cluster.x-k8s.io
+  resources:
+  - kinkclusters/status
+  - kinkclustertemplates/status
+  - kinkmachines/status
+  - kinkmachinetemplates/status
+  verbs:
+  - get
+  - patch
+  - update

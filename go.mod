@@ -6,7 +6,6 @@ toolchain go1.23.5
 
 require (
 	github.com/Masterminds/semver/v3 v3.3.1
-	github.com/google/yamlfmt v0.15.0
 	k8s.io/apimachinery v0.32.1
 	k8s.io/client-go v0.31.5
 	sigs.k8s.io/cluster-api v1.9.4
@@ -84,7 +83,6 @@ require (
 	github.com/blizzy78/varnamelen v0.8.0 // indirect
 	github.com/bmatcuk/doublestar/v4 v4.7.1 // indirect
 	github.com/bombsimon/wsl/v4 v4.5.0 // indirect
-	github.com/braydonk/yaml v0.7.0 // indirect
 	github.com/breml/bidichk v0.3.2 // indirect
 	github.com/breml/errchkjson v0.4.0 // indirect
 	github.com/butuzov/ireturn v0.3.1 // indirect
@@ -293,7 +291,6 @@ require (
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/ryancurrah/gomodguard v1.3.5 // indirect
 	github.com/ryanrolds/sqlclosecheck v0.5.1 // indirect
-	github.com/sabhiram/go-gitignore v0.0.0-20210923224102-525f6e181f06 // indirect
 	github.com/sagikazarmark/locafero v0.4.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/sanposhiho/wastedassign/v2 v2.1.0 // indirect

@@ -1,12 +1,7 @@
 site_name: Kubernetes in Kubernetes
 repo_url: https://github.com/anza-labs/kink
 copyright: >-
-  Copyright &copy; <script>
-
-
-
-    document.write(new Date().getFullYear())
-  </script> Anza Labs
+  Copyright &copy; <script>document.write(new Date().getFullYear())</script> Anza Labs
 plugins:
   - search
   - mkdocs-nav-weight
