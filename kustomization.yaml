@@ -1,7 +1,7 @@
 images:
 - name: controller
   newName: ghcr.io/anza-labs/kink-controller
-  newTag: v0.0.1
+  newTag: v0.0.2
 namePrefix: kink-
 namespace: kink-system
 resources:
