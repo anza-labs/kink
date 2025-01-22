@@ -1,0 +1,4 @@
+providers:
+  - name: kink
+    url: ${PWD}/dist/infrastructure-kink/v0.0.0/infrastructure-components.yaml
+    type: InfrastructureProvider

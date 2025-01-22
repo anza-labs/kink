@@ -7,17 +7,17 @@ metadata:
     app.kubernetes.io/managed-by: kustomize
   name: kinkmachine-viewer-role
 rules:
-- apiGroups:
-  - infrastructure.cluster.x-k8s.io
-  resources:
-  - kinkmachines
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - infrastructure.cluster.x-k8s.io
-  resources:
-  - kinkmachines/status
-  verbs:
-  - get
+  - apiGroups:
+      - infrastructure.cluster.x-k8s.io
+    resources:
+      - kinkmachines
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - infrastructure.cluster.x-k8s.io
+    resources:
+      - kinkmachines/status
+    verbs:
+      - get

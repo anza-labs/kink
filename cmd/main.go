@@ -19,9 +19,9 @@ import (
 	"flag"
 	"os"
 
-	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
-	// to ensure that exec-entrypoint and run can make use of them.
-	_ "k8s.io/client-go/plugin/pkg/client/auth"
+	kinkv1alpha1 "github.com/anza-labs/kink/api/v1alpha1"
+	"github.com/anza-labs/kink/internal/controller"
+	webhookv1alpha1 "github.com/anza-labs/kink/internal/webhook/v1alpha1"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -33,9 +33,9 @@ import (
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
-	infrastructurev1alpha1 "github.com/anza-labs/kink/api/v1alpha1"
-	"github.com/anza-labs/kink/internal/controller"
-	// +kubebuilder:scaffold:imports
+	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
+	// to ensure that exec-entrypoint and run can make use of them.
+	_ "k8s.io/client-go/plugin/pkg/client/auth"
 )
 
 var (
@@ -46,7 +46,7 @@ var (
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
-	utilruntime.Must(infrastructurev1alpha1.AddToScheme(scheme))
+	utilruntime.Must(kinkv1alpha1.AddToScheme(scheme))
 	// +kubebuilder:scaffold:scheme
 }
 
@@ -138,6 +138,39 @@ func main() {
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "KinkMachine")
 		os.Exit(1)
+	}
+	if err = (&controller.KinkMachineTemplateReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "KinkMachineTemplate")
+		os.Exit(1)
+	}
+	if err = (&controller.KinkClusterTemplateReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "KinkClusterTemplate")
+		os.Exit(1)
+	}
+
+	if os.Getenv("ENABLE_WEBHOOKS") != "false" {
+		if err = webhookv1alpha1.SetupKinkClusterTemplateWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "KinkClusterTemplate")
+			os.Exit(1)
+		}
+		if err = webhookv1alpha1.SetupKinkClusterWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "KinkCluster")
+			os.Exit(1)
+		}
+		if err = webhookv1alpha1.SetupKinkMachineWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "KinkMachine")
+			os.Exit(1)
+		}
+		if err = webhookv1alpha1.SetupKinkMachineTemplateWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "KinkMachineTemplate")
+			os.Exit(1)
+		}
 	}
 	// +kubebuilder:scaffold:builder
 

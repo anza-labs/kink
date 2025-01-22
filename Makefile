@@ -3,6 +3,7 @@ REPOSITORY     ?= localhost:5005
 TAG            ?= dev-$(shell git describe --match='' --always --abbrev=6 --dirty)
 PLATFORM       ?= linux/$(shell go env GOARCH)
 CHAINSAW_ARGS  ?=
+VERSION        ?= v0.0.0
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -64,16 +65,6 @@ test: manifests generate ## Run tests.
 test-e2e: chainsaw ## Run the e2e tests against a k8s instance using Kyverno Chainsaw.
 	$(CHAINSAW) test ${CHAINSAW_ARGS}
 
-BUCKET_NAME ?= test
-
-.PHONY: mc-play-test
-mc-play-test: mc
-	$(MC) mb --ignore-existing play/$(BUCKET_NAME)
-
-.PHONY: mc-play-test-cleanup
-mc-play-test-cleanup: mc
-	$(MC) rb --force play/$(BUCKET_NAME)
-
 .PHONY: lint
 lint: golangci-lint ## Run golangci-lint linter.
 	$(GOLANGCI_LINT) run
@@ -88,22 +79,15 @@ lint-manifests: kustomize kube-linter ## Run kube-linter on Kubernetes manifests
 		$(KUBE_LINTER) lint --config=./config/.kube-linter.yaml -
 
 .PHONY: hadolint
-hadolint: hadolint-manager hadolint-builder hadolint-gitfetcher hadolint-objfetcher ## Run hadolint on all Dockerfiles.
+hadolint: hadolint-manager ## Run hadolint on all Dockerfiles.
 
 .PHONY: hadolint-manager
 hadolint-manager: ## Run hadolint on manager Dockerfile.
 	$(CONTAINER_TOOL) run --rm -i hadolint/hadolint < Dockerfile
 
-.PHONY: hadolint-builder
-hadolint-builder: ## Run hadolint on builder Dockerfile.
-	$(CONTAINER_TOOL) run --rm -i hadolint/hadolint < ./pkg/builder/Dockerfile
-
-hadolint-%: ## Run hadolint on init Dockerfile.
-	$(CONTAINER_TOOL) run --rm -i hadolint/hadolint < ./pkg/init/$*/Dockerfile
-
 .PHONY: verify-licenses
 verify-licenses: addlicense ## Run addlicense to verify if files have license headers.
-	find -type f -name "*.go" ! -path "*/vendor/*" | xargs $(ADDLICENSE) -check || (echo 'Run "make update"' && exit 1)
+	find -type f -name "*.go" ! -path "*/vendor/*" | xargs $(ADDLICENSE) -check
 
 .PHONY: add-licenses
 add-licenses: addlicense ## Run addlicense to append license headers to files missing one.
@@ -129,8 +113,6 @@ serve-docs: ## Serve dev documentation on port 8000
 .PHONY: diff
 diff: ## Run git diff-index to check if any changes are made.
 	git --no-pager diff HEAD --
-
-VERSION ?= main
 
 .PHONY: publish
 publish: ## Runs the script that publishes the latest documentation.
@@ -166,9 +148,10 @@ docker-push-controller: ## Push docker image with the controller.
 
 .PHONY: build-installer
 build-installer: manifests generate kustomize ## Generate a consolidated YAML with CRDs and deployment.
-	mkdir -p dist
+	mkdir -p dist/infrastructure-kink/$(VERSION)
 	cd config/manager && $(KUSTOMIZE) edit set image controller=$(REPOSITORY)/kink-controller:$(TAG)
-	$(KUSTOMIZE) build config/default > dist/install.yaml
+	$(KUSTOMIZE) build config/default > dist/infrastructure-kink/$(VERSION)/infrastructure-components.yaml
+	cp hack/templates/*.yaml dist/infrastructure-kink/$(VERSION)
 
 ##@ Documentation
 
@@ -188,22 +171,28 @@ ifndef ignore-not-found
 endif
 
 .PHONY: cluster
-cluster: kind ctlptl
+cluster: kind ctlptl clusterctl
 	@PATH=${LOCALBIN}:$(PATH) $(CTLPTL) apply -f hack/kind.yaml
 	$(KUBECTL) apply -f https://github.com/cert-manager/cert-manager/releases/download/$(CERT_MANAGER_VERSION)/cert-manager.yaml
+	$(CLUSTERCTL) init \
+		--core=cluster-api:$(CLUSTER_API_VERSION) \
+		--bootstrap=kubeadm:$(CLUSTER_API_VERSION) \
+		--control-plane=kamaji:$(KAMAJI_VERSION) \
+		--validate=true \
+		--wait-providers \
+		--wait-provider-timeout=240
 
 .PHONY: cluster-reset
 cluster-reset: kind ctlptl
 	@PATH=${LOCALBIN}:$(PATH) $(CTLPTL) delete -f hack/kind.yaml
 
 .PHONY: deploy
-deploy: manifests kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.
-	cd config/manager && $(KUSTOMIZE) edit set image controller=$(REPOSITORY)/kink-controller:$(TAG)
-	$(KUSTOMIZE) build config/default | $(KUBECTL) apply -f -
+deploy: manifests kustomize build-installer ## Deploy controller to the K8s cluster specified in ~/.kube/config.
+	$(KUBECTL) apply -f dist/infrastructure-kink/$(VERSION)/infrastructure-components.yaml
 
 .PHONY: undeploy
-undeploy: kustomize ## Undeploy controller from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
-	$(KUSTOMIZE) build config/default | $(KUBECTL) delete --ignore-not-found=$(ignore-not-found) -f -
+undeploy: kustomize build-installer ## Undeploy controller from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
+	$(KUBECTL) delete --ignore-not-found=$(ignore-not-found) -f dist/infrastructure-kink/$(VERSION)/infrastructure-components.yaml
 
 ##@ Dependencies
 
@@ -216,19 +205,19 @@ $(LOCALBIN):
 KUBECTL ?= kubectl
 ADDLICENSE     ?= $(LOCALBIN)/addlicense
 CHAINSAW       ?= $(LOCALBIN)/chainsaw
+CLUSTERCTL     ?= $(LOCALBIN)/clusterctl
 CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
 CRD_REF_DOCS   ?= $(LOCALBIN)/crd-ref-docs
 CTLPTL         ?= $(LOCALBIN)/ctlptl
+GOLANGCI_LINT  ?= $(LOCALBIN)/golangci-lint
 KIND           ?= $(LOCALBIN)/kind
 KUBE_LINTER    ?= $(LOCALBIN)/kube-linter
 KUSTOMIZE      ?= $(LOCALBIN)/kustomize
-GOLANGCI_LINT  ?= $(LOCALBIN)/golangci-lint
-MC             ?= $(LOCALBIN)/mc
 
 ## Tool Versions
 ADDLICENSE_VERSION       ?= $(shell grep 'github.com/google/addlicense '       ./go.mod | cut -d ' ' -f 2)
 CHAINSAW_VERSION         ?= $(shell grep 'github.com/kyverno/chainsaw '        ./go.mod | cut -d ' ' -f 2)
-CERT_MANAGER_VERSION     ?= v1.16.2
+CLUSTER_API_VERSION      ?= $(shell grep 'sigs.k8s.io/cluster-api '            ./go.mod | cut -d ' ' -f 2)
 CONTROLLER_TOOLS_VERSION ?= $(shell grep 'sigs.k8s.io/controller-tools '       ./go.mod | cut -d ' ' -f 2)
 CRD_REF_DOCS_VERSION     ?= $(shell grep 'github.com/elastic/crd-ref-docs '    ./go.mod | cut -d ' ' -f 2)
 CTLPTL_VERSION           ?= $(shell grep 'github.com/tilt-dev/ctlptl '         ./go.mod | cut -d ' ' -f 2)
@@ -236,7 +225,13 @@ GOLANGCI_LINT_VERSION    ?= $(shell grep 'github.com/golangci/golangci-lint '  .
 KIND_VERSION             ?= $(shell grep 'sigs.k8s.io/kind '                   ./go.mod | cut -d ' ' -f 2)
 KUBE_LINTER_VERSION      ?= $(shell grep 'golang.stackrox.io/kube-linter '     ./go.mod | cut -d ' ' -f 2)
 KUSTOMIZE_VERSION        ?= $(shell grep 'sigs.k8s.io/kustomize/kustomize/v5 ' ./go.mod | cut -d ' ' -f 2)
-MC_VERSION               ?= latest
+
+## Compoenent Versions
+CERT_MANAGER_VERSION ?= v1.16.2
+KAMAJI_VERSION       ?= v0.13.0
+
+.PHONY: tools
+tools: addlicense chainsaw clusterctl controller-gen crd-ref-docs ctlptl golangci-lint kind kube-linter kustomize ## Install all tools.
 
 .PHONY: addlicense
 addlicense: $(ADDLICENSE)-$(ADDLICENSE_VERSION) ## Download addlicense locally if necessary.
@@ -247,6 +242,11 @@ $(ADDLICENSE)-$(ADDLICENSE_VERSION): $(LOCALBIN)
 chainsaw: $(CHAINSAW)-$(CHAINSAW_VERSION) ## Download chainsaw locally if necessary.
 $(CHAINSAW)-$(CHAINSAW_VERSION): $(LOCALBIN)
 	$(call go-install-tool,$(CHAINSAW),github.com/kyverno/chainsaw,$(CHAINSAW_VERSION))
+
+.PHONY: clusterctl
+clusterctl: $(CLUSTERCTL)-$(CLUSTER_API_VERSION)
+$(CLUSTERCTL)-$(CLUSTER_API_VERSION):
+	$(call go-install-tool,$(CLUSTERCTL),sigs.k8s.io/cluster-api/cmd/clusterctl,$(CLUSTER_API_VERSION))
 
 .PHONY: controller-gen
 controller-gen: $(CONTROLLER_GEN)-$(CONTROLLER_TOOLS_VERSION) ## Download controller-gen locally if necessary.
@@ -282,11 +282,6 @@ $(KUBE_LINTER)-$(KUBE_LINTER_VERSION): $(LOCALBIN)
 kustomize: $(KUSTOMIZE)-$(KUSTOMIZE_VERSION) ## Download kustomize locally if necessary.
 $(KUSTOMIZE)-$(KUSTOMIZE_VERSION): $(LOCALBIN)
 	$(call go-install-tool,$(KUSTOMIZE),sigs.k8s.io/kustomize/kustomize/v5,$(KUSTOMIZE_VERSION))
-
-.PHONY: mc
-mc: $(MC)-$(MC_VERSION) ## Download kustomize locally if necessary.
-$(MC)-$(MC_VERSION): $(LOCALBIN)
-	$(call go-install-tool,$(MC),github.com/minio/mc,$(MC_VERSION))
 
 # go-install-tool will 'go install' any package with custom target and name of binary, if it doesn't exist
 # $1 - target path with name of binary

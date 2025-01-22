@@ -11,8 +11,12 @@ Package v1alpha1 contains API Schema definitions for the infrastructure v1alpha1
 ### Resource Types
 - [KinkCluster](#kinkcluster)
 - [KinkClusterList](#kinkclusterlist)
+- [KinkClusterTemplate](#kinkclustertemplate)
+- [KinkClusterTemplateList](#kinkclustertemplatelist)
 - [KinkMachine](#kinkmachine)
 - [KinkMachineList](#kinkmachinelist)
+- [KinkMachineTemplate](#kinkmachinetemplate)
+- [KinkMachineTemplateList](#kinkmachinetemplatelist)
 
 
 
@@ -68,10 +72,8 @@ KinkClusterSpec defines the desired state of KinkCluster.
 
 _Appears in:_
 - [KinkCluster](#kinkcluster)
+- [KinkClusterTemplateResource](#kinkclustertemplateresource)
 
-| Field | Description | Default | Validation |
-| --- | --- | --- | --- |
-| `foo` _string_ | Foo is an example field of KinkCluster. Edit kinkcluster_types.go to remove/update |  |  |
 
 
 #### KinkClusterStatus
@@ -84,6 +86,97 @@ KinkClusterStatus defines the observed state of KinkCluster.
 
 _Appears in:_
 - [KinkCluster](#kinkcluster)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `ready` _boolean_ | Ready denotes that the kink cluster infrastructure is fully provisioned. |  |  |
+
+
+#### KinkClusterTemplate
+
+
+
+KinkClusterTemplate is the Schema for the kinkclustertemplates API.
+
+
+
+_Appears in:_
+- [KinkClusterTemplateList](#kinkclustertemplatelist)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `apiVersion` _string_ | `infrastructure.cluster.x-k8s.io/v1alpha1` | | |
+| `kind` _string_ | `KinkClusterTemplate` | | |
+| `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  |  |
+| `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  |  |
+| `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
+| `spec` _[KinkClusterTemplateSpec](#kinkclustertemplatespec)_ |  |  |  |
+| `status` _[KinkClusterTemplateStatus](#kinkclustertemplatestatus)_ |  |  |  |
+
+
+#### KinkClusterTemplateList
+
+
+
+KinkClusterTemplateList contains a list of KinkClusterTemplate.
+
+
+
+
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `apiVersion` _string_ | `infrastructure.cluster.x-k8s.io/v1alpha1` | | |
+| `kind` _string_ | `KinkClusterTemplateList` | | |
+| `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  |  |
+| `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  |  |
+| `metadata` _[ListMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#listmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
+| `items` _[KinkClusterTemplate](#kinkclustertemplate) array_ |  |  |  |
+
+
+#### KinkClusterTemplateResource
+
+
+
+
+
+
+
+_Appears in:_
+- [KinkClusterTemplateSpec](#kinkclustertemplatespec)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
+| `spec` _[KinkClusterSpec](#kinkclusterspec)_ |  |  |  |
+
+
+#### KinkClusterTemplateSpec
+
+
+
+KinkClusterTemplateSpec defines the desired state of KinkClusterTemplate.
+
+
+
+_Appears in:_
+- [KinkClusterTemplate](#kinkclustertemplate)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `template` _[KinkClusterTemplateResource](#kinkclustertemplateresource)_ |  |  |  |
+
+
+#### KinkClusterTemplateStatus
+
+
+
+KinkClusterTemplateStatus defines the observed state of KinkClusterTemplate.
+
+
+
+_Appears in:_
+- [KinkClusterTemplate](#kinkclustertemplate)
 
 
 
@@ -139,10 +232,11 @@ KinkMachineSpec defines the desired state of KinkMachine.
 
 _Appears in:_
 - [KinkMachine](#kinkmachine)
+- [KinkMachineTemplateResource](#kinkmachinetemplateresource)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `foo` _string_ | Foo is an example field of KinkMachine. Edit kinkmachine_types.go to remove/update |  |  |
+| `providerID` _string_ | providerID must match the provider ID as seen on the node object corresponding to this machine. |  |  |
 
 
 #### KinkMachineStatus
@@ -155,6 +249,97 @@ KinkMachineStatus defines the observed state of KinkMachine.
 
 _Appears in:_
 - [KinkMachine](#kinkmachine)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `ready` _boolean_ | Ready denotes that the kink machine infrastructure is fully provisioned. |  |  |
+
+
+#### KinkMachineTemplate
+
+
+
+KinkMachineTemplate is the Schema for the kinkmachinetemplates API.
+
+
+
+_Appears in:_
+- [KinkMachineTemplateList](#kinkmachinetemplatelist)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `apiVersion` _string_ | `infrastructure.cluster.x-k8s.io/v1alpha1` | | |
+| `kind` _string_ | `KinkMachineTemplate` | | |
+| `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  |  |
+| `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  |  |
+| `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
+| `spec` _[KinkMachineTemplateSpec](#kinkmachinetemplatespec)_ |  |  |  |
+| `status` _[KinkMachineTemplateStatus](#kinkmachinetemplatestatus)_ |  |  |  |
+
+
+#### KinkMachineTemplateList
+
+
+
+KinkMachineTemplateList contains a list of KinkMachineTemplate.
+
+
+
+
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `apiVersion` _string_ | `infrastructure.cluster.x-k8s.io/v1alpha1` | | |
+| `kind` _string_ | `KinkMachineTemplateList` | | |
+| `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  |  |
+| `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  |  |
+| `metadata` _[ListMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#listmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
+| `items` _[KinkMachineTemplate](#kinkmachinetemplate) array_ |  |  |  |
+
+
+#### KinkMachineTemplateResource
+
+
+
+
+
+
+
+_Appears in:_
+- [KinkMachineTemplateSpec](#kinkmachinetemplatespec)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
+| `spec` _[KinkMachineSpec](#kinkmachinespec)_ |  |  |  |
+
+
+#### KinkMachineTemplateSpec
+
+
+
+KinkMachineTemplateSpec defines the desired state of KinkMachineTemplate.
+
+
+
+_Appears in:_
+- [KinkMachineTemplate](#kinkmachinetemplate)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `template` _[KinkMachineTemplateResource](#kinkmachinetemplateresource)_ |  |  |  |
+
+
+#### KinkMachineTemplateStatus
+
+
+
+KinkMachineTemplateStatus defines the observed state of KinkMachineTemplate.
+
+
+
+_Appears in:_
+- [KinkMachineTemplate](#kinkmachinetemplate)
 
 
 
