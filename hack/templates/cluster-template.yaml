@@ -1,17 +1,4 @@
-apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
-kind: KubeadmConfigTemplate
-metadata:
-  name: ${CLUSTER_NAME}
-spec:
-  template:
-    metadata: {}
-    spec: {}
----
-apiVersion: controlplane.cluster.x-k8s.io/v1alpha1
-kind: KamajiControlPlane
-metadata:
-  name: ${CLUSTER_NAME}
-spec: {}
+
 ---
 apiVersion: cluster.x-k8s.io/v1beta1
 kind: Cluster
@@ -27,8 +14,53 @@ spec:
     kind: KinkCluster
     name: ${CLUSTER_NAME}
 ---
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: MachineDeployment
+metadata:
+  name: ${CLUSTER_NAME}
+spec:
+  clusterName: ${CLUSTER_NAME}
+  replicas: ${WORKER_MACHINE_COUNT}
+  selector:
+    matchLabels: null
+  template:
+    spec:
+      clusterName: ${CLUSTER_NAME}
+      version: ${KUBERNETES_VERSION}
+      bootstrap:
+        configRef:
+          apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+          kind: KubeadmConfigTemplate
+          name: ${CLUSTER_NAME}
+      infrastructureRef:
+        apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
+        kind: KinkMachineTemplate
+        name: ${CLUSTER_NAME}
+---
+apiVersion: controlplane.cluster.x-k8s.io/v1alpha1
+kind: KamajiControlPlane
+metadata:
+  name: ${CLUSTER_NAME}
+spec: {}
+---
+apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+kind: KubeadmConfigTemplate
+metadata:
+  name: ${CLUSTER_NAME}
+spec:
+  template:
+    spec: {}
+---
 apiVersion: infrastructure.cluster.x-k8s.io/v1alpha1
 kind: KinkCluster
 metadata:
   name: ${CLUSTER_NAME}
 spec: {}
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha1
+kind: KinkMachineTemplate
+metadata:
+  name: ${CLUSTER_NAME}
+spec:
+  template:
+    spec: {}
