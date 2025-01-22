@@ -7,7 +7,7 @@ toolchain go1.23.5
 require (
 	github.com/Masterminds/semver/v3 v3.3.1
 	k8s.io/apimachinery v0.32.1
-	k8s.io/client-go v0.31.5
+	k8s.io/client-go v0.32.1
 	k8s.io/klog/v2 v2.130.1
 	sigs.k8s.io/cluster-api v1.9.4
 	sigs.k8s.io/controller-runtime v0.19.4
@@ -20,7 +20,7 @@ require (
 	github.com/golangci/golangci-lint v1.63.4
 	github.com/google/addlicense v1.1.1
 	github.com/kyverno/chainsaw v0.2.12
-	github.com/tilt-dev/ctlptl v0.8.37
+	github.com/tilt-dev/ctlptl v0.8.38
 	golang.stackrox.io/kube-linter v0.7.1
 	sigs.k8s.io/controller-tools v0.16.5
 	sigs.k8s.io/kind v0.26.0
@@ -399,10 +399,10 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	helm.sh/helm/v3 v3.16.2 // indirect
 	honnef.co/go/tools v0.5.1 // indirect
-	k8s.io/api v0.31.5 // indirect
+	k8s.io/api v0.32.1 // indirect
 	k8s.io/apiextensions-apiserver v0.31.3 // indirect
 	k8s.io/apiserver v0.31.3 // indirect
-	k8s.io/cli-runtime v0.31.1 // indirect
+	k8s.io/cli-runtime v0.32.1 // indirect
 	k8s.io/cluster-bootstrap v0.31.3 // indirect
 	k8s.io/component-base v0.31.3 // indirect
 	k8s.io/kube-openapi v0.0.0-20241212222426-2c72e554b1e7 // indirect
