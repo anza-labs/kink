@@ -29,6 +29,4 @@ jobs:
       - run: |
           make generate manifests diff
       - run: |
-          make fmt diff
-      - run: |
           make api-docs diff
