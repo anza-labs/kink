@@ -16,13 +16,22 @@
   ],
   "packageRules": [
     {
-      "automerge": false,
       "matchManagers": [
         "helm-values"
       ],
       "labels": [
         "area/dependency",
         "do-not-merge"
+      ]
+    },
+    {
+      "groupName": "kubernetes images",
+      "groupSlug": "kubernetes",
+      "matchManagers": [
+        "helm-values"
+      ],
+      "matchPackageNames": [
+        "registry.k8s.io/**"
       ]
     }
   ]
