@@ -15,14 +15,23 @@
 package v1alpha1
 
 import (
+	kinkcorev1alpha1 "github.com/anza-labs/kink/api/core/v1alpha1"
+
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // KinkMachineSpec defines the desired state of KinkMachine.
 type KinkMachineSpec struct {
-	// providerID must match the provider ID as seen on the node object corresponding to this machine.
+	Container kinkcorev1alpha1.Container `json:",inline"`
+
+	// ProviderID must match the provider ID as seen on the node object corresponding to this machine.
 	// +optional
 	ProviderID *string `json:"providerID,omitempty"`
+
+	// Affinity specifies the scheduling constraints for Pods.
+	// +optional
+	Affinity *corev1.Affinity `json:"affinity,omitempty"`
 }
 
 // KinkMachineStatus defines the observed state of KinkMachine.

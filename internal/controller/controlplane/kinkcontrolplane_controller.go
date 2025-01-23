@@ -17,20 +17,21 @@ package controlplane
 import (
 	"context"
 
+	controlplanev1alpha1 "github.com/anza-labs/kink/api/controlplane/v1alpha1"
+
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
-
-	controlplanev1alpha1 "github.com/anza-labs/kink/api/controlplane/v1alpha1"
 )
 
-// KinkControlPlaneReconciler reconciles a KinkControlPlane object
+// KinkControlPlaneReconciler reconciles a KinkControlPlane object.
 type KinkControlPlaneReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
 }
 
+//nolint:lll // kubebuilder directives cannot be split into lines
 // +kubebuilder:rbac:groups=controlplane.cluster.x-k8s.io,resources=kinkcontrolplanes,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=controlplane.cluster.x-k8s.io,resources=kinkcontrolplanes/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=controlplane.cluster.x-k8s.io,resources=kinkcontrolplanes/finalizers,verbs=update

@@ -15,6 +15,9 @@
 package v1alpha1
 
 import (
+	kinkcorev1alpha1 "github.com/anza-labs/kink/api/core/v1alpha1"
+
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -24,6 +27,79 @@ type KinkControlPlaneSpec struct {
 	// The value must be a valid semantic version; also if the value provided by the user
 	// does not start with the v prefix, it must be added.
 	Version string `json:"version"`
+
+	// Affinity specifies the scheduling constraints for Pods.
+	// +optional
+	Affinity *corev1.Affinity `json:"affinity,omitempty"`
+
+	// APIServer defines the configuration for the Kubernetes API server.
+	APIServer APIServer `json:"apiServer"`
+
+	// Kine defines the configuration for the Kine component.
+	Kine Kine `json:"kine"`
+
+	// Scheduler defines the configuration for the Kubernetes scheduler.
+	Scheduler Scheduler `json:"scheduler"`
+
+	// ControllerManager defines the configuration for the Kubernetes controller manager.
+	ControllerManager ControllerManager `json:"controllerManager"`
+}
+
+// Kine represents ETCD-shim container.
+type Kine struct {
+	kinkcorev1alpha1.Container `json:",inline"`
+}
+
+// Scheduler represents a Kubernetes scheduler.
+//
+// Image:
+//   - If specified image contains tag or sha, those are ignored.
+//   - Defaults to registry.k8s.io/kube-scheduler
+type Scheduler struct {
+	KubeComponent `json:",inline"`
+}
+
+// ControllerManager represents a Kubernetes controller manager.
+//
+// Image:
+//   - If specified image contains tag or sha, those are ignored.
+//   - Defaults to registry.k8s.io/kube-controller-manager
+type ControllerManager struct {
+	KubeComponent `json:",inline"`
+}
+
+// APIServer represents a Kubernetes API server.
+//
+// Image:
+//   - If specified image contains tag or sha, those are ignored.
+//   - Defaults to registry.k8s.io/kube-apiserver
+type APIServer struct {
+	KubeComponent `json:",inline"`
+}
+
+// KubeComponent defines the base configuration for Kink control plane components.
+type KubeComponent struct {
+	kinkcorev1alpha1.Container `json:",inline"`
+
+	// Number of desired pods. Defaults to 1.
+	// +optional
+	// +default=1
+	// +kubebuilder:default=1
+	// +kubebuilder:validation:Minimum=1
+	// +kubebuilder:validation:Maximum=5
+	Replicas int32 `json:"replicas,omitempty"`
+
+	// Verbosity specifies the log verbosity level for the container. Valid values range from 0 (silent) to 10 (most verbose).
+	// +optional
+	// +default=4
+	// +kubebuilder:default=4
+	// +kubebuilder:validation:Minimum=0
+	// +kubebuilder:validation:Maximum=10
+	Verbosity uint8 `json:"verbosity"`
+
+	// ExtraArgs defines additional arguments to be passed to the container executable.
+	// +optional
+	ExtraArgs map[string]string `json:"extraArgs,omitempty"`
 }
 
 // KinkControlPlaneStatus defines the observed state of KinkControlPlane.

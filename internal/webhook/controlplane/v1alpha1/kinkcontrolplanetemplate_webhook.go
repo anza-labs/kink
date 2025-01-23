@@ -41,7 +41,8 @@ func SetupKinkControlPlaneTemplateWebhookWithManager(mgr ctrl.Manager) error {
 //nolint:lll // kubebuilder directives cannot be split into lines
 // +kubebuilder:webhook:path=/mutate-controlplane-cluster-x-k8s-io-v1alpha1-kinkcontrolplanetemplate,mutating=true,failurePolicy=fail,sideEffects=None,groups=controlplane.cluster.x-k8s.io,resources=kinkcontrolplanetemplates,verbs=create;update,versions=v1alpha1,name=mkinkcontrolplanetemplate-v1alpha1.kb.io,admissionReviewVersions=v1
 
-// KinkControlPlaneTemplateCustomDefaulter struct is responsible for setting default values on the custom resource of the
+// KinkControlPlaneTemplateCustomDefaulter struct is responsible for setting default values
+// on the custom resource of the
 // Kind KinkControlPlaneTemplate when those are created or updated.
 type KinkControlPlaneTemplateCustomDefaulter struct {
 	// TODO(user): Add more fields as needed for defaulting
@@ -78,7 +79,8 @@ type KinkControlPlaneTemplateCustomValidator struct {
 
 var _ webhook.CustomValidator = &KinkControlPlaneTemplateCustomValidator{}
 
-// ValidateCreate implements webhook.CustomValidator so a webhook will be registered for the type KinkControlPlaneTemplate.
+// ValidateCreate implements webhook.CustomValidator so a webhook will be registered
+// for the type KinkControlPlaneTemplate.
 func (v *KinkControlPlaneTemplateCustomValidator) ValidateCreate(
 	ctx context.Context,
 	obj runtime.Object,
@@ -87,14 +89,16 @@ func (v *KinkControlPlaneTemplateCustomValidator) ValidateCreate(
 	if !ok {
 		return nil, fmt.Errorf("expected a KinkControlPlaneTemplate object but got %T", obj)
 	}
-	kinkcontrolplanetemplatelog.Info("Validation for KinkControlPlaneTemplate upon creation", "name", kinkcontrolplanetemplate.GetName())
+	kinkcontrolplanetemplatelog.Info("Validation for KinkControlPlaneTemplate upon creation",
+		"name", kinkcontrolplanetemplate.GetName())
 
 	// TODO(user): fill in your validation logic upon object creation.
 
 	return nil, nil
 }
 
-// ValidateUpdate implements webhook.CustomValidator so a webhook will be registered for the type KinkControlPlaneTemplate.
+// ValidateUpdate implements webhook.CustomValidator so a webhook will be registered
+// for the type KinkControlPlaneTemplate.
 func (v *KinkControlPlaneTemplateCustomValidator) ValidateUpdate(
 	ctx context.Context,
 	oldObj, newObj runtime.Object,
@@ -103,14 +107,16 @@ func (v *KinkControlPlaneTemplateCustomValidator) ValidateUpdate(
 	if !ok {
 		return nil, fmt.Errorf("expected a KinkControlPlaneTemplate object for the newObj but got %T", newObj)
 	}
-	kinkcontrolplanetemplatelog.Info("Validation for KinkControlPlaneTemplate upon update", "name", kinkcontrolplanetemplate.GetName())
+	kinkcontrolplanetemplatelog.Info("Validation for KinkControlPlaneTemplate upon update",
+		"name", kinkcontrolplanetemplate.GetName())
 
 	// TODO(user): fill in your validation logic upon object update.
 
 	return nil, nil
 }
 
-// ValidateDelete implements webhook.CustomValidator so a webhook will be registered for the type KinkControlPlaneTemplate.
+// ValidateDelete implements webhook.CustomValidator so a webhook will be registered
+// for the type KinkControlPlaneTemplate.
 func (v *KinkControlPlaneTemplateCustomValidator) ValidateDelete(
 	ctx context.Context,
 	obj runtime.Object,
@@ -119,7 +125,8 @@ func (v *KinkControlPlaneTemplateCustomValidator) ValidateDelete(
 	if !ok {
 		return nil, fmt.Errorf("expected a KinkControlPlaneTemplate object but got %T", obj)
 	}
-	kinkcontrolplanetemplatelog.Info("Validation for KinkControlPlaneTemplate upon deletion", "name", kinkcontrolplanetemplate.GetName())
+	kinkcontrolplanetemplatelog.Info("Validation for KinkControlPlaneTemplate upon deletion",
+		"name", kinkcontrolplanetemplate.GetName())
 
 	// TODO(user): fill in your validation logic upon object deletion.
 

@@ -10,6 +10,14 @@
   <img src="assets/kink.png" width="256p"/>
 </p>
 
+| Component               | Image                                     | Version | Mode        |
+| ----------------------- | ----------------------------------------- | ------- | ----------- |
+| ETCD                    | `ghcr.io/anza-labs/library/kine`          |         | StatefulSet |
+| Kube Scheduler          | `registry.k8s.io/kube-scheduler`          |         | Deployment  |
+| Kube API-Server         | `registry.k8s.io/kube-apiserver`          |         | Deployment  |
+| Kube Controller Manager | `registry.k8s.io/kube-controller-manager` |         | Deployment  |
+| Node                    | `docker.io/kindest/base`                  |         | StatefulSet |
+
 ## License
 
 `kink` is licensed under the [Apache-2.0][license].

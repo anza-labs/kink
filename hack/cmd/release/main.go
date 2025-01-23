@@ -31,8 +31,6 @@ import (
 
 const (
 	defaultConfigPath = "./docs/.crd-ref-docs.yaml"
-	defaultImageName  = "controller"
-	defaultImageRef   = "ghcr.io/anza-labs/kink-controller"
 )
 
 func runCommand(name string, args ...string) error {
@@ -143,6 +141,7 @@ func replaceKubernetesVersion(filePath, newVersion string) error {
 	return os.Rename(tempFilePath, filePath)
 }
 
+//lint:ignore U1000 this might be helpful when creating dist/
 func createKustomization(resources []string, imageName, newImageName, newTag string) map[string]interface{} {
 	return map[string]interface{}{
 		"namespace":  "kink-system",
@@ -158,6 +157,7 @@ func createKustomization(resources []string, imageName, newImageName, newTag str
 	}
 }
 
+//lint:ignore U1000 this might be helpful when creating dist/
 func writeKustomization(kustomization map[string]interface{}, filepath string) error {
 	content, err := yaml.Marshal(kustomization)
 	if err != nil {
@@ -189,12 +189,7 @@ func release(version, fullVersion string) error {
 func main() {
 	versionFlag := flag.String("version", "", "Tagged version to build")
 	configFlag := flag.String("config", defaultConfigPath, "Path to CRD ref-docs config")
-	imageFlag := flag.String("image-name", defaultImageName, "Default image name")
-	newImageFlag := flag.String("image", defaultImageRef, "Default image reference")
-
 	flag.Parse()
-
-	resources := []string{"./config/crd", "./config/manager", "./config/rbac"}
 
 	version, err := parseVersion(*versionFlag)
 	if err != nil {
@@ -216,11 +211,6 @@ func main() {
 
 	if err := branchPrep(version, *versionFlag); err != nil {
 		log.Fatalf("Failed to prepare branch: %v", err)
-	}
-
-	kustomization := createKustomization(resources, *imageFlag, *newImageFlag, *versionFlag)
-	if err := writeKustomization(kustomization, "./kustomization.yaml"); err != nil {
-		log.Fatalf("Failed to write kustomization: %v", err)
 	}
 
 	if err := release(version, *versionFlag); err != nil {
