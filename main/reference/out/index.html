@@ -554,6 +554,33 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#apiserver" class="md-nav__link">
+    <span class="md-ellipsis">
+      APIServer
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#controllermanager" class="md-nav__link">
+    <span class="md-ellipsis">
+      ControllerManager
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kine" class="md-nav__link">
+    <span class="md-ellipsis">
+      Kine
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#kinkcontrolplane" class="md-nav__link">
     <span class="md-ellipsis">
       KinkControlPlane
@@ -629,6 +656,24 @@
   <a href="#kinkcontrolplanetemplatestatus" class="md-nav__link">
     <span class="md-ellipsis">
       KinkControlPlaneTemplateStatus
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kubecomponent" class="md-nav__link">
+    <span class="md-ellipsis">
+      KubeComponent
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scheduler" class="md-nav__link">
+    <span class="md-ellipsis">
+      Scheduler
     </span>
   </a>
   
@@ -908,6 +953,33 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#apiserver" class="md-nav__link">
+    <span class="md-ellipsis">
+      APIServer
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#controllermanager" class="md-nav__link">
+    <span class="md-ellipsis">
+      ControllerManager
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kine" class="md-nav__link">
+    <span class="md-ellipsis">
+      Kine
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#kinkcontrolplane" class="md-nav__link">
     <span class="md-ellipsis">
       KinkControlPlane
@@ -983,6 +1055,24 @@
   <a href="#kinkcontrolplanetemplatestatus" class="md-nav__link">
     <span class="md-ellipsis">
       KinkControlPlaneTemplateStatus
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kubecomponent" class="md-nav__link">
+    <span class="md-ellipsis">
+      KubeComponent
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scheduler" class="md-nav__link">
+    <span class="md-ellipsis">
+      Scheduler
     </span>
   </a>
   
@@ -1223,6 +1313,132 @@
 <li><a href="#kinkcontrolplanetemplate">KinkControlPlaneTemplate</a></li>
 <li><a href="#kinkcontrolplanetemplatelist">KinkControlPlaneTemplateList</a></li>
 </ul>
+<h4 id="apiserver">APIServer</h4>
+<p>APIServer represents a Kubernetes API server.</p>
+<p>Image:
+  - If specified image contains tag or sha, those are ignored.
+  - Defaults to registry.k8s.io/kube-apiserver</p>
+<p><em>Appears in:</em>
+- <a href="#kinkcontrolplanespec">KinkControlPlaneSpec</a></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+<th>Default</th>
+<th>Validation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>image</code> <em>string</em></td>
+<td>Image specifies the container image to use.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>resources</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcerequirements-v1-core">ResourceRequirements</a></em></td>
+<td>Resources describes the compute resource requirements for the container.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>replicas</code> <em>integer</em></td>
+<td>Number of desired pods. Defaults to 1.</td>
+<td>1</td>
+<td>Maximum: 5 <br />Minimum: 1 <br /></td>
+</tr>
+<tr>
+<td><code>verbosity</code> <em>integer</em></td>
+<td>Verbosity specifies the log verbosity level for the container. Valid values range from 0 (silent) to 10 (most verbose).</td>
+<td>4</td>
+<td>Maximum: 10 <br />Minimum: 0 <br /></td>
+</tr>
+<tr>
+<td><code>extraArgs</code> <em>object (keys:string, values:string)</em></td>
+<td>ExtraArgs defines additional arguments to be passed to the container executable.</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h4 id="controllermanager">ControllerManager</h4>
+<p>ControllerManager represents a Kubernetes controller manager.</p>
+<p>Image:
+  - If specified image contains tag or sha, those are ignored.
+  - Defaults to registry.k8s.io/kube-controller-manager</p>
+<p><em>Appears in:</em>
+- <a href="#kinkcontrolplanespec">KinkControlPlaneSpec</a></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+<th>Default</th>
+<th>Validation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>image</code> <em>string</em></td>
+<td>Image specifies the container image to use.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>resources</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcerequirements-v1-core">ResourceRequirements</a></em></td>
+<td>Resources describes the compute resource requirements for the container.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>replicas</code> <em>integer</em></td>
+<td>Number of desired pods. Defaults to 1.</td>
+<td>1</td>
+<td>Maximum: 5 <br />Minimum: 1 <br /></td>
+</tr>
+<tr>
+<td><code>verbosity</code> <em>integer</em></td>
+<td>Verbosity specifies the log verbosity level for the container. Valid values range from 0 (silent) to 10 (most verbose).</td>
+<td>4</td>
+<td>Maximum: 10 <br />Minimum: 0 <br /></td>
+</tr>
+<tr>
+<td><code>extraArgs</code> <em>object (keys:string, values:string)</em></td>
+<td>ExtraArgs defines additional arguments to be passed to the container executable.</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h4 id="kine">Kine</h4>
+<p>Kine represents ETCD-shim container.</p>
+<p><em>Appears in:</em>
+- <a href="#kinkcontrolplanespec">KinkControlPlaneSpec</a></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+<th>Default</th>
+<th>Validation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>image</code> <em>string</em></td>
+<td>Image specifies the container image to use.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>resources</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcerequirements-v1-core">ResourceRequirements</a></em></td>
+<td>Resources describes the compute resource requirements for the container.</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
 <h4 id="kinkcontrolplane">KinkControlPlane</h4>
 <p>KinkControlPlane is the Schema for the kinkcontrolplanes API.</p>
 <p><em>Appears in:</em>
@@ -1349,6 +1565,36 @@
 <tr>
 <td><code>version</code> <em>string</em></td>
 <td>Version defines the desired Kubernetes version for the control plane.<br />The value must be a valid semantic version; also if the value provided by the user<br />does not start with the v prefix, it must be added.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>affinity</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#affinity-v1-core">Affinity</a></em></td>
+<td>Affinity specifies the scheduling constraints for Pods.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>apiServer</code> <em><a href="#apiserver">APIServer</a></em></td>
+<td>APIServer defines the configuration for the Kubernetes API server.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>kine</code> <em><a href="#kine">Kine</a></em></td>
+<td>Kine defines the configuration for the Kine component.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>scheduler</code> <em><a href="#scheduler">Scheduler</a></em></td>
+<td>Scheduler defines the configuration for the Kubernetes scheduler.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>controllerManager</code> <em><a href="#controllermanager">ControllerManager</a></em></td>
+<td>ControllerManager defines the configuration for the Kubernetes controller manager.</td>
 <td></td>
 <td></td>
 </tr>
@@ -1549,6 +1795,103 @@
 <p>KinkControlPlaneTemplateStatus defines the observed state of KinkControlPlaneTemplate.</p>
 <p><em>Appears in:</em>
 - <a href="#kinkcontrolplanetemplate">KinkControlPlaneTemplate</a></p>
+<h4 id="kubecomponent">KubeComponent</h4>
+<p>KubeComponent defines the base configuration for Kink control plane components.</p>
+<p><em>Appears in:</em>
+- <a href="#apiserver">APIServer</a>
+- <a href="#controllermanager">ControllerManager</a>
+- <a href="#scheduler">Scheduler</a></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+<th>Default</th>
+<th>Validation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>image</code> <em>string</em></td>
+<td>Image specifies the container image to use.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>resources</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcerequirements-v1-core">ResourceRequirements</a></em></td>
+<td>Resources describes the compute resource requirements for the container.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>replicas</code> <em>integer</em></td>
+<td>Number of desired pods. Defaults to 1.</td>
+<td>1</td>
+<td>Maximum: 5 <br />Minimum: 1 <br /></td>
+</tr>
+<tr>
+<td><code>verbosity</code> <em>integer</em></td>
+<td>Verbosity specifies the log verbosity level for the container. Valid values range from 0 (silent) to 10 (most verbose).</td>
+<td>4</td>
+<td>Maximum: 10 <br />Minimum: 0 <br /></td>
+</tr>
+<tr>
+<td><code>extraArgs</code> <em>object (keys:string, values:string)</em></td>
+<td>ExtraArgs defines additional arguments to be passed to the container executable.</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h4 id="scheduler">Scheduler</h4>
+<p>Scheduler represents a Kubernetes scheduler.</p>
+<p>Image:
+  - If specified image contains tag or sha, those are ignored.
+  - Defaults to registry.k8s.io/kube-scheduler</p>
+<p><em>Appears in:</em>
+- <a href="#kinkcontrolplanespec">KinkControlPlaneSpec</a></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+<th>Default</th>
+<th>Validation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>image</code> <em>string</em></td>
+<td>Image specifies the container image to use.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>resources</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcerequirements-v1-core">ResourceRequirements</a></em></td>
+<td>Resources describes the compute resource requirements for the container.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>replicas</code> <em>integer</em></td>
+<td>Number of desired pods. Defaults to 1.</td>
+<td>1</td>
+<td>Maximum: 5 <br />Minimum: 1 <br /></td>
+</tr>
+<tr>
+<td><code>verbosity</code> <em>integer</em></td>
+<td>Verbosity specifies the log verbosity level for the container. Valid values range from 0 (silent) to 10 (most verbose).</td>
+<td>4</td>
+<td>Maximum: 10 <br />Minimum: 0 <br /></td>
+</tr>
+<tr>
+<td><code>extraArgs</code> <em>object (keys:string, values:string)</em></td>
+<td>ExtraArgs defines additional arguments to be passed to the container executable.</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
 <h2 id="infrastructureclusterx-k8siov1alpha1">infrastructure.cluster.x-k8s.io/v1alpha1</h2>
 <p>Package v1alpha1 contains API Schema definitions for the infrastructure v1alpha1 API group.</p>
 <h3 id="resource-types_1">Resource Types</h3>
@@ -1982,8 +2325,26 @@
 </thead>
 <tbody>
 <tr>
+<td><code>image</code> <em>string</em></td>
+<td>Image specifies the container image to use.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>resources</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcerequirements-v1-core">ResourceRequirements</a></em></td>
+<td>Resources describes the compute resource requirements for the container.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
 <td><code>providerID</code> <em>string</em></td>
-<td>providerID must match the provider ID as seen on the node object corresponding to this machine.</td>
+<td>ProviderID must match the provider ID as seen on the node object corresponding to this machine.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>affinity</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#affinity-v1-core">Affinity</a></em></td>
+<td>Affinity specifies the scheduling constraints for Pods.</td>
 <td></td>
 <td></td>
 </tr>
