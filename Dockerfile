@@ -20,6 +20,7 @@ RUN xx-go mod download
 COPY cmd/main.go cmd/main.go
 COPY api/ api/
 COPY internal/ internal/
+COPY version/ version/
 
 # Build
 ENV CGO_ENABLED=0
