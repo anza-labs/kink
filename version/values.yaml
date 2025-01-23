@@ -7,7 +7,7 @@ controllerManager:
   image:
     registry: "registry.k8s.io"
     repository: "kube-controller-manager"
-    tag: "v1.32.0"
+    tag: "v1.32.1"
 scheduler:
   image:
     registry: "registry.k8s.io"
