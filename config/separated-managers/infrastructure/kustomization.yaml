@@ -1,0 +1,6 @@
+resources:
+- ../../default
+patches:
+- path: manager_infrastructure_patch.yaml
+  target:
+    kind: Deployment

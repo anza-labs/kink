@@ -22,7 +22,7 @@ spec:
   clusterName: ${CLUSTER_NAME}
   replicas: ${WORKER_MACHINE_COUNT}
   selector:
-    matchLabels: null
+    matchLabels: {}
   template:
     spec:
       clusterName: ${CLUSTER_NAME}
@@ -37,12 +37,6 @@ spec:
         kind: KinkMachineTemplate
         name: ${CLUSTER_NAME}
 ---
-apiVersion: controlplane.cluster.x-k8s.io/v1alpha1
-kind: KamajiControlPlane
-metadata:
-  name: ${CLUSTER_NAME}
-spec: {}
----
 apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
 kind: KubeadmConfigTemplate
 metadata:
@@ -56,6 +50,13 @@ kind: KinkCluster
 metadata:
   name: ${CLUSTER_NAME}
 spec: {}
+---
+apiVersion: controlplane.cluster.x-k8s.io/v1alpha1
+kind: KinkControlPlane
+metadata:
+  name: ${CLUSTER_NAME}
+spec:
+  version: ${KUBERNETES_VERSION}
 ---
 apiVersion: infrastructure.cluster.x-k8s.io/v1alpha1
 kind: KinkMachineTemplate

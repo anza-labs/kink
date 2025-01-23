@@ -1,4 +1,7 @@
 providers:
-  - name: kink
+  - name: kinky-infra
     url: ${PWD}/dist/infrastructure-kink/v0.0.0/infrastructure-components.yaml
     type: InfrastructureProvider
+  - name: kinky-controlplane
+    url: ${PWD}/dist/controlplane-kink/v0.0.0/infrastructure-components.yaml
+    type: ControlPlaneProvider

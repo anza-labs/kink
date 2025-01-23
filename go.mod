@@ -22,9 +22,10 @@ require (
 	github.com/kyverno/chainsaw v0.2.12
 	github.com/tilt-dev/ctlptl v0.8.38
 	golang.stackrox.io/kube-linter v0.7.1
+	helm.sh/helm/v3 v3.16.2 // indirect
 	sigs.k8s.io/controller-tools v0.16.5
 	sigs.k8s.io/kind v0.26.0
-	sigs.k8s.io/kustomize/kustomize/v5 v5.6.0
+	sigs.k8s.io/kustomize/kustomize/v5 v5.4.3
 )
 
 require (
@@ -397,7 +398,6 @@ require (
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	helm.sh/helm/v3 v3.16.2 // indirect
 	honnef.co/go/tools v0.5.1 // indirect
 	k8s.io/api v0.32.1 // indirect
 	k8s.io/apiextensions-apiserver v0.31.3 // indirect
@@ -415,7 +415,7 @@ require (
 	sigs.k8s.io/json v0.0.0-20241010143419-9aa6b5e7a4b3 // indirect
 	sigs.k8s.io/kubectl-validate v0.0.5-0.20240827210056-ce13d95db263 // indirect
 	sigs.k8s.io/kustomize/api v0.19.0 // indirect
-	sigs.k8s.io/kustomize/cmd/config v0.19.0 // indirect
+	sigs.k8s.io/kustomize/cmd/config v0.14.2 // indirect
 	sigs.k8s.io/kustomize/kyaml v0.19.0 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.2 // indirect
 )

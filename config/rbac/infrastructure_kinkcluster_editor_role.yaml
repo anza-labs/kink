@@ -1,0 +1,27 @@
+# permissions for end users to edit kinkclusters.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: kink
+    app.kubernetes.io/managed-by: kustomize
+  name: infrastructure-kinkcluster-editor-role
+rules:
+  - apiGroups:
+      - infrastructure.cluster.x-k8s.io
+    resources:
+      - kinkclusters
+    verbs:
+      - create
+      - delete
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
+      - infrastructure.cluster.x-k8s.io
+    resources:
+      - kinkclusters/status
+    verbs:
+      - get

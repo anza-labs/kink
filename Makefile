@@ -149,8 +149,10 @@ docker-push-controller: ## Push docker image with the controller.
 .PHONY: build-installer
 build-installer: manifests generate kustomize ## Generate a consolidated YAML with CRDs and deployment.
 	mkdir -p dist/infrastructure-kink/$(VERSION)
+	mkdir -p dist/controlplane-kink/$(VERSION)
 	cd config/manager && $(KUSTOMIZE) edit set image controller=$(REPOSITORY)/kink-controller:$(TAG)
-	$(KUSTOMIZE) build config/default > dist/infrastructure-kink/$(VERSION)/infrastructure-components.yaml
+	$(KUSTOMIZE) build config/separated-managers/infrastructure > dist/infrastructure-kink/$(VERSION)/infrastructure-components.yaml
+	$(KUSTOMIZE) build config/separated-managers/controlplane > dist/controlplane-kink/$(VERSION)/controlplane-components.yaml
 	cp hack/templates/*.yaml dist/infrastructure-kink/$(VERSION)
 
 ##@ Documentation
@@ -171,16 +173,15 @@ ifndef ignore-not-found
 endif
 
 .PHONY: cluster
-cluster: kind ctlptl clusterctl
+cluster: kind ctlptl clusterctl kustomize
 	@PATH=${LOCALBIN}:$(PATH) $(CTLPTL) apply -f hack/kind.yaml
 	$(KUBECTL) apply -f https://github.com/cert-manager/cert-manager/releases/download/$(CERT_MANAGER_VERSION)/cert-manager.yaml
 	$(CLUSTERCTL) init \
 		--core=cluster-api:$(CLUSTER_API_VERSION) \
 		--bootstrap=kubeadm:$(CLUSTER_API_VERSION) \
-		--control-plane=kamaji:$(KAMAJI_VERSION) \
 		--validate=true \
 		--wait-providers \
-		--wait-provider-timeout=240
+		--wait-provider-timeout=360
 
 .PHONY: cluster-reset
 cluster-reset: kind ctlptl
@@ -189,10 +190,12 @@ cluster-reset: kind ctlptl
 .PHONY: deploy
 deploy: manifests kustomize build-installer ## Deploy controller to the K8s cluster specified in ~/.kube/config.
 	$(KUBECTL) apply -f dist/infrastructure-kink/$(VERSION)/infrastructure-components.yaml
+	$(KUBECTL) apply -f dist/controlplane-kink/$(VERSION)/controlplane-components.yaml
 
 .PHONY: undeploy
 undeploy: kustomize build-installer ## Undeploy controller from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
 	$(KUBECTL) delete --ignore-not-found=$(ignore-not-found) -f dist/infrastructure-kink/$(VERSION)/infrastructure-components.yaml
+	$(KUBECTL) delete --ignore-not-found=$(ignore-not-found) -f dist/controlplane-kink/$(VERSION)/controlplane-components.yaml
 
 ##@ Dependencies
 
@@ -202,7 +205,8 @@ $(LOCALBIN):
 	mkdir -p $(LOCALBIN)
 
 ## Tool Binaries
-KUBECTL ?= kubectl
+KUBECTL   ?= kubectl
+
 ADDLICENSE     ?= $(LOCALBIN)/addlicense
 CHAINSAW       ?= $(LOCALBIN)/chainsaw
 CLUSTERCTL     ?= $(LOCALBIN)/clusterctl
@@ -228,7 +232,6 @@ KUSTOMIZE_VERSION        ?= $(shell grep 'sigs.k8s.io/kustomize/kustomize/v5 ' .
 
 ## Compoenent Versions
 CERT_MANAGER_VERSION ?= v1.16.2
-KAMAJI_VERSION       ?= v0.13.0
 
 .PHONY: tools
 tools: addlicense chainsaw clusterctl controller-gen crd-ref-docs ctlptl golangci-lint kind kube-linter kustomize ## Install all tools.
@@ -274,7 +277,7 @@ $(KIND)-$(KIND_VERSION): $(LOCALBIN)
 	$(call go-install-tool,$(KIND),sigs.k8s.io/kind,$(KIND_VERSION))
 
 .PHONY: kube-linter
-kube-linter: $(KUBE_LINTER)-$(KUBE_LINTER_VERSION)
+kube-linter: $(KUBE_LINTER)-$(KUBE_LINTER_VERSION) ## Download kube-linter locally if necessary.
 $(KUBE_LINTER)-$(KUBE_LINTER_VERSION): $(LOCALBIN)
 	$(call go-install-tool,$(KUBE_LINTER),golang.stackrox.io/kube-linter/cmd/kube-linter,$(KUBE_LINTER_VERSION))
 

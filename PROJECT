@@ -5,6 +5,7 @@
 domain: cluster.x-k8s.io
 layout:
 - go.kubebuilder.io/v4
+multigroup: true
 projectName: kink
 repo: github.com/anza-labs/kink
 resources:
@@ -58,6 +59,33 @@ resources:
   group: infrastructure
   kind: KinkClusterTemplate
   path: github.com/anza-labs/kink/api/v1alpha1
+  version: v1alpha1
+  webhooks:
+    conversion: true
+    defaulting: true
+    validation: true
+    webhookVersion: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: cluster.x-k8s.io
+  group: controlplane
+  kind: KinkControlPlane
+  path: github.com/anza-labs/kink/api/controlplane/v1alpha1
+  version: v1alpha1
+  webhooks:
+    conversion: true
+    defaulting: true
+    validation: true
+    webhookVersion: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  domain: cluster.x-k8s.io
+  group: controlplane
+  kind: KinkControlPlaneTemplate
+  path: github.com/anza-labs/kink/api/controlplane/v1alpha1
   version: v1alpha1
   webhooks:
     conversion: true

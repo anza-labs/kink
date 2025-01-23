@@ -1,7 +1,186 @@
 # API Reference
 
 ## Packages
+- [controlplane.cluster.x-k8s.io/v1alpha1](#controlplaneclusterx-k8siov1alpha1)
 - [infrastructure.cluster.x-k8s.io/v1alpha1](#infrastructureclusterx-k8siov1alpha1)
+
+
+## controlplane.cluster.x-k8s.io/v1alpha1
+
+Package v1alpha1 contains API Schema definitions for the controlplane v1alpha1 API group.
+
+### Resource Types
+- [KinkControlPlane](#kinkcontrolplane)
+- [KinkControlPlaneList](#kinkcontrolplanelist)
+- [KinkControlPlaneTemplate](#kinkcontrolplanetemplate)
+- [KinkControlPlaneTemplateList](#kinkcontrolplanetemplatelist)
+
+
+
+#### KinkControlPlane
+
+
+
+KinkControlPlane is the Schema for the kinkcontrolplanes API.
+
+
+
+_Appears in:_
+- [KinkControlPlaneList](#kinkcontrolplanelist)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `apiVersion` _string_ | `controlplane.cluster.x-k8s.io/v1alpha1` | | |
+| `kind` _string_ | `KinkControlPlane` | | |
+| `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  |  |
+| `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  |  |
+| `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
+| `spec` _[KinkControlPlaneSpec](#kinkcontrolplanespec)_ |  |  |  |
+| `status` _[KinkControlPlaneStatus](#kinkcontrolplanestatus)_ |  |  |  |
+
+
+#### KinkControlPlaneList
+
+
+
+KinkControlPlaneList contains a list of KinkControlPlane.
+
+
+
+
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `apiVersion` _string_ | `controlplane.cluster.x-k8s.io/v1alpha1` | | |
+| `kind` _string_ | `KinkControlPlaneList` | | |
+| `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  |  |
+| `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  |  |
+| `metadata` _[ListMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#listmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
+| `items` _[KinkControlPlane](#kinkcontrolplane) array_ |  |  |  |
+
+
+#### KinkControlPlaneSpec
+
+
+
+KinkControlPlaneSpec defines the desired state of KinkControlPlane.
+
+
+
+_Appears in:_
+- [KinkControlPlane](#kinkcontrolplane)
+- [KinkControlPlaneTemplateResource](#kinkcontrolplanetemplateresource)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `version` _string_ | Version defines the desired Kubernetes version for the control plane.<br />The value must be a valid semantic version; also if the value provided by the user<br />does not start with the v prefix, it must be added. |  |  |
+
+
+#### KinkControlPlaneStatus
+
+
+
+KinkControlPlaneStatus defines the observed state of KinkControlPlane.
+
+
+
+_Appears in:_
+- [KinkControlPlane](#kinkcontrolplane)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `version` _string_ | Version represents the minimum Kubernetes version for the control plane machines<br />in the cluster. |  |  |
+| `initialized` _boolean_ | Initialized denotes that the kink control plane API Server is initialized and thus<br />it can accept requests. |  |  |
+| `ready` _boolean_ | Ready denotes that the kink control plane is ready to serve requests. |  |  |
+
+
+#### KinkControlPlaneTemplate
+
+
+
+KinkControlPlaneTemplate is the Schema for the kinkcontrolplanetemplates API.
+
+
+
+_Appears in:_
+- [KinkControlPlaneTemplateList](#kinkcontrolplanetemplatelist)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `apiVersion` _string_ | `controlplane.cluster.x-k8s.io/v1alpha1` | | |
+| `kind` _string_ | `KinkControlPlaneTemplate` | | |
+| `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  |  |
+| `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  |  |
+| `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
+| `spec` _[KinkControlPlaneTemplateSpec](#kinkcontrolplanetemplatespec)_ |  |  |  |
+| `status` _[KinkControlPlaneTemplateStatus](#kinkcontrolplanetemplatestatus)_ |  |  |  |
+
+
+#### KinkControlPlaneTemplateList
+
+
+
+KinkControlPlaneTemplateList contains a list of KinkControlPlaneTemplate.
+
+
+
+
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `apiVersion` _string_ | `controlplane.cluster.x-k8s.io/v1alpha1` | | |
+| `kind` _string_ | `KinkControlPlaneTemplateList` | | |
+| `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  |  |
+| `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  |  |
+| `metadata` _[ListMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#listmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
+| `items` _[KinkControlPlaneTemplate](#kinkcontrolplanetemplate) array_ |  |  |  |
+
+
+#### KinkControlPlaneTemplateResource
+
+
+
+
+
+
+
+_Appears in:_
+- [KinkControlPlaneTemplateSpec](#kinkcontrolplanetemplatespec)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
+| `spec` _[KinkControlPlaneSpec](#kinkcontrolplanespec)_ |  |  |  |
+
+
+#### KinkControlPlaneTemplateSpec
+
+
+
+KinkControlPlaneTemplateSpec defines the desired state of KinkControlPlaneTemplate.
+
+
+
+_Appears in:_
+- [KinkControlPlaneTemplate](#kinkcontrolplanetemplate)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `template` _[KinkControlPlaneTemplateResource](#kinkcontrolplanetemplateresource)_ |  |  |  |
+
+
+#### KinkControlPlaneTemplateStatus
+
+
+
+KinkControlPlaneTemplateStatus defines the observed state of KinkControlPlaneTemplate.
+
+
+
+_Appears in:_
+- [KinkControlPlaneTemplate](#kinkcontrolplanetemplate)
+
+
 
 
 ## infrastructure.cluster.x-k8s.io/v1alpha1

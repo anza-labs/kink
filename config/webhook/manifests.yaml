@@ -10,6 +10,46 @@ webhooks:
     service:
       name: webhook-service
       namespace: system
+      path: /mutate-controlplane-cluster-x-k8s-io-v1alpha1-kinkcontrolplane
+  failurePolicy: Fail
+  name: mkinkcontrolplane-v1alpha1.kb.io
+  rules:
+  - apiGroups:
+    - controlplane.cluster.x-k8s.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - kinkcontrolplanes
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /mutate-controlplane-cluster-x-k8s-io-v1alpha1-kinkcontrolplanetemplate
+  failurePolicy: Fail
+  name: mkinkcontrolplanetemplate-v1alpha1.kb.io
+  rules:
+  - apiGroups:
+    - controlplane.cluster.x-k8s.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - kinkcontrolplanetemplates
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
       path: /mutate-infrastructure-cluster-x-k8s-io-v1alpha1-kinkcluster
   failurePolicy: Fail
   name: mkinkcluster-v1alpha1.kb.io
@@ -90,6 +130,46 @@ kind: ValidatingWebhookConfiguration
 metadata:
   name: validating-webhook-configuration
 webhooks:
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-controlplane-cluster-x-k8s-io-v1alpha1-kinkcontrolplane
+  failurePolicy: Fail
+  name: vkinkcontrolplane-v1alpha1.kb.io
+  rules:
+  - apiGroups:
+    - controlplane.cluster.x-k8s.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - kinkcontrolplanes
+  sideEffects: None
+- admissionReviewVersions:
+  - v1
+  clientConfig:
+    service:
+      name: webhook-service
+      namespace: system
+      path: /validate-controlplane-cluster-x-k8s-io-v1alpha1-kinkcontrolplanetemplate
+  failurePolicy: Fail
+  name: vkinkcontrolplanetemplate-v1alpha1.kb.io
+  rules:
+  - apiGroups:
+    - controlplane.cluster.x-k8s.io
+    apiVersions:
+    - v1alpha1
+    operations:
+    - CREATE
+    - UPDATE
+    resources:
+    - kinkcontrolplanetemplates
+  sideEffects: None
 - admissionReviewVersions:
   - v1
   clientConfig:

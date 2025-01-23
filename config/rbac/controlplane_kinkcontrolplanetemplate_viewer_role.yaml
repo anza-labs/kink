@@ -1,0 +1,23 @@
+# permissions for end users to view kinkcontrolplanetemplates.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: kink
+    app.kubernetes.io/managed-by: kustomize
+  name: controlplane-kinkcontrolplanetemplate-viewer-role
+rules:
+- apiGroups:
+  - controlplane.cluster.x-k8s.io
+  resources:
+  - kinkcontrolplanetemplates
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - controlplane.cluster.x-k8s.io
+  resources:
+  - kinkcontrolplanetemplates/status
+  verbs:
+  - get

@@ -6,7 +6,9 @@
 [![GitHub release](https://img.shields.io/github/release/anza-labs/kink)](https://GitHub.com/anza-labs/kink/releases/)
 [![Go Report Card](https://goreportcard.com/badge/github.com/anza-labs/kink)](https://goreportcard.com/report/github.com/anza-labs/kink)
 
-TODO
+<p align="center">
+  <img src="assets/kink.png" width="256p"/>
+</p>
 
 ## License
 

@@ -19,9 +19,12 @@ import (
 	"flag"
 	"os"
 
-	kinkv1alpha1 "github.com/anza-labs/kink/api/v1alpha1"
-	"github.com/anza-labs/kink/internal/controller"
-	webhookv1alpha1 "github.com/anza-labs/kink/internal/webhook/v1alpha1"
+	controlplanev1alpha1 "github.com/anza-labs/kink/api/controlplane/v1alpha1"
+	infrastructurev1alpha1 "github.com/anza-labs/kink/api/infrastructure/v1alpha1"
+	"github.com/anza-labs/kink/internal/controller/controlplane"
+	"github.com/anza-labs/kink/internal/controller/infrastructure"
+	controlplanewebhookv1alpha1 "github.com/anza-labs/kink/internal/webhook/controlplane/v1alpha1"
+	infrastructurewebhookv1alpha1 "github.com/anza-labs/kink/internal/webhook/infrastructure/v1alpha1"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -39,14 +42,29 @@ import (
 )
 
 var (
-	scheme   = runtime.NewScheme()
-	setupLog = ctrl.Log.WithName("setup")
+	scheme             = runtime.NewScheme()
+	setupLog           = ctrl.Log.WithName("setup")
+	enabledControllers = map[string]bool{
+		controlPlaneController:   true,
+		infrastructureController: true,
+	}
 )
+
+const (
+	allControllers           = "all"
+	controlPlaneController   = "control-plane"
+	infrastructureController = "infrastructure"
+)
+
+func isControllerEnabled(controllerName string) bool {
+	return enabledControllers[controllerName]
+}
 
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
-	utilruntime.Must(kinkv1alpha1.AddToScheme(scheme))
+	utilruntime.Must(infrastructurev1alpha1.AddToScheme(scheme))
+	utilruntime.Must(controlplanev1alpha1.AddToScheme(scheme))
 	// +kubebuilder:scaffold:scheme
 }
 
@@ -56,6 +74,7 @@ func main() {
 	var probeAddr string
 	var secureMetrics bool
 	var enableHTTP2 bool
+	var enabledController string
 	var tlsOpts []func(*tls.Config)
 	flag.StringVar(&metricsAddr, "metrics-bind-address", "0", "The address the metrics endpoint binds to. "+
 		"Use :8443 for HTTPS or :8080 for HTTP, or leave as 0 to disable the metrics service.")
@@ -67,8 +86,15 @@ func main() {
 		"If set, the metrics endpoint is served securely via HTTPS. Use --metrics-secure=false to use HTTP instead.")
 	flag.BoolVar(&enableHTTP2, "enable-http2", false,
 		"If set, HTTP/2 will be enabled for the metrics and webhook servers")
+	flag.StringVar(&enabledController, "enable-controller", "", "The controller to enable. Default: all")
 	klog.InitFlags(nil)
 	flag.Parse()
+
+	if enabledController != "" && enabledController != allControllers {
+		enabledControllers = map[string]bool{
+			enabledController: true,
+		}
+	}
 
 	ctrl.SetLogger(klog.NewKlogr())
 
@@ -122,54 +148,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = (&controller.KinkClusterReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "KinkCluster")
-		os.Exit(1)
-	}
-	if err = (&controller.KinkMachineReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "KinkMachine")
-		os.Exit(1)
-	}
-	if err = (&controller.KinkMachineTemplateReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "KinkMachineTemplate")
-		os.Exit(1)
-	}
-	if err = (&controller.KinkClusterTemplateReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "KinkClusterTemplate")
-		os.Exit(1)
-	}
-
-	if os.Getenv("ENABLE_WEBHOOKS") != "false" {
-		if err = webhookv1alpha1.SetupKinkClusterTemplateWebhookWithManager(mgr); err != nil {
-			setupLog.Error(err, "unable to create webhook", "webhook", "KinkClusterTemplate")
-			os.Exit(1)
-		}
-		if err = webhookv1alpha1.SetupKinkClusterWebhookWithManager(mgr); err != nil {
-			setupLog.Error(err, "unable to create webhook", "webhook", "KinkCluster")
-			os.Exit(1)
-		}
-		if err = webhookv1alpha1.SetupKinkMachineWebhookWithManager(mgr); err != nil {
-			setupLog.Error(err, "unable to create webhook", "webhook", "KinkMachine")
-			os.Exit(1)
-		}
-		if err = webhookv1alpha1.SetupKinkMachineTemplateWebhookWithManager(mgr); err != nil {
-			setupLog.Error(err, "unable to create webhook", "webhook", "KinkMachineTemplate")
-			os.Exit(1)
-		}
-	}
 	// +kubebuilder:scaffold:builder
+
+	if isControllerEnabled(infrastructureController) {
+		enableInfrastructure(mgr)
+	}
+	if isControllerEnabled(controlPlaneController) {
+		enableControlPlane(mgr)
+	}
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
 		setupLog.Error(err, "unable to set up health check")
@@ -184,5 +170,62 @@ func main() {
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)
+	}
+}
+
+func enableInfrastructure(mgr ctrl.Manager) {
+	if err := (&infrastructure.KinkClusterReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "KinkCluster")
+		os.Exit(1)
+	}
+	if err := (&infrastructure.KinkMachineReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "KinkMachine")
+		os.Exit(1)
+	}
+
+	if os.Getenv("ENABLE_WEBHOOKS") != "false" {
+		if err := infrastructurewebhookv1alpha1.SetupKinkClusterTemplateWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "KinkClusterTemplate")
+			os.Exit(1)
+		}
+		if err := infrastructurewebhookv1alpha1.SetupKinkClusterWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "KinkCluster")
+			os.Exit(1)
+		}
+		if err := infrastructurewebhookv1alpha1.SetupKinkMachineWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "KinkMachine")
+			os.Exit(1)
+		}
+		if err := infrastructurewebhookv1alpha1.SetupKinkMachineTemplateWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "KinkMachineTemplate")
+			os.Exit(1)
+		}
+	}
+}
+
+func enableControlPlane(mgr ctrl.Manager) {
+	if err := (&controlplane.KinkControlPlaneReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "KinkControlPlane")
+		os.Exit(1)
+	}
+
+	if os.Getenv("ENABLE_WEBHOOKS") != "false" {
+		if err := controlplanewebhookv1alpha1.SetupKinkControlPlaneWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "KinkControlPlane")
+			os.Exit(1)
+		}
+		if err := controlplanewebhookv1alpha1.SetupKinkControlPlaneTemplateWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "KinkControlPlaneTemplate")
+			os.Exit(1)
+		}
 	}
 }

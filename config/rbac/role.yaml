@@ -16,12 +16,36 @@ rules:
   - list
   - watch
 - apiGroups:
+  - controlplane.cluster.x-k8s.io
+  resources:
+  - kinkcontrolplanes
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - controlplane.cluster.x-k8s.io
+  resources:
+  - kinkcontrolplanes/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - controlplane.cluster.x-k8s.io
+  resources:
+  - kinkcontrolplanes/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
   - infrastructure.cluster.x-k8s.io
   resources:
   - kinkclusters
-  - kinkclustertemplates
   - kinkmachines
-  - kinkmachinetemplates
   verbs:
   - create
   - delete
@@ -34,18 +58,14 @@ rules:
   - infrastructure.cluster.x-k8s.io
   resources:
   - kinkclusters/finalizers
-  - kinkclustertemplates/finalizers
   - kinkmachines/finalizers
-  - kinkmachinetemplates/finalizers
   verbs:
   - update
 - apiGroups:
   - infrastructure.cluster.x-k8s.io
   resources:
   - kinkclusters/status
-  - kinkclustertemplates/status
   - kinkmachines/status
-  - kinkmachinetemplates/status
   verbs:
   - get
   - patch
