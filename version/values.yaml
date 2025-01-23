@@ -1,0 +1,25 @@
+apiServer:
+  image:
+    registry: "registry.k8s.io"
+    repository: "kube-apiserver"
+    tag: "v1.32.0"
+controllerManager:
+  image:
+    registry: "registry.k8s.io"
+    repository: "kube-controller-manager"
+    tag: "v1.32.0"
+scheduler:
+  image:
+    registry: "registry.k8s.io"
+    repository: "kube-scheduler"
+    tag: "v1.32.0"
+nodeBase:
+  image:
+    registry: "docker.io"
+    repository: "kindest/base"
+    tag: "v20241212-9f82dd49"
+kine:
+  image:
+    registry: "ghcr.io"
+    repository: "anza-labs/library/kine"
+    tag: "0.13.7"

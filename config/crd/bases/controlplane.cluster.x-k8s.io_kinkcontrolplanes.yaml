@@ -972,6 +972,9 @@ spec:
                   image:
                     description: Image specifies the container image to use.
                     type: string
+                  imagePullPolicy:
+                    description: Image pull policy. One of Always, Never, IfNotPresent.
+                    type: string
                   replicas:
                     default: 1
                     description: Number of desired pods. Defaults to 1.
@@ -1060,6 +1063,9 @@ spec:
                   image:
                     description: Image specifies the container image to use.
                     type: string
+                  imagePullPolicy:
+                    description: Image pull policy. One of Always, Never, IfNotPresent.
+                    type: string
                   replicas:
                     default: 1
                     description: Number of desired pods. Defaults to 1.
@@ -1141,6 +1147,9 @@ spec:
                   image:
                     description: Image specifies the container image to use.
                     type: string
+                  imagePullPolicy:
+                    description: Image pull policy. One of Always, Never, IfNotPresent.
+                    type: string
                   resources:
                     description: Resources describes the compute resource requirements
                       for the container.
@@ -1214,6 +1223,9 @@ spec:
                     type: object
                   image:
                     description: Image specifies the container image to use.
+                    type: string
+                  imagePullPolicy:
+                    description: Image pull policy. One of Always, Never, IfNotPresent.
                     type: string
                   replicas:
                     default: 1

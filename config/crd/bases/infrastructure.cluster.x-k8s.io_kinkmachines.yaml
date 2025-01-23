@@ -962,6 +962,9 @@ spec:
               image:
                 description: Image specifies the container image to use.
                 type: string
+              imagePullPolicy:
+                description: Image pull policy. One of Always, Never, IfNotPresent.
+                type: string
               providerID:
                 description: ProviderID must match the provider ID as seen on the
                   node object corresponding to this machine.

@@ -25,6 +25,10 @@ type Container struct {
 	// +optional
 	Image string `json:"image,omitempty"`
 
+	// Image pull policy. One of Always, Never, IfNotPresent.
+	// +optional
+	ImagePullPolicy corev1.PullPolicy `json:"imagePullPolicy,omitempty"`
+
 	// Resources describes the compute resource requirements for the container.
 	// +optional
 	Resources corev1.ResourceRequirements `json:"resources,omitempty"`

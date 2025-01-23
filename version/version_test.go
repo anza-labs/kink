@@ -1,4 +1,4 @@
-// Copyright 2024-2025 anza-labs contributors.
+// Copyright 2025 anza-labs contributors.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,28 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package naming
+package version
 
-func APIServerContainer() string {
-	return "api-server"
-}
+import (
+	"testing"
 
-func SchedulerContainer() string {
-	return "scheduler"
-}
+	"github.com/stretchr/testify/assert"
+)
 
-func ControllerManagerContainer() string {
-	return "controller-manager"
-}
-
-func KineContainer() string {
-	return "kine"
-}
-
-func NodeContainer() string {
-	return "node"
-}
-
-func ConfigMap(base, hash string) string {
-	return DNSName(Truncate("%s-%s", 63, base, hash))
+func TestSmoke(t *testing.T) {
+	assert.Regexp(t, "^registry.k8s.io/kube-apiserver:v.+$", APIServer())
+	assert.Regexp(t, "^registry.k8s.io/kube-controller-manager:v.+$", ControllerManager())
+	assert.Regexp(t, "^registry.k8s.io/kube-scheduler:v.+$", Scheduler())
+	assert.Regexp(t, "^docker.io/kindest/base:v.+$", NodeBase())
+	assert.Regexp(t, "^ghcr.io/anza-labs/library/kine:.+$", Kine())
 }

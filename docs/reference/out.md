@@ -36,6 +36,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `image` _string_ | Image specifies the container image to use. |  |  |
+| `imagePullPolicy` _[PullPolicy](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#pullpolicy-v1-core)_ | Image pull policy. One of Always, Never, IfNotPresent. |  |  |
 | `resources` _[ResourceRequirements](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcerequirements-v1-core)_ | Resources describes the compute resource requirements for the container. |  |  |
 | `replicas` _integer_ | Number of desired pods. Defaults to 1. | 1 | Maximum: 5 <br />Minimum: 1 <br /> |
 | `verbosity` _integer_ | Verbosity specifies the log verbosity level for the container. Valid values range from 0 (silent) to 10 (most verbose). | 4 | Maximum: 10 <br />Minimum: 0 <br /> |
@@ -61,6 +62,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `image` _string_ | Image specifies the container image to use. |  |  |
+| `imagePullPolicy` _[PullPolicy](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#pullpolicy-v1-core)_ | Image pull policy. One of Always, Never, IfNotPresent. |  |  |
 | `resources` _[ResourceRequirements](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcerequirements-v1-core)_ | Resources describes the compute resource requirements for the container. |  |  |
 | `replicas` _integer_ | Number of desired pods. Defaults to 1. | 1 | Maximum: 5 <br />Minimum: 1 <br /> |
 | `verbosity` _integer_ | Verbosity specifies the log verbosity level for the container. Valid values range from 0 (silent) to 10 (most verbose). | 4 | Maximum: 10 <br />Minimum: 0 <br /> |
@@ -81,6 +83,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `image` _string_ | Image specifies the container image to use. |  |  |
+| `imagePullPolicy` _[PullPolicy](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#pullpolicy-v1-core)_ | Image pull policy. One of Always, Never, IfNotPresent. |  |  |
 | `resources` _[ResourceRequirements](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcerequirements-v1-core)_ | Resources describes the compute resource requirements for the container. |  |  |
 
 
@@ -270,6 +273,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `image` _string_ | Image specifies the container image to use. |  |  |
+| `imagePullPolicy` _[PullPolicy](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#pullpolicy-v1-core)_ | Image pull policy. One of Always, Never, IfNotPresent. |  |  |
 | `resources` _[ResourceRequirements](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcerequirements-v1-core)_ | Resources describes the compute resource requirements for the container. |  |  |
 | `replicas` _integer_ | Number of desired pods. Defaults to 1. | 1 | Maximum: 5 <br />Minimum: 1 <br /> |
 | `verbosity` _integer_ | Verbosity specifies the log verbosity level for the container. Valid values range from 0 (silent) to 10 (most verbose). | 4 | Maximum: 10 <br />Minimum: 0 <br /> |
@@ -295,6 +299,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `image` _string_ | Image specifies the container image to use. |  |  |
+| `imagePullPolicy` _[PullPolicy](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#pullpolicy-v1-core)_ | Image pull policy. One of Always, Never, IfNotPresent. |  |  |
 | `resources` _[ResourceRequirements](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcerequirements-v1-core)_ | Resources describes the compute resource requirements for the container. |  |  |
 | `replicas` _integer_ | Number of desired pods. Defaults to 1. | 1 | Maximum: 5 <br />Minimum: 1 <br /> |
 | `verbosity` _integer_ | Verbosity specifies the log verbosity level for the container. Valid values range from 0 (silent) to 10 (most verbose). | 4 | Maximum: 10 <br />Minimum: 0 <br /> |
@@ -535,6 +540,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `image` _string_ | Image specifies the container image to use. |  |  |
+| `imagePullPolicy` _[PullPolicy](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#pullpolicy-v1-core)_ | Image pull policy. One of Always, Never, IfNotPresent. |  |  |
 | `resources` _[ResourceRequirements](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcerequirements-v1-core)_ | Resources describes the compute resource requirements for the container. |  |  |
 | `providerID` _string_ | ProviderID must match the provider ID as seen on the node object corresponding to this machine. |  |  |
 | `affinity` _[Affinity](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#affinity-v1-core)_ | Affinity specifies the scheduling constraints for Pods. |  |  |
