@@ -16,13 +16,14 @@ package version
 
 import (
 	"bytes"
-	_ "embed"
 	"fmt"
 	"io"
 
 	"github.com/anza-labs/kink/version/internal/values"
 
 	yaml "sigs.k8s.io/yaml/goyaml.v3"
+
+	_ "embed"
 )
 
 var (

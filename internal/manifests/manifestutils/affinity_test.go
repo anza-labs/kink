@@ -17,13 +17,13 @@ package manifestutils
 import (
 	"testing"
 
-	controlplanev1alpha1 "github.com/anza-labs/kink/api/controlplane/v1alpha1"
-	infrastructurev1alpha1 "github.com/anza-labs/kink/api/infrastructure/v1alpha1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
-
 	"github.com/stretchr/testify/assert"
 
+	controlplanev1alpha1 "github.com/anza-labs/kink/api/controlplane/v1alpha1"
+	infrastructurev1alpha1 "github.com/anza-labs/kink/api/infrastructure/v1alpha1"
+
 	corev1 "k8s.io/api/core/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func TestAffinity(t *testing.T) {

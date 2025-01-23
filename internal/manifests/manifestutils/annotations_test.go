@@ -17,13 +17,14 @@ package manifestutils
 import (
 	"testing"
 
-	controlplanev1alpha1 "github.com/anza-labs/kink/api/controlplane/v1alpha1"
-	infrastructurev1alpha1 "github.com/anza-labs/kink/api/infrastructure/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	controlplanev1alpha1 "github.com/anza-labs/kink/api/controlplane/v1alpha1"
+	infrastructurev1alpha1 "github.com/anza-labs/kink/api/infrastructure/v1alpha1"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func TestAnnotationsPropagateDown(t *testing.T) {

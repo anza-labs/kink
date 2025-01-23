@@ -18,11 +18,13 @@ import (
 	controlplanev1alpha1 "github.com/anza-labs/kink/api/controlplane/v1alpha1"
 	"github.com/anza-labs/kink/internal/naming"
 	"github.com/anza-labs/kink/version"
+
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
 type ControlPlaneBuilder struct {
+	//nolint:unused // wip
 	spec *controlplanev1alpha1.KinkControlPlaneSpec
 }
 
@@ -31,6 +33,7 @@ func (b *ControlPlaneBuilder) Kine() []runtime.Object {
 	return objects
 }
 
+//nolint:unused // wip
 func (b *ControlPlaneBuilder) kineContainer() corev1.Container {
 	containerImage := b.spec.Kine.Image
 	if containerImage == "" {

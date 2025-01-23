@@ -15,6 +15,7 @@
 // Additional copyrights:
 // Copyright The OpenTelemetry Authors
 
+//nolint:lll // no need to split lines here
 package manifestutils
 
 import (
