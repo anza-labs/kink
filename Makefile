@@ -96,6 +96,7 @@ add-licenses: addlicense ## Run addlicense to append license headers to files mi
 .PHONY: serve-docs
 serve-docs: ## Serve dev documentation on port 8000
 	ln -f README.md docs/index.md
+	ln -f docs/assets/kink.png assets/kink.png
 	$(CONTAINER_TOOL) run \
 		--rm \
 		--volume $(shell pwd):/app:ro \
@@ -160,6 +161,7 @@ build-installer: manifests generate kustomize ## Generate a consolidated YAML wi
 .PHONY: api-docs
 api-docs: crd-ref-docs ## Generate API Reference documentation.
 	ln -f README.md docs/index.md
+	ln -f assets/kink.png docs/assets/kink.png
 	$(CRD_REF_DOCS) \
 		--config=./docs/.crd-ref-docs.yaml \
 		--source-path=./api/ \
