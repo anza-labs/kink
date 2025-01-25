@@ -33,6 +33,15 @@
       "matchPackageNames": [
         "registry.k8s.io/**"
       ]
+    },
+    {
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchPackageNames": [
+        "docker.io/kindest/base"
+      ],
+      "versioning": "loose"
     }
   ]
 }
