@@ -17,7 +17,7 @@ nodeBase:
   image:
     registry: "docker.io"
     repository: "kindest/base"
-    tag: "v20241212-9f82dd49"
+    tag: "v20250117-f528b021"
 kine:
   image:
     registry: "ghcr.io"
