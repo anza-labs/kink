@@ -23,7 +23,7 @@ import (
 
 // KinkMachineSpec defines the desired state of KinkMachine.
 type KinkMachineSpec struct {
-	Container kinkcorev1alpha1.Container `json:",inline"`
+	kinkcorev1alpha1.Container `json:",inline"`
 
 	// ProviderID must match the provider ID as seen on the node object corresponding to this machine.
 	// +optional
@@ -32,6 +32,11 @@ type KinkMachineSpec struct {
 	// Affinity specifies the scheduling constraints for Pods.
 	// +optional
 	Affinity *corev1.Affinity `json:"affinity,omitempty"`
+
+	// Persistence specifies volume configuration for Kine data persistence.
+	// Defaults to EmptyDir.
+	// +optional
+	Persistence *kinkcorev1alpha1.Persistence `json:"persistence,omitempty"`
 }
 
 // KinkMachineStatus defines the observed state of KinkMachine.

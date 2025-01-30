@@ -12,17 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package manifests
+package controlplane
 
-import (
-	infrastructurev1alpha1 "github.com/anza-labs/kink/api/infrastructure/v1alpha1"
+import "fmt"
 
-	"k8s.io/apimachinery/pkg/runtime"
+const (
+	ConceptControlPlane = "kink-control-plane"
+
+	ComponentAPIServer         = "api-server"
+	ComponentControllerManager = "controller-manager"
+	ComponentKine              = "kine"
+	ComponentScheduler         = "scheduler"
 )
 
-type NodeBuilder struct{}
-
-func (b *NodeBuilder) Build(spec *infrastructurev1alpha1.KinkMachine) []runtime.Object {
-	objects := []runtime.Object{}
-	return objects
+func buildArgs(args map[string]string) []string {
+	cmd := []string{}
+	for arg, val := range args {
+		cmd = append(cmd, fmt.Sprintf("--%s=%s"), arg, val)
+	}
+	return cmd
 }

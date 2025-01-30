@@ -22,7 +22,7 @@ import (
 )
 
 // Annotations return the annotations for Registry resources.
-func Annotations(instance client.Object, filterAnnotations []string) (map[string]string, error) {
+func Annotations(instance client.Object, filterAnnotations []string) map[string]string {
 	// new map every time, so that we don't touch the instance's annotations
 	annotations := map[string]string{}
 
@@ -34,18 +34,15 @@ func Annotations(instance client.Object, filterAnnotations []string) (map[string
 		}
 	}
 
-	return annotations, nil
+	return annotations
 }
 
 // PodAnnotations return the spec annotations for Registry pod.
-func PodAnnotations(instance client.Object, filterAnnotations []string) (map[string]string, error) {
+func PodAnnotations(instance client.Object, filterAnnotations []string) map[string]string {
 	// new map every time, so that we don't touch the instance's annotations
 	podAnnotations := map[string]string{}
 
-	annotations, err := Annotations(instance, filterAnnotations)
-	if err != nil {
-		return nil, err
-	}
+	annotations := Annotations(instance, filterAnnotations)
 	// propagating annotations from metadata.annotations
 	for kMeta, vMeta := range annotations {
 		if _, found := podAnnotations[kMeta]; !found {
@@ -53,5 +50,5 @@ func PodAnnotations(instance client.Object, filterAnnotations []string) (map[str
 		}
 	}
 
-	return podAnnotations, nil
+	return podAnnotations
 }

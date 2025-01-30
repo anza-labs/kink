@@ -45,6 +45,7 @@ func Labels(
 	name string,
 	image string,
 	component string,
+	concept string,
 	filterLabels []string,
 ) map[string]string {
 	var versionLabel string
@@ -58,7 +59,7 @@ func Labels(
 		}
 	}
 
-	for k, v := range SelectorLabels(instance, component) {
+	for k, v := range SelectorLabels(instance, component, concept) {
 		base[k] = v
 	}
 
@@ -87,11 +88,11 @@ func Labels(
 // SelectorLabels return the common labels to all objects that are part of a managed CR to use as selector.
 // Selector labels are immutable for Deployment, StatefulSet and DaemonSet, therefore, no labels in selector should be
 // expected to be modified for the lifetime of the object.
-func SelectorLabels(instance metav1.ObjectMeta, component string) map[string]string {
+func SelectorLabels(instance metav1.ObjectMeta, component, concept string) map[string]string {
 	return map[string]string{
 		"app.kubernetes.io/managed-by": "kink",
 		"app.kubernetes.io/instance":   naming.Truncate("%s.%s", 63, instance.Namespace, instance.Name),
-		"app.kubernetes.io/part-of":    "kink-cluster",
+		"app.kubernetes.io/part-of":    concept,
 		"app.kubernetes.io/component":  component,
 	}
 }

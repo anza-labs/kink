@@ -33,3 +33,15 @@ type Container struct {
 	// +optional
 	Resources corev1.ResourceRequirements `json:"resources,omitempty"`
 }
+
+// Container defines the minimum persistence configuration. It always defaults to EmptyDir.
+type Persistence struct {
+	// EmptyDir represents a temporary directory that shares a pod's lifetime.
+	// +optional
+	EmptyDir *corev1.EmptyDirVolumeSource `json:"emptyDir,omitempty"`
+
+	// PersistentVolumeClaimVolumeSource represents a reference to a
+	// PersistentVolumeClaim in the same namespace.
+	// +optional
+	PersistentVolumeClaim *corev1.PersistentVolumeClaimVolumeSource `json:"persistentVolumeClaim,omitempty"`
+}

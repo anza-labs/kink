@@ -48,6 +48,11 @@ type KinkControlPlaneSpec struct {
 // Kine represents ETCD-shim container.
 type Kine struct {
 	kinkcorev1alpha1.Container `json:",inline"`
+
+	// Persistence specifies volume configuration for Kine data persistence.
+	// Defaults to EmptyDir.
+	// +optional
+	Persistence *kinkcorev1alpha1.Persistence `json:"persistence,omitempty"`
 }
 
 // Scheduler represents a Kubernetes scheduler.

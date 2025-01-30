@@ -19,6 +19,7 @@
 package v1alpha1
 
 import (
+	corev1alpha1 "github.com/anza-labs/kink/api/core/v1alpha1"
 	"k8s.io/api/core/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
@@ -290,6 +291,11 @@ func (in *KinkMachineSpec) DeepCopyInto(out *KinkMachineSpec) {
 	if in.Affinity != nil {
 		in, out := &in.Affinity, &out.Affinity
 		*out = new(v1.Affinity)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.Persistence != nil {
+		in, out := &in.Persistence, &out.Persistence
+		*out = new(corev1alpha1.Persistence)
 		(*in).DeepCopyInto(*out)
 	}
 }

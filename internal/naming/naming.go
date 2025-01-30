@@ -14,24 +14,44 @@
 
 package naming
 
+func APIServer(base string) string {
+	return DNSName(Truncate("%s-api-server", 63, base))
+}
+
 func APIServerContainer() string {
 	return "api-server"
+}
+
+func Scheduler(base string) string {
+	return DNSName(Truncate("%s-scheduler", 63, base))
 }
 
 func SchedulerContainer() string {
 	return "scheduler"
 }
 
+func ControllerManager(base string) string {
+	return DNSName(Truncate("%s-controller-manager", 63, base))
+}
+
 func ControllerManagerContainer() string {
 	return "controller-manager"
+}
+
+func Kine(base string) string {
+	return DNSName(Truncate("%s-kine", 63, base))
 }
 
 func KineContainer() string {
 	return "kine"
 }
 
-func NodeContainer() string {
-	return "node"
+func Node(base string) string {
+	return DNSName(Truncate("%s-node", 63, base))
+}
+
+func NodeBaseContainer() string {
+	return "base"
 }
 
 func ConfigMap(base, hash string) string {

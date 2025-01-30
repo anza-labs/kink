@@ -18,7 +18,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 
 	controlplanev1alpha1 "github.com/anza-labs/kink/api/controlplane/v1alpha1"
 	infrastructurev1alpha1 "github.com/anza-labs/kink/api/infrastructure/v1alpha1"
@@ -44,10 +43,8 @@ func TestAnnotationsPropagateDown(t *testing.T) {
 		},
 	} {
 		// test
-		annotations, err := Annotations(instance, []string{})
-		require.NoError(t, err)
-		podAnnotations, err := PodAnnotations(instance, []string{})
-		require.NoError(t, err)
+		annotations := Annotations(instance, []string{})
+		podAnnotations := PodAnnotations(instance, []string{})
 
 		// verify
 		assert.Len(t, annotations, 1)
@@ -82,10 +79,9 @@ func TestAnnotationsFilter(t *testing.T) {
 	} {
 
 		// This requires the filter to be in regex match form and not the other simpler wildcard one.
-		annotations, err := Annotations(instance, []string{".*\\.bar\\.io"})
+		annotations := Annotations(instance, []string{".*\\.bar\\.io"})
 
 		// verify
-		require.NoError(t, err)
 		assert.Len(t, annotations, 2)
 		assert.NotContains(t, annotations, "test.bar.io")
 		assert.Equal(t, "1234", annotations["test.io/port"])

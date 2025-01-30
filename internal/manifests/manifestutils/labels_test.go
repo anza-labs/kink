@@ -47,13 +47,13 @@ func TestLabels(t *testing.T) {
 		image := "some/image:v1.31.5"
 
 		// test
-		labels := Labels(objectMeta, instanceName, image, "instance", []string{})
+		labels := Labels(objectMeta, instanceName, image, "instance", "concept", []string{})
 
 		// validate
 		assert.Equal(t, "kink", labels["app.kubernetes.io/managed-by"])
 		assert.Equal(t, "my-ns.my-instance", labels["app.kubernetes.io/instance"])
 		assert.Equal(t, "v1.31.5", labels["app.kubernetes.io/version"])
-		assert.Equal(t, "kink-cluster", labels["app.kubernetes.io/part-of"])
+		assert.Equal(t, "concept", labels["app.kubernetes.io/part-of"])
 		assert.Equal(t, "instance", labels["app.kubernetes.io/component"])
 	})
 
@@ -68,13 +68,13 @@ func TestLabels(t *testing.T) {
 		image := "some/image@sha256:ac0192b549007e22998eb74e8d8488dcfe70f1489520c3b144a6047ac5efbe90"
 
 		// test
-		labels := Labels(objectMeta, instanceName, image, "instance", []string{})
+		labels := Labels(objectMeta, instanceName, image, "instance", "concept", []string{})
 
 		// validate
 		assert.Equal(t, "kink", labels["app.kubernetes.io/managed-by"])
 		assert.Equal(t, "my-ns.my-instance", labels["app.kubernetes.io/instance"])
 		assert.Equal(t, "ac0192b549007e22998eb74e8d8488dcfe70f1489520c3b144a6047ac5efbe9", labels["app.kubernetes.io/version"])
-		assert.Equal(t, "kink-cluster", labels["app.kubernetes.io/part-of"])
+		assert.Equal(t, "concept", labels["app.kubernetes.io/part-of"])
 		assert.Equal(t, "instance", labels["app.kubernetes.io/component"])
 	})
 
@@ -89,13 +89,13 @@ func TestLabels(t *testing.T) {
 		image := "some/image:v1.31.5@sha256:ac0192b549007e22998eb74e8d8488dcfe70f1489520c3b144a6047ac5efbe90"
 
 		// test
-		labels := Labels(objectMeta, instanceName, image, "instance", []string{})
+		labels := Labels(objectMeta, instanceName, image, "instance", "concept", []string{})
 
 		// validate
 		assert.Equal(t, "kink", labels["app.kubernetes.io/managed-by"])
 		assert.Equal(t, "my-ns.my-instance", labels["app.kubernetes.io/instance"])
 		assert.Equal(t, "v1.31.5", labels["app.kubernetes.io/version"])
-		assert.Equal(t, "kink-cluster", labels["app.kubernetes.io/part-of"])
+		assert.Equal(t, "concept", labels["app.kubernetes.io/part-of"])
 		assert.Equal(t, "instance", labels["app.kubernetes.io/component"])
 	})
 
@@ -110,13 +110,13 @@ func TestLabels(t *testing.T) {
 		image := "some/image"
 
 		// test
-		labels := Labels(objectMeta, instanceName, image, "instance", []string{})
+		labels := Labels(objectMeta, instanceName, image, "instance", "concept", []string{})
 
 		// validate
 		assert.Equal(t, "kink", labels["app.kubernetes.io/managed-by"])
 		assert.Equal(t, "my-ns.my-instance", labels["app.kubernetes.io/instance"])
 		assert.Equal(t, "latest", labels["app.kubernetes.io/version"])
-		assert.Equal(t, "kink-cluster", labels["app.kubernetes.io/part-of"])
+		assert.Equal(t, "concept", labels["app.kubernetes.io/part-of"])
 		assert.Equal(t, "instance", labels["app.kubernetes.io/component"])
 	})
 
@@ -133,7 +133,7 @@ func TestLabels(t *testing.T) {
 		image := "some/image"
 
 		// test
-		labels := Labels(objectMeta, instanceName, image, "instance", []string{})
+		labels := Labels(objectMeta, instanceName, image, "instance", "concept", []string{})
 
 		// verify
 		assert.Len(t, labels, 7)
@@ -151,7 +151,7 @@ func TestLabels(t *testing.T) {
 
 		// test
 		// This requires the filter to be in regex match form and not the other simpler wildcard one.
-		labels := Labels(objectMeta, instanceName, "latest", "instance", []string{".*.bar.io"})
+		labels := Labels(objectMeta, instanceName, "latest", "instance", "concept", []string{".*.bar.io"})
 
 		// verify
 		assert.Len(t, labels, 7)

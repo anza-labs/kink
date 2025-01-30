@@ -85,6 +85,7 @@ _Appears in:_
 | `image` _string_ | Image specifies the container image to use. |  |  |
 | `imagePullPolicy` _[PullPolicy](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#pullpolicy-v1-core)_ | Image pull policy. One of Always, Never, IfNotPresent. |  |  |
 | `resources` _[ResourceRequirements](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcerequirements-v1-core)_ | Resources describes the compute resource requirements for the container. |  |  |
+| `persistence` _[Persistence](#persistence)_ | Persistence specifies volume configuration for Kine data persistence.<br />Defaults to EmptyDir. |  |  |
 
 
 #### KinkControlPlane
@@ -544,6 +545,7 @@ _Appears in:_
 | `resources` _[ResourceRequirements](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcerequirements-v1-core)_ | Resources describes the compute resource requirements for the container. |  |  |
 | `providerID` _string_ | ProviderID must match the provider ID as seen on the node object corresponding to this machine. |  |  |
 | `affinity` _[Affinity](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#affinity-v1-core)_ | Affinity specifies the scheduling constraints for Pods. |  |  |
+| `persistence` _[Persistence](#persistence)_ | Persistence specifies volume configuration for Kine data persistence.<br />Defaults to EmptyDir. |  |  |
 
 
 #### KinkMachineStatus

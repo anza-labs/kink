@@ -16,59 +16,20 @@ package manifests
 
 import (
 	controlplanev1alpha1 "github.com/anza-labs/kink/api/controlplane/v1alpha1"
-	"github.com/anza-labs/kink/internal/naming"
-	"github.com/anza-labs/kink/version"
+	"github.com/anza-labs/kink/internal/manifests/controlplane"
 
-	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-type ControlPlaneBuilder struct {
-	//nolint:unused // wip
-	spec *controlplanev1alpha1.KinkControlPlaneSpec
-}
+type ControlPlaneBuilder struct{}
 
-func (b *ControlPlaneBuilder) Kine() []runtime.Object {
+func (b *ControlPlaneBuilder) Build(kcp *controlplanev1alpha1.KinkControlPlane) ([]runtime.Object, error) {
 	objects := []runtime.Object{}
-	return objects
-}
 
-//nolint:unused // wip
-func (b *ControlPlaneBuilder) kineContainer() corev1.Container {
-	containerImage := b.spec.Kine.Image
-	if containerImage == "" {
-		containerImage = version.Kine()
-	}
+	objects = append(objects, (&controlplane.APIServer{KinkControlPlane: kcp}).Build()...)
+	objects = append(objects, (&controlplane.ControllerManager{KinkControlPlane: kcp}).Build()...)
+	objects = append(objects, (&controlplane.Kine{KinkControlPlane: kcp}).Build()...)
+	objects = append(objects, (&controlplane.Scheduler{KinkControlPlane: kcp}).Build()...)
 
-	resources := b.spec.Kine.Resources
-
-	return corev1.Container{
-		Name:            naming.KineContainer(),
-		Image:           containerImage, // TODO: set value here
-		Command:         []string{"/kine"},
-		Ports:           []corev1.ContainerPort{}, // TODO: set metrics port here
-		Resources:       resources,                // TODO: set it from spec
-		VolumeMounts:    []corev1.VolumeMount{},   // TODO: mount volume for db
-		ImagePullPolicy: b.spec.Kine.ImagePullPolicy,
-		SecurityContext: nil,
-		// TODO: any of these shoul be set?
-		LivenessProbe:  nil,
-		ReadinessProbe: nil,
-		StartupProbe:   nil,
-	}
-}
-
-func (b *ControlPlaneBuilder) APIServer() []runtime.Object {
-	objects := []runtime.Object{}
-	return objects
-}
-
-func (b *ControlPlaneBuilder) ControllerManager() []runtime.Object {
-	objects := []runtime.Object{}
-	return objects
-}
-
-func (b *ControlPlaneBuilder) Scheduler() []runtime.Object {
-	objects := []runtime.Object{}
-	return objects
+	return objects, nil
 }
