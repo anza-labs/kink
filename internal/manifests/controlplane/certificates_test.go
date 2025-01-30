@@ -12,17 +12,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package manifests
-
-import (
-	infrastructurev1alpha1 "github.com/anza-labs/kink/api/infrastructure/v1alpha1"
-
-	"k8s.io/apimachinery/pkg/runtime"
-)
-
-type NodeBuilder struct{}
-
-func (b *NodeBuilder) Build(spec *infrastructurev1alpha1.KinkMachine) []runtime.Object {
-	objects := []runtime.Object{}
-	return objects
-}
+package controlplane

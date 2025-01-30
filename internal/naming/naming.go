@@ -22,6 +22,10 @@ func APIServerContainer() string {
 	return "api-server"
 }
 
+func RootCA() string {
+	return "root-ca"
+}
+
 func Scheduler(base string) string {
 	return DNSName(Truncate("%s-scheduler", 63, base))
 }

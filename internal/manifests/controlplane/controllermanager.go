@@ -53,7 +53,10 @@ func (b *ControllerManager) Deployment() *appsv1.Deployment {
 		name, image, ComponentControllerManager, ConceptControlPlane,
 		nil,
 	)
-	selectorLabels := manifestutils.SelectorLabels(b.KinkControlPlane.ObjectMeta, ComponentControllerManager, ConceptControlPlane)
+	selectorLabels := manifestutils.SelectorLabels(
+		b.KinkControlPlane.ObjectMeta,
+		ComponentControllerManager, ConceptControlPlane,
+	)
 	annotations := manifestutils.Annotations(b.KinkControlPlane, nil)
 	podAnnotations := manifestutils.PodAnnotations(b.KinkControlPlane, nil)
 
@@ -104,7 +107,10 @@ func (b *ControllerManager) Service() *corev1.Service {
 		name, image, ComponentControllerManager, ConceptControlPlane,
 		nil,
 	)
-	selectorLabels := manifestutils.SelectorLabels(b.KinkControlPlane.ObjectMeta, ComponentControllerManager, ConceptControlPlane)
+	selectorLabels := manifestutils.SelectorLabels(
+		b.KinkControlPlane.ObjectMeta,
+		ComponentControllerManager, ConceptControlPlane,
+	)
 	annotations := manifestutils.Annotations(b.KinkControlPlane, nil)
 
 	return &corev1.Service{

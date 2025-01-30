@@ -14,11 +14,18 @@
 
 package controlplane
 
-import "fmt"
+import (
+	"fmt"
+
+	controlplanev1alpha1 "github.com/anza-labs/kink/api/controlplane/v1alpha1"
+
+	"k8s.io/apimachinery/pkg/runtime"
+)
 
 const (
 	ConceptControlPlane = "kink-control-plane"
 
+	ComponentCertificates      = "certificates"
 	ComponentAPIServer         = "api-server"
 	ComponentControllerManager = "controller-manager"
 	ComponentKine              = "kine"
@@ -28,7 +35,21 @@ const (
 func buildArgs(args map[string]string) []string {
 	cmd := []string{}
 	for arg, val := range args {
-		cmd = append(cmd, fmt.Sprintf("--%s=%s"), arg, val)
+		cmd = append(cmd, fmt.Sprintf("--%s=%s", arg, val))
 	}
 	return cmd
+}
+
+type ControlPlaneBuilder struct{}
+
+func (b *ControlPlaneBuilder) Build(kcp *controlplanev1alpha1.KinkControlPlane) ([]runtime.Object, error) {
+	objects := []runtime.Object{}
+
+	objects = append(objects, (&Certificates{KinkControlPlane: kcp}).Build()...)
+	objects = append(objects, (&APIServer{KinkControlPlane: kcp}).Build()...)
+	objects = append(objects, (&ControllerManager{KinkControlPlane: kcp}).Build()...)
+	objects = append(objects, (&Kine{KinkControlPlane: kcp}).Build()...)
+	objects = append(objects, (&Scheduler{KinkControlPlane: kcp}).Build()...)
+
+	return objects, nil
 }
