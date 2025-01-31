@@ -32,20 +32,34 @@ type APIServer struct {
 	KinkControlPlane *controlplanev1alpha1.KinkControlPlane
 }
 
-func (b *APIServer) Build() []runtime.Object {
-	objects := []runtime.Object{
-		b.Service(),
-		b.Deployment(),
+func (b *APIServer) Build() ([]runtime.Object, error) {
+	objects := []runtime.Object{}
+
+	svc, err := b.Service()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build Service: %w", err)
 	}
-	return objects
+	objects = append(objects, svc)
+
+	depl, err := b.Deployment()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build Deployment: %w", err)
+	}
+	objects = append(objects, depl)
+
+	return objects, nil
 }
 
-func (b *APIServer) Deployment() *appsv1.Deployment {
+func (b *APIServer) Deployment() (*appsv1.Deployment, error) {
 	name := naming.APIServer(b.KinkControlPlane.Name)
 
-	image := b.KinkControlPlane.Spec.APIServer.Image
-	if image == "" {
-		image = version.APIServer()
+	image, err := manifestutils.Image(
+		b.KinkControlPlane.Spec.APIServer.Image,
+		b.KinkControlPlane.Spec.Version,
+		version.APIServer(),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to assess image: %w", err)
 	}
 
 	labels := manifestutils.Labels(
@@ -88,15 +102,19 @@ func (b *APIServer) Deployment() *appsv1.Deployment {
 				Spec: podSpec,
 			},
 		},
-	}
+	}, nil
 }
 
-func (b *APIServer) Service() *corev1.Service {
+func (b *APIServer) Service() (*corev1.Service, error) {
 	name := naming.APIServer(b.KinkControlPlane.Name)
 
-	image := b.KinkControlPlane.Spec.APIServer.Image
-	if image == "" {
-		image = version.APIServer()
+	image, err := manifestutils.Image(
+		b.KinkControlPlane.Spec.APIServer.Image,
+		b.KinkControlPlane.Spec.Version,
+		version.APIServer(),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to assess image: %w", err)
 	}
 
 	labels := manifestutils.Labels(
@@ -119,7 +137,7 @@ func (b *APIServer) Service() *corev1.Service {
 			Type:     corev1.ServiceTypeClusterIP,
 			Ports:    []corev1.ServicePort{}, // TODO
 		},
-	}
+	}, nil
 }
 
 func (b *APIServer) container(image string, ha bool) corev1.Container {
@@ -133,10 +151,7 @@ func (b *APIServer) container(image string, ha bool) corev1.Container {
 		"etcd-cafile":   "/etc/etcd/ca.crt",          // TODO: validate with cert-manager
 		"etcd-certfile": "/etc/etcd/etcd-client.crt", // TODO: validate with cert-manager
 		"etcd-keyfile":  "/etc/etcd/etcd-client.key", // TODO: validate with cert-manager
-		"etcd-servers": fmt.Sprintf(
-			"https://%s.%s.svc.cluster.local:2379",
-			naming.Kine(b.KinkControlPlane.Name), b.KinkControlPlane.Namespace,
-		),
+		"etcd-servers":  naming.KineEndpoint(b.KinkControlPlane.Name, b.KinkControlPlane.Namespace),
 	}
 	for arg, value := range cfg.ExtraArgs {
 		if _, ok := args[arg]; !ok {

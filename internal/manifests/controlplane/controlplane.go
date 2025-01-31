@@ -46,10 +46,25 @@ func (b *ControlPlaneBuilder) Build(kcp *controlplanev1alpha1.KinkControlPlane) 
 	objects := []runtime.Object{}
 
 	objects = append(objects, (&Certificates{KinkControlPlane: kcp}).Build()...)
-	objects = append(objects, (&APIServer{KinkControlPlane: kcp}).Build()...)
-	objects = append(objects, (&ControllerManager{KinkControlPlane: kcp}).Build()...)
 	objects = append(objects, (&Kine{KinkControlPlane: kcp}).Build()...)
-	objects = append(objects, (&Scheduler{KinkControlPlane: kcp}).Build()...)
+
+	kas, err := (&APIServer{KinkControlPlane: kcp}).Build()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build API Server components: %w", err)
+	}
+	objects = append(objects, kas...)
+
+	kcm, err := (&ControllerManager{KinkControlPlane: kcp}).Build()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build Controller Manager components: %w", err)
+	}
+	objects = append(objects, kcm...)
+
+	ks, err := (&Scheduler{KinkControlPlane: kcp}).Build()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build Scheduler components: %w", err)
+	}
+	objects = append(objects, ks...)
 
 	return objects, nil
 }

@@ -25,6 +25,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
+const (
+	// clusterFinalizer is name of cluster finalizer.
+	clusterFinalizer = "cluster.kink.anza-labs.com/finalizer"
+)
+
 // KinkClusterReconciler reconciles a KinkCluster object.
 type KinkClusterReconciler struct {
 	client.Client

@@ -90,10 +90,11 @@ func Labels(
 // expected to be modified for the lifetime of the object.
 func SelectorLabels(instance metav1.ObjectMeta, component, concept string) map[string]string {
 	return map[string]string{
-		"app.kubernetes.io/managed-by": "kink",
-		"app.kubernetes.io/instance":   naming.Truncate("%s.%s", 63, instance.Namespace, instance.Name),
-		"app.kubernetes.io/part-of":    concept,
-		"app.kubernetes.io/component":  component,
+		"app.kubernetes.io/managed-by":  "kink",
+		"app.kubernetes.io/instance":    naming.Truncate("%s.%s", 63, instance.Namespace, instance.Name),
+		"app.kubernetes.io/part-of":     concept,
+		"app.kubernetes.io/component":   component,
+		"cluster.x-k8s.io/cluster-name": instance.Name,
 	}
 }
 

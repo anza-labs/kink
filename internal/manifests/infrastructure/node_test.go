@@ -79,10 +79,11 @@ func TestAPIServer(t *testing.T) {
 			Spec: corev1.ServiceSpec{
 				Type: corev1.ServiceTypeClusterIP,
 				Selector: map[string]string{
-					"app.kubernetes.io/component":  "node",
-					"app.kubernetes.io/instance":   "test",
-					"app.kubernetes.io/managed-by": "kink",
-					"app.kubernetes.io/part-of":    "kink-infrastructure",
+					"app.kubernetes.io/component":   "node",
+					"app.kubernetes.io/instance":    "test-namespace.test",
+					"app.kubernetes.io/managed-by":  "kink",
+					"app.kubernetes.io/part-of":     "kink-infrastructure",
+					"cluster.x-k8s.io/cluster-name": "test",
 				},
 				Ports: []corev1.ServicePort{
 					{Name: "kubelet", Port: 10250, TargetPort: intstr.FromString("kubelet")},

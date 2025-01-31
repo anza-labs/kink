@@ -55,6 +55,7 @@ func TestLabels(t *testing.T) {
 		assert.Equal(t, "v1.31.5", labels["app.kubernetes.io/version"])
 		assert.Equal(t, "concept", labels["app.kubernetes.io/part-of"])
 		assert.Equal(t, "instance", labels["app.kubernetes.io/component"])
+		assert.Equal(t, "my-instance", labels["cluster.x-k8s.io/cluster-name"])
 	})
 
 	t.Run("Sha256Set", func(t *testing.T) {
@@ -76,6 +77,7 @@ func TestLabels(t *testing.T) {
 		assert.Equal(t, "ac0192b549007e22998eb74e8d8488dcfe70f1489520c3b144a6047ac5efbe9", labels["app.kubernetes.io/version"])
 		assert.Equal(t, "concept", labels["app.kubernetes.io/part-of"])
 		assert.Equal(t, "instance", labels["app.kubernetes.io/component"])
+		assert.Equal(t, "my-instance", labels["cluster.x-k8s.io/cluster-name"])
 	})
 
 	t.Run("TagSha256Set", func(t *testing.T) {
@@ -97,6 +99,7 @@ func TestLabels(t *testing.T) {
 		assert.Equal(t, "v1.31.5", labels["app.kubernetes.io/version"])
 		assert.Equal(t, "concept", labels["app.kubernetes.io/part-of"])
 		assert.Equal(t, "instance", labels["app.kubernetes.io/component"])
+		assert.Equal(t, "my-instance", labels["cluster.x-k8s.io/cluster-name"])
 	})
 
 	t.Run("TagUnset", func(t *testing.T) {
@@ -118,6 +121,7 @@ func TestLabels(t *testing.T) {
 		assert.Equal(t, "latest", labels["app.kubernetes.io/version"])
 		assert.Equal(t, "concept", labels["app.kubernetes.io/part-of"])
 		assert.Equal(t, "instance", labels["app.kubernetes.io/component"])
+		assert.Equal(t, "my-instance", labels["cluster.x-k8s.io/cluster-name"])
 	})
 
 	t.Run("PropagateDown", func(t *testing.T) {
@@ -125,6 +129,7 @@ func TestLabels(t *testing.T) {
 
 		// prepare
 		objectMeta := metav1.ObjectMeta{
+			Name: instanceName,
 			Labels: map[string]string{
 				"myapp":                  "mycomponent",
 				"app.kubernetes.io/name": "test",
@@ -136,7 +141,7 @@ func TestLabels(t *testing.T) {
 		labels := Labels(objectMeta, instanceName, image, "instance", "concept", []string{})
 
 		// verify
-		assert.Len(t, labels, 7)
+		assert.Len(t, labels, 8)
 		assert.Equal(t, "mycomponent", labels["myapp"])
 		assert.Equal(t, "test", labels["app.kubernetes.io/name"])
 	})
@@ -154,7 +159,7 @@ func TestLabels(t *testing.T) {
 		labels := Labels(objectMeta, instanceName, "latest", "instance", "concept", []string{".*.bar.io"})
 
 		// verify
-		assert.Len(t, labels, 7)
+		assert.Len(t, labels, 8)
 		assert.NotContains(t, labels, "test.bar.io")
 		assert.Equal(t, "bar", labels["test.foo.io"])
 	})

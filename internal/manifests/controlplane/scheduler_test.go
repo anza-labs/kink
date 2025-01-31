@@ -36,9 +36,10 @@ func TestScheduler(t *testing.T) {
 		scheduler := (&Scheduler{KinkControlPlane: &controlplanev1alpha1.KinkControlPlane{}})
 
 		// test
-		actual := scheduler.Build()
+		actual, err := scheduler.Build()
 
 		// validate
+		assert.NoError(t, err)
 		assert.Len(t, actual, 2)
 	})
 
@@ -56,9 +57,10 @@ func TestScheduler(t *testing.T) {
 				scheduler := (&Scheduler{KinkControlPlane: tc.kcp})
 
 				// test
-				actual := scheduler.Deployment()
+				actual, err := scheduler.Deployment()
 
 				// validate
+				assert.NoError(t, err)
 				assert.Equal(t, tc.expected, actual)
 			})
 		}
@@ -78,9 +80,10 @@ func TestScheduler(t *testing.T) {
 				scheduler := (&Scheduler{KinkControlPlane: tc.kcp})
 
 				// test
-				actual := scheduler.Service()
+				actual, err := scheduler.Service()
 
 				// validate
+				assert.NoError(t, err)
 				assert.Equal(t, tc.expected, actual)
 			})
 		}

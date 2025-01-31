@@ -32,20 +32,34 @@ type ControllerManager struct {
 	KinkControlPlane *controlplanev1alpha1.KinkControlPlane
 }
 
-func (b *ControllerManager) Build() []runtime.Object {
-	objects := []runtime.Object{
-		b.Service(),
-		b.Deployment(),
+func (b *ControllerManager) Build() ([]runtime.Object, error) {
+	objects := []runtime.Object{}
+
+	svc, err := b.Service()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build Service: %w", err)
 	}
-	return objects
+	objects = append(objects, svc)
+
+	depl, err := b.Deployment()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build Deployment: %w", err)
+	}
+	objects = append(objects, depl)
+
+	return objects, nil
 }
 
-func (b *ControllerManager) Deployment() *appsv1.Deployment {
+func (b *ControllerManager) Deployment() (*appsv1.Deployment, error) {
 	name := naming.ControllerManager(b.KinkControlPlane.Name)
 
-	image := b.KinkControlPlane.Spec.ControllerManager.Image
-	if image == "" {
-		image = version.ControllerManager()
+	image, err := manifestutils.Image(
+		b.KinkControlPlane.Spec.ControllerManager.Image,
+		b.KinkControlPlane.Spec.Version,
+		version.ControllerManager(),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to assess image: %w", err)
 	}
 
 	labels := manifestutils.Labels(
@@ -91,15 +105,19 @@ func (b *ControllerManager) Deployment() *appsv1.Deployment {
 				Spec: podSpec,
 			},
 		},
-	}
+	}, nil
 }
 
-func (b *ControllerManager) Service() *corev1.Service {
+func (b *ControllerManager) Service() (*corev1.Service, error) {
 	name := naming.ControllerManager(b.KinkControlPlane.Name)
 
-	image := b.KinkControlPlane.Spec.ControllerManager.Image
-	if image == "" {
-		image = version.ControllerManager()
+	image, err := manifestutils.Image(
+		b.KinkControlPlane.Spec.ControllerManager.Image,
+		b.KinkControlPlane.Spec.Version,
+		version.ControllerManager(),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to assess image: %w", err)
 	}
 
 	labels := manifestutils.Labels(
@@ -125,7 +143,7 @@ func (b *ControllerManager) Service() *corev1.Service {
 			Type:     corev1.ServiceTypeClusterIP,
 			Ports:    []corev1.ServicePort{}, // TODO
 		},
-	}
+	}, nil
 }
 
 func (b *ControllerManager) container(image string, ha bool) corev1.Container {
