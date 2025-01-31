@@ -32,20 +32,34 @@ type Scheduler struct {
 	KinkControlPlane *controlplanev1alpha1.KinkControlPlane
 }
 
-func (b *Scheduler) Build() []runtime.Object {
-	objects := []runtime.Object{
-		b.Service(),
-		b.Deployment(),
+func (b *Scheduler) Build() ([]runtime.Object, error) {
+	objects := []runtime.Object{}
+
+	svc, err := b.Service()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build Service: %w", err)
 	}
-	return objects
+	objects = append(objects, svc)
+
+	depl, err := b.Deployment()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build Deployment: %w", err)
+	}
+	objects = append(objects, depl)
+
+	return objects, nil
 }
 
-func (b *Scheduler) Deployment() *appsv1.Deployment {
+func (b *Scheduler) Deployment() (*appsv1.Deployment, error) {
 	name := naming.Scheduler(b.KinkControlPlane.Name)
 
-	image := b.KinkControlPlane.Spec.Scheduler.Image
-	if image == "" {
-		image = version.Scheduler()
+	image, err := manifestutils.Image(
+		b.KinkControlPlane.Spec.Scheduler.Image,
+		b.KinkControlPlane.Spec.Version,
+		version.Scheduler(),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to assess image: %w", err)
 	}
 
 	labels := manifestutils.Labels(
@@ -88,15 +102,19 @@ func (b *Scheduler) Deployment() *appsv1.Deployment {
 				Spec: podSpec,
 			},
 		},
-	}
+	}, nil
 }
 
-func (b *Scheduler) Service() *corev1.Service {
+func (b *Scheduler) Service() (*corev1.Service, error) {
 	name := naming.Scheduler(b.KinkControlPlane.Name)
 
-	image := b.KinkControlPlane.Spec.Scheduler.Image
-	if image == "" {
-		image = version.Scheduler()
+	image, err := manifestutils.Image(
+		b.KinkControlPlane.Spec.Scheduler.Image,
+		b.KinkControlPlane.Spec.Version,
+		version.Scheduler(),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to assess image: %w", err)
 	}
 
 	labels := manifestutils.Labels(
@@ -119,7 +137,7 @@ func (b *Scheduler) Service() *corev1.Service {
 			Type:     corev1.ServiceTypeClusterIP,
 			Ports:    []corev1.ServicePort{}, // TODO
 		},
-	}
+	}, nil
 }
 
 func (b *Scheduler) container(image string, ha bool) corev1.Container {
