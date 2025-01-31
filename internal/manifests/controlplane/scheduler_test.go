@@ -25,6 +25,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
+// The tests cover method invocations with various configurations and verify the expected outputs.
 func TestScheduler(t *testing.T) {
 	t.Parallel()
 

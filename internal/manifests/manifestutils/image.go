@@ -21,6 +21,7 @@ import (
 	"github.com/distribution/reference"
 )
 
+// Returns the final image reference and any error encountered during processing.
 func Image(image, version, defaultImage string) (string, error) {
 	if image == "" {
 		if version == "" {
@@ -32,6 +33,26 @@ func Image(image, version, defaultImage string) (string, error) {
 	return setVersion(image, version, false)
 }
 
+// setVersion constructs an image reference with an optional version tag.
+// 
+// It parses the provided image reference and builds a normalized image reference string.
+// The function handles different scenarios for version specification:
+// - If force is false, it preserves existing tags or digests from the original image
+// - If force is true or no existing version is found, it applies the provided version
+//
+// Parameters:
+//   - image: The original image reference to parse
+//   - version: The version tag to potentially apply
+//   - force: Flag to force applying the version, overriding existing tags
+//
+// Returns:
+//   - A fully qualified image reference string
+//   - An error if the image reference cannot be parsed
+//
+// Examples:
+//   - setVersion("nginx", "1.2.3", false) returns "nginx:1.2.3"
+//   - setVersion("nginx:latest", "1.2.3", false) returns "nginx:latest"
+//   - setVersion("nginx:latest", "1.2.3", true) returns "nginx:1.2.3"
 func setVersion(image, version string, force bool) (string, error) {
 	ref, err := reference.ParseNormalizedNamed(image)
 	if err != nil {

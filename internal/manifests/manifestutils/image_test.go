@@ -20,6 +20,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// - Validating image format
 func TestImage(t *testing.T) {
 	t.Parallel()
 

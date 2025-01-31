@@ -87,7 +87,7 @@ func Labels(
 
 // SelectorLabels return the common labels to all objects that are part of a managed CR to use as selector.
 // Selector labels are immutable for Deployment, StatefulSet and DaemonSet, therefore, no labels in selector should be
-// expected to be modified for the lifetime of the object.
+// Returns a map of string labels with predefined Kubernetes recommended label keys.
 func SelectorLabels(instance metav1.ObjectMeta, component, concept string) map[string]string {
 	return map[string]string{
 		"app.kubernetes.io/managed-by":  "kink",

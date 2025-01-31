@@ -25,6 +25,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
+// The tests are designed to be run concurrently and check for error-free execution and expected outputs.
 func TestControllerManager(t *testing.T) {
 	t.Parallel()
 

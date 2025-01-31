@@ -25,6 +25,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
+// The tests ensure that method calls do not produce errors and return expected results.
 func TestAPIServer(t *testing.T) {
 	t.Parallel()
 
