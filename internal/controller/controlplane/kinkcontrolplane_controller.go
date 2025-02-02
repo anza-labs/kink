@@ -21,6 +21,7 @@ import (
 	cmv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 
 	controlplanev1alpha1 "github.com/anza-labs/kink/api/controlplane/v1alpha1"
+	"github.com/anza-labs/kink/internal/manifests/controlplane"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -72,7 +73,7 @@ type KinkControlPlaneReconciler struct {
 func (r *KinkControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := log.FromContext(ctx)
 
-	log.V(3).Info("Fetching KinkControlPlane object")
+	log.V(2).Info("Fetching KinkControlPlane object")
 	kinkCP := &controlplanev1alpha1.KinkControlPlane{}
 	if err := r.Get(ctx, req.NamespacedName, kinkCP); err != nil {
 		log.Error(err, "Failed to fetch KinkControlPlane object")
@@ -106,27 +107,38 @@ func (r *KinkControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		return ctrl.Result{}, nil
 	}
 
-	log.V(3).Info("Starting ControlPlane reconciliation")
+	log.V(2).Info("Starting ControlPlane reconciliation")
 	if err := r.reconcile(ctx, kinkCP); err != nil {
 		log.Error(err, "Failed to reconcile resources")
 		return ctrl.Result{}, err
 	}
 
+	log.V(2).Info("Reconciliation successful")
 	return ctrl.Result{}, nil
 }
 
+// reconcile ensures that the necessary resources for the given KinkControlPlane
+// are built and applied in the cluster.
 func (r *KinkControlPlaneReconciler) reconcile(
 	ctx context.Context,
 	kinkCP *controlplanev1alpha1.KinkControlPlane,
 ) error {
-	_ = log.FromContext(ctx)
+	log := log.FromContext(ctx)
 
-	// TODO
-	if err := r.ensureResources(ctx, kinkCP); err != nil {
-		return err
+	log.V(2).Info("Building components")
+	obj, err := (&controlplane.Builder{}).Build(kinkCP)
+	if err != nil {
+		return fmt.Errorf("failed to build components: %w", err)
 	}
 
-	return fmt.Errorf("unimplemented")
+	log.V(2).Info("Ensuring components")
+	if err := r.ensureResources(ctx, kinkCP, obj...); err != nil {
+		return fmt.Errorf("failed to ensure resources: %w", err)
+	}
+
+	// TODO: get status of dependents and set it
+
+	return nil
 }
 
 // ensureResource ensures that a resource is created or updated.
@@ -162,7 +174,14 @@ func (r *KinkControlPlaneReconciler) cleanupResources(
 	log.V(3).Info("Cleaning up resources")
 
 	// Define a list of owned resources to delete
-	resourceTypes := []client.ObjectList{}
+	resourceTypes := []client.ObjectList{
+		&appsv1.DeploymentList{},
+		&appsv1.StatefulSetList{},
+		&corev1.ServiceList{},
+		&corev1.SecretList{},
+		&cmv1.IssuerList{},
+		&cmv1.CertificateList{},
+	}
 
 	ownerUID := kinkCP.GetUID()
 	for _, resourceType := range resourceTypes {

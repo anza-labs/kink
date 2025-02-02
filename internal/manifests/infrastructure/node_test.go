@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package controlplane
+package infrastructure
 
 import (
 	"testing"
@@ -28,7 +28,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-func TestAPIServer(t *testing.T) {
+func TestNode(t *testing.T) {
 	t.Parallel()
 
 	t.Run("Build", func(t *testing.T) {
@@ -36,16 +36,17 @@ func TestAPIServer(t *testing.T) {
 		t.Parallel()
 
 		// prepare
-		node := (&Node{KinkMachine: &infrastructurev1alpha1.KinkMachine{}})
+		b := (&Builder{})
 
 		// test
-		actual := node.Build()
+		actual, err := b.Build(&infrastructurev1alpha1.KinkMachine{})
 
 		// validate
+		assert.NoError(t, err)
 		assert.Len(t, actual, 2)
 	})
 
-	t.Run("Deployment", func(t *testing.T) {
+	t.Run("StatefulSet", func(t *testing.T) {
 		t.Parallel()
 
 		for name, tc := range map[string]struct {

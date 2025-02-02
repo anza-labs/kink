@@ -25,7 +25,7 @@ import (
 	"github.com/anza-labs/kink/internal/naming"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 // IssuerKind defines the kind of issuer used for certificates.
@@ -51,8 +51,8 @@ type Certificates struct {
 }
 
 // Build constructs and returns a list of certificate-related runtime objects.
-func (b *Certificates) Build() []runtime.Object {
-	objects := []runtime.Object{
+func (b *Certificates) Build() []client.Object {
+	objects := []client.Object{
 		b.RootCA(),
 		b.ClusterCA(), b.ClusterCAIssuer(), b.APIServer(), b.ServiceAccountCertificate(),
 		b.FrontProxyCA(),

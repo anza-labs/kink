@@ -19,7 +19,7 @@ import (
 
 	controlplanev1alpha1 "github.com/anza-labs/kink/api/controlplane/v1alpha1"
 
-	"k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
@@ -40,10 +40,10 @@ func buildArgs(args map[string]string) []string {
 	return cmd
 }
 
-type ControlPlaneBuilder struct{}
+type Builder struct{}
 
-func (b *ControlPlaneBuilder) Build(kcp *controlplanev1alpha1.KinkControlPlane) ([]runtime.Object, error) {
-	objects := []runtime.Object{}
+func (b *Builder) Build(kcp *controlplanev1alpha1.KinkControlPlane) ([]client.Object, error) {
+	objects := []client.Object{}
 
 	objects = append(objects, (&Certificates{KinkControlPlane: kcp}).Build()...)
 	objects = append(objects, (&Kine{KinkControlPlane: kcp}).Build()...)
