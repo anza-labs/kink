@@ -180,6 +180,7 @@ cluster: kind ctlptl clusterctl kustomize
 	$(CLUSTERCTL) init \
 		--core=cluster-api:$(CLUSTER_API_VERSION) \
 		--bootstrap=kubeadm:$(CLUSTER_API_VERSION) \
+		--control-plane=kubeadm:$(CLUSTER_API_VERSION) \
 		--validate=true \
 		--wait-providers \
 		--wait-provider-timeout=360

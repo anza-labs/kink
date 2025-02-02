@@ -19,6 +19,7 @@ package manifestutils
 
 import (
 	"crypto/sha256"
+	"encoding/json"
 	"fmt"
 	"regexp"
 	"strings"
@@ -26,7 +27,6 @@ import (
 	"github.com/anza-labs/kink/internal/naming"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"sigs.k8s.io/yaml"
 )
 
 func IsFilteredSet(sourceSet string, filterSet []string) bool {
@@ -99,8 +99,8 @@ func SelectorLabels(instance metav1.ObjectMeta, component, concept string) map[s
 }
 
 // GetConfigMapSHA computes a SHA256 checksum for a ConfigMap object.
-func GetConfigMapSHA(data map[string]string) (string, error) {
-	b, err := yaml.Marshal(data)
+func GetConfigMapSHA(data any) (string, error) {
+	b, err := json.Marshal(data)
 	if err != nil {
 		return "", err
 	}

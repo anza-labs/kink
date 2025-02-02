@@ -86,9 +86,20 @@ func TestNode(t *testing.T) {
 					"app.kubernetes.io/part-of":     "kink-infrastructure",
 					"cluster.x-k8s.io/cluster-name": "test",
 				},
+				ClusterIP: corev1.ClusterIPNone,
 				Ports: []corev1.ServicePort{
-					{Name: "kubelet", Port: 10250, TargetPort: intstr.FromString("kubelet")},
-					{Name: "kube-proxy", Port: 10256, TargetPort: intstr.FromString("kube-proxy")},
+					{
+						Name:       "kubelet",
+						Port:       10250,
+						TargetPort: intstr.FromString("kubelet"),
+						Protocol:   corev1.ProtocolTCP,
+					},
+					{
+						Name:       "kube-proxy",
+						Port:       10256,
+						TargetPort: intstr.FromString("kube-proxy"),
+						Protocol:   corev1.ProtocolTCP,
+					},
 				},
 			},
 		}

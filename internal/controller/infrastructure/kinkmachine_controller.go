@@ -19,17 +19,18 @@ import (
 	"fmt"
 
 	infrastructurev1alpha1 "github.com/anza-labs/kink/api/infrastructure/v1alpha1"
+	"github.com/anza-labs/kink/internal/controller/util"
 	"github.com/anza-labs/kink/internal/manifests/infrastructure"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/klog/v2"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
 const (
@@ -119,8 +120,20 @@ func (r *KinkMachineReconciler) reconcile(
 		return fmt.Errorf("failed to build components: %w", err)
 	}
 
-	log.V(2).Info("Ensuring components")
-	if err := r.ensureResources(ctx, kinkM, obj...); err != nil {
+	ownedObjects, err := util.FindOwnedObjects(ctx, r.Client, r.Scheme, kinkM, r.GetOwnedResourceTypes())
+	if err != nil {
+		return fmt.Errorf("failed to find owned objects: %w", err)
+	}
+
+	log.V(2).Info("Reconciling components")
+	if err := util.ReconcileDesiredObjects(
+		ctx,
+		r.Client,
+		kinkM,
+		r.Scheme,
+		obj,
+		ownedObjects,
+	); err != nil {
 		return fmt.Errorf("failed to ensure resources: %w", err)
 	}
 
@@ -129,28 +142,18 @@ func (r *KinkMachineReconciler) reconcile(
 	return nil
 }
 
-// ensureResource ensures that a resource is created or updated.
-func (r *KinkMachineReconciler) ensureResources(
-	ctx context.Context,
-	owner client.Object,
-	objs ...client.Object,
-) error {
-	log := log.FromContext(ctx, "owner", klog.KObj(owner))
-
-	for _, resource := range objs {
-		log.V(3).Info("Ensuring object exists",
-			"name", resource.GetName(),
-			"kind", resource.GetObjectKind().GroupVersionKind().Kind)
-
-		_, err := controllerutil.CreateOrUpdate(ctx, r.Client, resource, func() error {
-			return ctrl.SetControllerReference(owner, resource, r.Scheme)
-		})
-		if err != nil {
-			return err
-		}
+// GetOwnedResourceTypes returns all the resource types the controller can own.
+// Even though this method returns an array of client.Object, these are (empty)
+// example structs rather than actual resources.
+func (r *KinkMachineReconciler) GetOwnedResourceTypes(filters ...util.Filterer) []client.Object {
+	objs := []client.Object{
+		&appsv1.StatefulSet{},
+		&corev1.Service{},
 	}
-
-	return nil
+	for _, filter := range filters {
+		objs = filter.Filter(objs)
+	}
+	return objs
 }
 
 // cleanupResources removes resources owned by the KinkMachine.
@@ -158,41 +161,16 @@ func (r *KinkMachineReconciler) cleanupResources(
 	ctx context.Context,
 	kinkM *infrastructurev1alpha1.KinkMachine,
 ) error {
-	log := log.FromContext(ctx, "kinkControllPlane", klog.KRef(kinkM.Namespace, kinkM.Name))
+	log := log.FromContext(ctx)
 	log.V(3).Info("Cleaning up resources")
 
-	// Define a list of owned resources to delete
-	resourceTypes := []client.ObjectList{
-		&appsv1.StatefulSetList{},
-		&corev1.ServiceList{},
+	ownedObjects, err := util.FindOwnedObjects(ctx, r.Client, r.Scheme, kinkM, r.GetOwnedResourceTypes())
+	if err != nil {
+		return fmt.Errorf("failed to find owned objects: %w", err)
 	}
 
-	ownerUID := kinkM.GetUID()
-	for _, resourceType := range resourceTypes {
-		list := resourceType.DeepCopyObject().(client.ObjectList)
-		err := r.List(ctx, list, client.InNamespace(kinkM.Namespace))
-		if err != nil {
-			return fmt.Errorf("failed to list objects: %w", err)
-		}
-
-		// Iterate over resources and delete them
-		items, err := meta.ExtractList(list)
-		if err != nil {
-			return fmt.Errorf("failed to extract list: %w", err)
-		}
-		for _, item := range items {
-			resource := item.(client.Object)
-			for _, ref := range resource.GetOwnerReferences() {
-				if ref.UID == ownerUID {
-					log.V(3).Info("Deleting resource",
-						"name", resource.GetName(),
-						"kind", resource.GetObjectKind().GroupVersionKind().Kind)
-					if err := r.Delete(ctx, resource); err != nil {
-						return fmt.Errorf("failed to delete resource: %w", err)
-					}
-				}
-			}
-		}
+	if err := util.DeleteObjects(ctx, r.Client, r.Scheme, ownedObjects); err != nil {
+		return fmt.Errorf("failed to delete owned objects: %w", err)
 	}
 
 	log.V(3).Info("Cleanup complete")
@@ -201,10 +179,13 @@ func (r *KinkMachineReconciler) cleanupResources(
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *KinkMachineReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewControllerManagedBy(mgr).
+	c := ctrl.NewControllerManagedBy(mgr).
 		For(&infrastructurev1alpha1.KinkMachine{}).
-		Named("kinkmachine").
-		Owns(&appsv1.StatefulSet{}).
-		Owns(&corev1.Service{}).
-		Complete(r)
+		Named("kinkmachine")
+
+	for _, obj := range r.GetOwnedResourceTypes() {
+		c = c.Owns(obj, builder.WithPredicates(predicate.GenerationChangedPredicate{}))
+	}
+
+	return c.Complete(r)
 }

@@ -10,13 +10,31 @@
   <img src="assets/kink.png" width="256p"/>
 </p>
 
-| Component               | Image                                     | Version | Mode        |
-| ----------------------- | ----------------------------------------- | ------- | ----------- |
-| ETCD                    | `ghcr.io/anza-labs/library/kine`          |         | StatefulSet |
-| Kube Scheduler          | `registry.k8s.io/kube-scheduler`          |         | Deployment  |
-| Kube API-Server         | `registry.k8s.io/kube-apiserver`          |         | Deployment  |
-| Kube Controller Manager | `registry.k8s.io/kube-controller-manager` |         | Deployment  |
-| Node                    | `docker.io/kindest/base`                  |         | StatefulSet |
+| Component               | Image                                     | Mode        |
+| ----------------------- | ----------------------------------------- | ----------- |
+| ETCD                    | `ghcr.io/anza-labs/library/kine`          | Deployment  |
+| Kube Scheduler          | `registry.k8s.io/kube-scheduler`          | Deployment  |
+| Kube API-Server         | `registry.k8s.io/kube-apiserver`          | Deployment  |
+| Kube Controller Manager | `registry.k8s.io/kube-controller-manager` | Deployment  |
+| Node                    | `docker.io/kindest/base`                  | StatefulSet |
+
+```yaml
+kubectl apply -f - <<EOF
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: example
+---
+apiVersion: controlplane.cluster.x-k8s.io/v1alpha1
+kind: KinkControlPlane
+metadata:
+  name: example
+  namespace: example
+spec:
+  version: v1.32.0
+EOF
+```
 
 ## License
 

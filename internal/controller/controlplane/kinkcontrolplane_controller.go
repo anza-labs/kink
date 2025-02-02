@@ -21,17 +21,18 @@ import (
 	cmv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 
 	controlplanev1alpha1 "github.com/anza-labs/kink/api/controlplane/v1alpha1"
+	"github.com/anza-labs/kink/internal/controller/util"
 	"github.com/anza-labs/kink/internal/manifests/controlplane"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/klog/v2"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 )
 
 const (
@@ -52,15 +53,15 @@ type KinkControlPlaneReconciler struct {
 // +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=apps,resources=deployments/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=apps,resources=deployments/finalizers,verbs=update
-// +kubebuilder:rbac:groups=apps,resources=statefulsets,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=apps,resources=statefulsets/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=apps,resources=statefulsets/finalizers,verbs=update
-// +kubebuilder:rbac:groups=core,resources=services,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=core,resources=services/status,verbs=get;update;patch
-// +kubebuilder:rbac:groups=core,resources=services/finalizers,verbs=update
+// +kubebuilder:rbac:groups=core,resources=configmaps,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=core,resources=configmaps/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=core,resources=configmaps/finalizers,verbs=update
 // +kubebuilder:rbac:groups=core,resources=secrets,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=core,resources=secrets/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=core,resources=secrets/finalizers,verbs=update
+// +kubebuilder:rbac:groups=core,resources=services,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=core,resources=services/status,verbs=get;update;patch
+// +kubebuilder:rbac:groups=core,resources=services/finalizers,verbs=update
 // +kubebuilder:rbac:groups=cert-manager.io,resources=issuers,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=cert-manager.io,resources=issuers/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=cert-manager.io,resources=issuers/finalizers,verbs=update
@@ -131,38 +132,84 @@ func (r *KinkControlPlaneReconciler) reconcile(
 		return fmt.Errorf("failed to build components: %w", err)
 	}
 
-	log.V(2).Info("Ensuring components")
-	if err := r.ensureResources(ctx, kinkCP, obj...); err != nil {
+	ownedObjects, err := util.FindOwnedObjects(
+		ctx,
+		r.Client,
+		r.Scheme,
+		kinkCP,
+		r.GetOwnedResourceTypes(util.Exclude[*corev1.Secret]{}),
+	)
+	if err != nil {
+		return fmt.Errorf("failed to find owned objects: %w", err)
+	}
+	log.V(4).Info("Found objects", "objects", ownedObjects)
+
+	log.V(2).Info("Reconciling components", "object_count", len(ownedObjects), "expected_count", len(obj))
+	if err := util.ReconcileDesiredObjects(
+		ctx,
+		r.Client,
+		kinkCP,
+		r.Scheme,
+		obj,
+		ownedObjects,
+	); err != nil {
 		return fmt.Errorf("failed to ensure resources: %w", err)
 	}
 
-	// TODO: get status of dependents and set it
+	log.V(2).Info("Building kubeconfigs")
+	kc, err := (&controlplane.Kubeconfig{
+		Client:           r.Client,
+		KinkControlPlane: kinkCP,
+	}).Build(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to build kubeconfigs: %w", err)
+	}
+
+	ownedSecrets, err := util.FindOwnedObjects(
+		ctx,
+		r.Client,
+		r.Scheme,
+		kinkCP,
+		r.GetOwnedResourceTypes(util.Only[*corev1.Secret]{}),
+	)
+	if err != nil {
+		return fmt.Errorf("failed to find owned secrets: %w", err)
+	}
+	log.V(4).Info("Found objects", "objects", ownedSecrets)
+
+	log.V(2).Info("Reconciling kubeconfigs", "object_count", len(ownedSecrets), "expected_count", len(kc))
+	if err := util.ReconcileDesiredObjects(
+		ctx,
+		r.Client,
+		kinkCP,
+		r.Scheme,
+		kc,
+		ownedSecrets,
+	); err != nil {
+		return fmt.Errorf("failed to ensure secrets: %w", err)
+	}
+
+	// TODO: get status of dependents and set it to KinK Cluster status
 
 	return nil
 }
 
-// ensureResource ensures that a resource is created or updated.
-func (r *KinkControlPlaneReconciler) ensureResources(
-	ctx context.Context,
-	owner client.Object,
-	objs ...client.Object,
-) error {
-	log := log.FromContext(ctx, "owner", klog.KObj(owner))
-
-	for _, resource := range objs {
-		log.V(3).Info("Ensuring object exists",
-			"name", resource.GetName(),
-			"kind", resource.GetObjectKind().GroupVersionKind().Kind)
-
-		_, err := controllerutil.CreateOrUpdate(ctx, r.Client, resource, func() error {
-			return ctrl.SetControllerReference(owner, resource, r.Scheme)
-		})
-		if err != nil {
-			return err
-		}
+// GetOwnedResourceTypes returns all the resource types the controller can own.
+// Even though this method returns an array of client.Object, these are (empty)
+// example structs rather than actual resources.
+func (r *KinkControlPlaneReconciler) GetOwnedResourceTypes(filters ...util.Filterer) []client.Object {
+	objs := []client.Object{
+		&appsv1.Deployment{},
+		&corev1.ConfigMap{},
+		&corev1.Secret{},
+		&corev1.Service{},
+		&cmv1.Issuer{},
+		&cmv1.Certificate{},
 	}
-
-	return nil
+	for _, filter := range filters {
+		objs = filter.Filter(objs)
+	}
+	return objs
 }
 
 // cleanupResources removes resources owned by the KinkControlPlane.
@@ -170,45 +217,22 @@ func (r *KinkControlPlaneReconciler) cleanupResources(
 	ctx context.Context,
 	kinkCP *controlplanev1alpha1.KinkControlPlane,
 ) error {
-	log := log.FromContext(ctx, "kinkControllPlane", klog.KRef(kinkCP.Namespace, kinkCP.Name))
+	log := log.FromContext(ctx)
 	log.V(3).Info("Cleaning up resources")
 
-	// Define a list of owned resources to delete
-	resourceTypes := []client.ObjectList{
-		&appsv1.DeploymentList{},
-		&appsv1.StatefulSetList{},
-		&corev1.ServiceList{},
-		&corev1.SecretList{},
-		&cmv1.IssuerList{},
-		&cmv1.CertificateList{},
+	ownedObjects, err := util.FindOwnedObjects(
+		ctx,
+		r.Client,
+		r.Scheme,
+		kinkCP,
+		r.GetOwnedResourceTypes(),
+	)
+	if err != nil {
+		return fmt.Errorf("failed to find owned objects: %w", err)
 	}
 
-	ownerUID := kinkCP.GetUID()
-	for _, resourceType := range resourceTypes {
-		list := resourceType.DeepCopyObject().(client.ObjectList)
-		err := r.List(ctx, list, client.InNamespace(kinkCP.Namespace))
-		if err != nil {
-			return fmt.Errorf("failed to list objects: %w", err)
-		}
-
-		// Iterate over resources and delete them
-		items, err := meta.ExtractList(list)
-		if err != nil {
-			return fmt.Errorf("failed to extract list: %w", err)
-		}
-		for _, item := range items {
-			resource := item.(client.Object)
-			for _, ref := range resource.GetOwnerReferences() {
-				if ref.UID == ownerUID {
-					log.V(3).Info("Deleting resource",
-						"name", resource.GetName(),
-						"kind", resource.GetObjectKind().GroupVersionKind().Kind)
-					if err := r.Delete(ctx, resource); err != nil {
-						return fmt.Errorf("failed to delete resource: %w", err)
-					}
-				}
-			}
-		}
+	if err := util.DeleteObjects(ctx, r.Client, r.Scheme, ownedObjects); err != nil {
+		return fmt.Errorf("failed to delete owned objects: %w", err)
 	}
 
 	log.V(3).Info("Cleanup complete")
@@ -217,14 +241,13 @@ func (r *KinkControlPlaneReconciler) cleanupResources(
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *KinkControlPlaneReconciler) SetupWithManager(mgr ctrl.Manager) error {
-	return ctrl.NewControllerManagedBy(mgr).
+	c := ctrl.NewControllerManagedBy(mgr).
 		For(&controlplanev1alpha1.KinkControlPlane{}).
-		Named("kinkcontrolplane").
-		Owns(&appsv1.Deployment{}).
-		Owns(&appsv1.StatefulSet{}).
-		Owns(&corev1.Service{}).
-		Owns(&corev1.Secret{}).
-		Owns(&cmv1.Issuer{}).
-		Owns(&cmv1.Certificate{}).
-		Complete(r)
+		Named("kinkcontrolplane")
+
+	for _, obj := range r.GetOwnedResourceTypes() {
+		c = c.Owns(obj, builder.WithPredicates(predicate.GenerationChangedPredicate{}))
+	}
+
+	return c.Complete(r)
 }

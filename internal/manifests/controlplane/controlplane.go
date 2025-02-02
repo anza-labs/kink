@@ -16,6 +16,7 @@ package controlplane
 
 import (
 	"fmt"
+	"slices"
 
 	controlplanev1alpha1 "github.com/anza-labs/kink/api/controlplane/v1alpha1"
 
@@ -30,6 +31,18 @@ const (
 	ComponentControllerManager = "controller-manager"
 	ComponentKine              = "kine"
 	ComponentScheduler         = "scheduler"
+
+	rootPKIPath  = "/etc/pki/kubernetes"
+	rootCAFile   = "ca.crt"
+	rootCertFile = "tls.crt"
+	rootKeyFile  = "tls.key"
+
+	kubeconfigPath = "/etc/kubernetes"
+	kubeconfigName = "value"
+
+	serviceAccountsPKIPath         = "/etc/pki/service-accounts"
+	serviceAccountsCertificateFile = "tls.crt"
+	serviceAccountsKeyFile         = "tls.key"
 )
 
 func buildArgs(args map[string]string) []string {
@@ -37,6 +50,7 @@ func buildArgs(args map[string]string) []string {
 	for arg, val := range args {
 		cmd = append(cmd, fmt.Sprintf("--%s=%s", arg, val))
 	}
+	slices.Sort(cmd)
 	return cmd
 }
 

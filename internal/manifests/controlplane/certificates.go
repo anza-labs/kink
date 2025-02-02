@@ -54,9 +54,12 @@ type Certificates struct {
 func (b *Certificates) Build() []client.Object {
 	objects := []client.Object{
 		b.RootCA(),
-		b.ClusterCA(), b.ClusterCAIssuer(), b.APIServer(), b.ServiceAccountCertificate(),
+		b.ClusterCA(), b.ClusterCAIssuer(),
+		b.APIServer(), b.ServiceAccountCertificate(),
+		b.AdminCertificate(), b.SchedulerCertificate(), b.ControllerManagerCertificate(),
 		b.FrontProxyCA(),
-		b.KineCA(), b.KineCAIssuer(), b.KineServer(), b.KineAPIServerClient(),
+		b.KineCA(),
+		b.KineCAIssuer(), b.KineServer(), b.KineAPIServerClient(),
 	}
 	return objects
 }
@@ -103,9 +106,9 @@ func (b *Certificates) ClusterCA() *cmv1.Certificate {
 		},
 		Spec: cmv1.CertificateSpec{
 			IsCA:        true,
+			CommonName:  "Kubernetes API",
 			Duration:    &defaultCAResidualTime,
 			RenewBefore: &defaultRenewBefore,
-			CommonName:  "Kubernetes API",
 			IssuerRef: cmmetav1.ObjectReference{
 				Name: naming.RootCA(b.KinkControlPlane.Name),
 				Kind: IssuerKind,
@@ -167,6 +170,10 @@ func (b *Certificates) APIServer() *cmv1.Certificate {
 			Annotations: annotations,
 		},
 		Spec: cmv1.CertificateSpec{
+			CommonName: "kubernetes",
+			Subject: &cmv1.X509Subject{
+				Organizations: []string{"system:masters"},
+			},
 			Duration:    &defaultCertResidualTime,
 			RenewBefore: &defaultRenewBefore,
 			IssuerRef: cmmetav1.ObjectReference{
@@ -182,8 +189,132 @@ func (b *Certificates) APIServer() *cmv1.Certificate {
 				cmv1.UsageKeyEncipherment,
 				cmv1.UsageServerAuth,
 			},
-			DNSNames:    naming.KubernetesDNSNames(b.KinkControlPlane.Name, b.KinkControlPlane.Namespace),
+			DNSNames: naming.KubernetesDNSNames(
+				b.KinkControlPlane.Name,
+				b.KinkControlPlane.Namespace,
+				b.KinkControlPlane.Spec.DNSName,
+			),
 			IPAddresses: []string{"127.0.0.1"},
+		},
+	}
+}
+
+func (b *Certificates) AdminCertificate() *cmv1.Certificate {
+	name := naming.AdminCertificate(b.KinkControlPlane.Name)
+
+	selectorLabels := manifestutils.SelectorLabels(
+		b.KinkControlPlane.ObjectMeta,
+		ComponentCertificates, ConceptControlPlane,
+	)
+	annotations := manifestutils.Annotations(b.KinkControlPlane, nil)
+
+	return &cmv1.Certificate{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:        name,
+			Namespace:   b.KinkControlPlane.Namespace,
+			Labels:      selectorLabels,
+			Annotations: annotations,
+		},
+		Spec: cmv1.CertificateSpec{
+			CommonName: "cluster-admin",
+			Subject: &cmv1.X509Subject{
+				Organizations: []string{"system:masters"},
+			},
+			Duration:    &defaultCertResidualTime,
+			RenewBefore: &defaultRenewBefore,
+			IssuerRef: cmmetav1.ObjectReference{
+				Name: naming.ClusterCA(b.KinkControlPlane.Name),
+				Kind: IssuerKind,
+			},
+			SecretName: name,
+			SecretTemplate: &cmv1.CertificateSecretTemplate{
+				Labels: selectorLabels,
+			},
+			Usages: []cmv1.KeyUsage{
+				cmv1.UsageDigitalSignature,
+				cmv1.UsageKeyEncipherment,
+				cmv1.UsageClientAuth,
+			},
+		},
+	}
+}
+
+func (b *Certificates) SchedulerCertificate() *cmv1.Certificate {
+	name := naming.SchedulerCertificate(b.KinkControlPlane.Name)
+
+	selectorLabels := manifestutils.SelectorLabels(
+		b.KinkControlPlane.ObjectMeta,
+		ComponentCertificates, ConceptControlPlane,
+	)
+	annotations := manifestutils.Annotations(b.KinkControlPlane, nil)
+
+	return &cmv1.Certificate{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:        name,
+			Namespace:   b.KinkControlPlane.Namespace,
+			Labels:      selectorLabels,
+			Annotations: annotations,
+		},
+		Spec: cmv1.CertificateSpec{
+			CommonName: "system:kube-controller-manager",
+			Subject: &cmv1.X509Subject{
+				Organizations: []string{"system:kube-controller-manager"},
+			},
+			Duration:    &defaultCertResidualTime,
+			RenewBefore: &defaultRenewBefore,
+			IssuerRef: cmmetav1.ObjectReference{
+				Name: naming.ClusterCA(b.KinkControlPlane.Name),
+				Kind: IssuerKind,
+			},
+			SecretName: name,
+			SecretTemplate: &cmv1.CertificateSecretTemplate{
+				Labels: selectorLabels,
+			},
+			Usages: []cmv1.KeyUsage{
+				cmv1.UsageDigitalSignature,
+				cmv1.UsageKeyEncipherment,
+				cmv1.UsageClientAuth,
+			},
+		},
+	}
+}
+
+func (b *Certificates) ControllerManagerCertificate() *cmv1.Certificate {
+	name := naming.ControllerManagerCertificate(b.KinkControlPlane.Name)
+
+	selectorLabels := manifestutils.SelectorLabels(
+		b.KinkControlPlane.ObjectMeta,
+		ComponentCertificates, ConceptControlPlane,
+	)
+	annotations := manifestutils.Annotations(b.KinkControlPlane, nil)
+
+	return &cmv1.Certificate{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:        name,
+			Namespace:   b.KinkControlPlane.Namespace,
+			Labels:      selectorLabels,
+			Annotations: annotations,
+		},
+		Spec: cmv1.CertificateSpec{
+			CommonName: "system:kube-controller-manager",
+			Subject: &cmv1.X509Subject{
+				Organizations: []string{"system:kube-controller-manager"},
+			},
+			Duration:    &defaultCertResidualTime,
+			RenewBefore: &defaultRenewBefore,
+			IssuerRef: cmmetav1.ObjectReference{
+				Name: naming.ClusterCA(b.KinkControlPlane.Name),
+				Kind: IssuerKind,
+			},
+			SecretName: name,
+			SecretTemplate: &cmv1.CertificateSecretTemplate{
+				Labels: selectorLabels,
+			},
+			Usages: []cmv1.KeyUsage{
+				cmv1.UsageDigitalSignature,
+				cmv1.UsageKeyEncipherment,
+				cmv1.UsageClientAuth,
+			},
 		},
 	}
 }
@@ -271,6 +402,10 @@ func (b *Certificates) KineServer() *cmv1.Certificate {
 			Annotations: annotations,
 		},
 		Spec: cmv1.CertificateSpec{
+			CommonName: "ETCD Server",
+			Subject: &cmv1.X509Subject{
+				Organizations: []string{"etcd"},
+			},
 			Duration:    &defaultCertResidualTime,
 			RenewBefore: &defaultRenewBefore,
 			IssuerRef: cmmetav1.ObjectReference{
@@ -311,6 +446,10 @@ func (b *Certificates) KineAPIServerClient() *cmv1.Certificate {
 			Annotations: annotations,
 		},
 		Spec: cmv1.CertificateSpec{
+			CommonName: "Kubernetes",
+			Subject: &cmv1.X509Subject{
+				Organizations: []string{"apiserver"},
+			},
 			Duration:    &defaultCertResidualTime,
 			RenewBefore: &defaultRenewBefore,
 			IssuerRef: cmmetav1.ObjectReference{
@@ -326,6 +465,8 @@ func (b *Certificates) KineAPIServerClient() *cmv1.Certificate {
 				cmv1.UsageKeyEncipherment,
 				cmv1.UsageClientAuth,
 			},
+			DNSNames:    naming.KineDNSNames(b.KinkControlPlane.Name, b.KinkControlPlane.Namespace),
+			IPAddresses: []string{"127.0.0.1"},
 		},
 	}
 }
@@ -386,6 +527,10 @@ func (b *Certificates) ServiceAccountCertificate() *cmv1.Certificate {
 			Annotations: annotations,
 		},
 		Spec: cmv1.CertificateSpec{
+			CommonName: "service-accounts",
+			Subject: &cmv1.X509Subject{
+				Organizations: []string{"system:serviceaccounts"},
+			},
 			Duration:    &defaultCertResidualTime,
 			RenewBefore: &defaultRenewBefore,
 			SecretName:  name,
@@ -396,6 +541,12 @@ func (b *Certificates) ServiceAccountCertificate() *cmv1.Certificate {
 				Name: naming.ClusterCA(b.KinkControlPlane.Name),
 				Kind: IssuerKind,
 			},
+			DNSNames: naming.KubernetesDNSNames(
+				b.KinkControlPlane.Name,
+				b.KinkControlPlane.Namespace,
+				b.KinkControlPlane.Spec.DNSName,
+			),
+			IPAddresses: []string{"127.0.0.1"},
 		},
 	}
 }

@@ -24,20 +24,26 @@ func KineEndpoint(name, namespace string) string {
 }
 
 func KineDNSNames(name, namespace string) []string {
+	serviceName := Kine(name)
 	dnsNames := []string{
-		Kine(name),
+		serviceName,
 		"localhost",
 	}
 	if namespace != "" {
-		dnsNames = append(dnsNames, fmt.Sprintf("%s.%s.svc.cluster.local", Kine(name), namespace))
+		dnsNames = append(dnsNames,
+			fmt.Sprintf("%s.%s", serviceName, namespace),
+			fmt.Sprintf("%s.%s.svc", serviceName, namespace),
+			fmt.Sprintf("%s.%s.svc.cluster.local", serviceName, namespace),
+		)
 	}
 	return dnsNames
 }
 
-func KubernetesDNSNames(name, namespace string) []string {
+func KubernetesDNSNames(name, namespace, publicDNSName string) []string {
 	serviceName := APIServer(name)
 	dnsNames := []string{
 		serviceName,
+		"localhost",
 		"kubernetes",
 		"kubernetes.default",
 		"kubernetes.default.svc",
@@ -50,5 +56,23 @@ func KubernetesDNSNames(name, namespace string) []string {
 			fmt.Sprintf("%s.%s.svc.cluster.local", serviceName, namespace),
 		)
 	}
+	if publicDNSName != "" {
+		dnsNames = append(dnsNames, publicDNSName)
+	}
 	return dnsNames
+}
+
+func PublicAPIServerEndpoint(publicDNSName string) string {
+	if publicDNSName != "" {
+		return fmt.Sprintf("https://%s:6443", publicDNSName)
+	}
+	return "https://localhost:6443"
+}
+
+func LocalAPIServerEndpoint(name, namespace string) string {
+	serviceName := APIServer(name)
+	if namespace != "" {
+		return fmt.Sprintf("https://%s.%s.svc.cluster.local:6443", serviceName, namespace)
+	}
+	return fmt.Sprintf("https://%s:6443", serviceName)
 }
