@@ -36,9 +36,10 @@ func TestControllerManager(t *testing.T) {
 		controllerManager := (&ControllerManager{KinkControlPlane: &controlplanev1alpha1.KinkControlPlane{}})
 
 		// test
-		actual := controllerManager.Build()
+		actual, err := controllerManager.Build()
 
 		// validate
+		assert.NoError(t, err)
 		assert.Len(t, actual, 2)
 	})
 
@@ -56,9 +57,10 @@ func TestControllerManager(t *testing.T) {
 				controllerManager := (&ControllerManager{KinkControlPlane: tc.kcp})
 
 				// test
-				actual := controllerManager.Deployment()
+				actual, err := controllerManager.Deployment()
 
 				// validate
+				assert.NoError(t, err)
 				assert.Equal(t, tc.expected, actual)
 			})
 		}
@@ -78,9 +80,10 @@ func TestControllerManager(t *testing.T) {
 				controllerManager := (&ControllerManager{KinkControlPlane: tc.kcp})
 
 				// test
-				actual := controllerManager.Service()
+				actual, err := controllerManager.Service()
 
 				// validate
+				assert.NoError(t, err)
 				assert.Equal(t, tc.expected, actual)
 			})
 		}

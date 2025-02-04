@@ -12,4 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package manifests
+package infrastructure
+
+import (
+	infrastructurev1alpha1 "github.com/anza-labs/kink/api/infrastructure/v1alpha1"
+
+	"sigs.k8s.io/controller-runtime/pkg/client"
+)
+
+type Builder struct{}
+
+func (b *Builder) Build(km *infrastructurev1alpha1.KinkMachine) ([]client.Object, error) {
+	objects := []client.Object{}
+
+	objects = append(objects, (&Node{KinkMachine: km}).Build()...)
+
+	return objects, nil
+}

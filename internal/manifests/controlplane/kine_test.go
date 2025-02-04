@@ -42,12 +42,12 @@ func TestKine(t *testing.T) {
 		assert.Len(t, actual, 2)
 	})
 
-	t.Run("StatefulSet", func(t *testing.T) {
+	t.Run("Deployment", func(t *testing.T) {
 		t.Parallel()
 
 		for name, tc := range map[string]struct {
 			kcp      *controlplanev1alpha1.KinkControlPlane
-			expected *appsv1.StatefulSet
+			expected *appsv1.Deployment
 		}{} {
 			t.Run(name, func(t *testing.T) {
 				t.Parallel()
@@ -56,7 +56,7 @@ func TestKine(t *testing.T) {
 				kine := (&Kine{KinkControlPlane: tc.kcp})
 
 				// test
-				actual := kine.StatefulSet()
+				actual := kine.Deployment()
 
 				// validate
 				assert.Equal(t, tc.expected, actual)

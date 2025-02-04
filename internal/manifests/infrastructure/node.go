@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package controlplane
+package infrastructure
 
 import (
 	"maps"
@@ -25,9 +25,9 @@ import (
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/utils/ptr"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
@@ -45,8 +45,8 @@ type Node struct {
 	KinkMachine *infrastructurev1alpha1.KinkMachine
 }
 
-func (b *Node) Build() []runtime.Object {
-	objects := []runtime.Object{
+func (b *Node) Build() []client.Object {
+	objects := []client.Object{
 		b.Service(),
 		b.StatefulSet(),
 	}
@@ -85,9 +85,10 @@ func (b *Node) StatefulSet() *appsv1.StatefulSet {
 	podAnnotations := manifestutils.PodAnnotations(b.KinkMachine, nil)
 
 	podSpec := corev1.PodSpec{
-		Affinity:   manifestutils.Affinity(b.KinkMachine),
-		Containers: []corev1.Container{b.container(image)},
-		Volumes:    []corev1.Volume{dataVolume},
+		Affinity:         manifestutils.Affinity(b.KinkMachine),
+		Containers:       []corev1.Container{b.container(image)},
+		Volumes:          []corev1.Volume{dataVolume},
+		ImagePullSecrets: b.KinkMachine.Spec.ImagePullSecrets,
 	}
 
 	return &appsv1.StatefulSet{
@@ -138,11 +139,22 @@ func (b *Node) Service() *corev1.Service {
 			Annotations: annotations,
 		},
 		Spec: corev1.ServiceSpec{
-			Selector: selectorLabels,
-			Type:     corev1.ServiceTypeClusterIP,
+			Selector:  selectorLabels,
+			Type:      corev1.ServiceTypeClusterIP,
+			ClusterIP: corev1.ClusterIPNone,
 			Ports: []corev1.ServicePort{
-				{Name: "kubelet", Port: 10250, TargetPort: intstr.FromString("kubelet")},
-				{Name: "kube-proxy", Port: 10256, TargetPort: intstr.FromString("kube-proxy")},
+				{
+					Name:       "kubelet",
+					Port:       10250,
+					TargetPort: intstr.FromString("kubelet"),
+					Protocol:   corev1.ProtocolTCP,
+				},
+				{
+					Name:       "kube-proxy",
+					Port:       10256,
+					TargetPort: intstr.FromString("kube-proxy"),
+					Protocol:   corev1.ProtocolTCP,
+				},
 			},
 		},
 	}
@@ -158,8 +170,16 @@ func (b *Node) container(image string) corev1.Container {
 		Args:      []string{},
 		Resources: resources,
 		Ports: []corev1.ContainerPort{
-			{Name: "kubelet", ContainerPort: 10250},
-			{Name: "kube-proxy", ContainerPort: 10256},
+			{
+				Name:          "kubelet",
+				ContainerPort: 10250,
+				Protocol:      corev1.ProtocolTCP,
+			},
+			{
+				Name:          "kube-proxy",
+				ContainerPort: 10256,
+				Protocol:      corev1.ProtocolTCP,
+			},
 		},
 		VolumeMounts: []corev1.VolumeMount{
 			b.volumeMount(),

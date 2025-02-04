@@ -11,6 +11,9 @@ spec:
     spec:
       containers:
         - name: manager
+          env:
+            - name: ENABLE_WEBHOOKS
+              value: "true"
           ports:
             - containerPort: 9443
               name: webhook-server

@@ -177,10 +177,10 @@ endif
 .PHONY: cluster
 cluster: kind ctlptl clusterctl kustomize
 	@PATH=${LOCALBIN}:$(PATH) $(CTLPTL) apply -f hack/kind.yaml
-	$(KUBECTL) apply -f https://github.com/cert-manager/cert-manager/releases/download/$(CERT_MANAGER_VERSION)/cert-manager.yaml
 	$(CLUSTERCTL) init \
 		--core=cluster-api:$(CLUSTER_API_VERSION) \
 		--bootstrap=kubeadm:$(CLUSTER_API_VERSION) \
+		--control-plane=kubeadm:$(CLUSTER_API_VERSION) \
 		--validate=true \
 		--wait-providers \
 		--wait-provider-timeout=360
@@ -231,9 +231,6 @@ GOLANGCI_LINT_VERSION    ?= $(shell grep 'github.com/golangci/golangci-lint '  .
 KIND_VERSION             ?= $(shell grep 'sigs.k8s.io/kind '                   ./go.mod | cut -d ' ' -f 2)
 KUBE_LINTER_VERSION      ?= $(shell grep 'golang.stackrox.io/kube-linter '     ./go.mod | cut -d ' ' -f 2)
 KUSTOMIZE_VERSION        ?= $(shell grep 'sigs.k8s.io/kustomize/kustomize/v5 ' ./go.mod | cut -d ' ' -f 2)
-
-## Compoenent Versions
-CERT_MANAGER_VERSION ?= v1.16.2
 
 .PHONY: tools
 tools: addlicense chainsaw clusterctl controller-gen crd-ref-docs ctlptl golangci-lint kind kube-linter kustomize ## Install all tools.

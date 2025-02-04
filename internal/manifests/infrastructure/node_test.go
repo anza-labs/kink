@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package controlplane
+package infrastructure
 
 import (
 	"testing"
@@ -28,7 +28,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-func TestAPIServer(t *testing.T) {
+func TestNode(t *testing.T) {
 	t.Parallel()
 
 	t.Run("Build", func(t *testing.T) {
@@ -36,16 +36,17 @@ func TestAPIServer(t *testing.T) {
 		t.Parallel()
 
 		// prepare
-		node := (&Node{KinkMachine: &infrastructurev1alpha1.KinkMachine{}})
+		b := (&Builder{})
 
 		// test
-		actual := node.Build()
+		actual, err := b.Build(&infrastructurev1alpha1.KinkMachine{})
 
 		// validate
+		assert.NoError(t, err)
 		assert.Len(t, actual, 2)
 	})
 
-	t.Run("Deployment", func(t *testing.T) {
+	t.Run("StatefulSet", func(t *testing.T) {
 		t.Parallel()
 
 		for name, tc := range map[string]struct {
@@ -79,14 +80,26 @@ func TestAPIServer(t *testing.T) {
 			Spec: corev1.ServiceSpec{
 				Type: corev1.ServiceTypeClusterIP,
 				Selector: map[string]string{
-					"app.kubernetes.io/component":  "node",
-					"app.kubernetes.io/instance":   "test",
-					"app.kubernetes.io/managed-by": "kink",
-					"app.kubernetes.io/part-of":    "kink-infrastructure",
+					"app.kubernetes.io/component":   "node",
+					"app.kubernetes.io/instance":    "test-namespace.test",
+					"app.kubernetes.io/managed-by":  "kink",
+					"app.kubernetes.io/part-of":     "kink-infrastructure",
+					"cluster.x-k8s.io/cluster-name": "test",
 				},
+				ClusterIP: corev1.ClusterIPNone,
 				Ports: []corev1.ServicePort{
-					{Name: "kubelet", Port: 10250, TargetPort: intstr.FromString("kubelet")},
-					{Name: "kube-proxy", Port: 10256, TargetPort: intstr.FromString("kube-proxy")},
+					{
+						Name:       "kubelet",
+						Port:       10250,
+						TargetPort: intstr.FromString("kubelet"),
+						Protocol:   corev1.ProtocolTCP,
+					},
+					{
+						Name:       "kube-proxy",
+						Port:       10256,
+						TargetPort: intstr.FromString("kube-proxy"),
+						Protocol:   corev1.ProtocolTCP,
+					},
 				},
 			},
 		}

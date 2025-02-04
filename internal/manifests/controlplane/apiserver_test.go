@@ -36,9 +36,10 @@ func TestAPIServer(t *testing.T) {
 		apiServer := (&APIServer{KinkControlPlane: &controlplanev1alpha1.KinkControlPlane{}})
 
 		// test
-		actual := apiServer.Build()
+		actual, err := apiServer.Build()
 
 		// validate
+		assert.NoError(t, err)
 		assert.Len(t, actual, 2)
 	})
 
@@ -56,9 +57,10 @@ func TestAPIServer(t *testing.T) {
 				apiServer := (&APIServer{KinkControlPlane: tc.kcp})
 
 				// test
-				actual := apiServer.Deployment()
+				actual, err := apiServer.Deployment()
 
 				// validate
+				assert.NoError(t, err)
 				assert.Equal(t, tc.expected, actual)
 			})
 		}
@@ -78,9 +80,10 @@ func TestAPIServer(t *testing.T) {
 				apiServer := (&APIServer{KinkControlPlane: tc.kcp})
 
 				// test
-				actual := apiServer.Service()
+				actual, err := apiServer.Service()
 
 				// validate
+				assert.NoError(t, err)
 				assert.Equal(t, tc.expected, actual)
 			})
 		}

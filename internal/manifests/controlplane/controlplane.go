@@ -16,10 +16,11 @@ package controlplane
 
 import (
 	"fmt"
+	"slices"
 
 	controlplanev1alpha1 "github.com/anza-labs/kink/api/controlplane/v1alpha1"
 
-	"k8s.io/apimachinery/pkg/runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
@@ -30,6 +31,18 @@ const (
 	ComponentControllerManager = "controller-manager"
 	ComponentKine              = "kine"
 	ComponentScheduler         = "scheduler"
+
+	rootPKIPath  = "/etc/pki/kubernetes"
+	rootCAFile   = "ca.crt"
+	rootCertFile = "tls.crt"
+	rootKeyFile  = "tls.key"
+
+	kubeconfigPath = "/etc/kubernetes"
+	kubeconfigName = "value"
+
+	serviceAccountsPKIPath         = "/etc/pki/service-accounts"
+	serviceAccountsCertificateFile = "tls.crt"
+	serviceAccountsKeyFile         = "tls.key"
 )
 
 func buildArgs(args map[string]string) []string {
@@ -37,19 +50,35 @@ func buildArgs(args map[string]string) []string {
 	for arg, val := range args {
 		cmd = append(cmd, fmt.Sprintf("--%s=%s", arg, val))
 	}
+	slices.Sort(cmd)
 	return cmd
 }
 
-type ControlPlaneBuilder struct{}
+type Builder struct{}
 
-func (b *ControlPlaneBuilder) Build(kcp *controlplanev1alpha1.KinkControlPlane) ([]runtime.Object, error) {
-	objects := []runtime.Object{}
+func (b *Builder) Build(kcp *controlplanev1alpha1.KinkControlPlane) ([]client.Object, error) {
+	objects := []client.Object{}
 
 	objects = append(objects, (&Certificates{KinkControlPlane: kcp}).Build()...)
-	objects = append(objects, (&APIServer{KinkControlPlane: kcp}).Build()...)
-	objects = append(objects, (&ControllerManager{KinkControlPlane: kcp}).Build()...)
 	objects = append(objects, (&Kine{KinkControlPlane: kcp}).Build()...)
-	objects = append(objects, (&Scheduler{KinkControlPlane: kcp}).Build()...)
+
+	kas, err := (&APIServer{KinkControlPlane: kcp}).Build()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build API Server components: %w", err)
+	}
+	objects = append(objects, kas...)
+
+	kcm, err := (&ControllerManager{KinkControlPlane: kcp}).Build()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build Controller Manager components: %w", err)
+	}
+	objects = append(objects, kcm...)
+
+	ks, err := (&Scheduler{KinkControlPlane: kcp}).Build()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build Scheduler components: %w", err)
+	}
+	objects = append(objects, ks...)
 
 	return objects, nil
 }

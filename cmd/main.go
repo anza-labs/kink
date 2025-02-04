@@ -19,6 +19,8 @@ import (
 	"flag"
 	"os"
 
+	cmv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
+
 	controlplanev1alpha1 "github.com/anza-labs/kink/api/controlplane/v1alpha1"
 	infrastructurev1alpha1 "github.com/anza-labs/kink/api/infrastructure/v1alpha1"
 	"github.com/anza-labs/kink/internal/controller/controlplane"
@@ -65,6 +67,7 @@ func init() {
 
 	utilruntime.Must(infrastructurev1alpha1.AddToScheme(scheme))
 	utilruntime.Must(controlplanev1alpha1.AddToScheme(scheme))
+	utilruntime.Must(cmv1.AddToScheme(scheme))
 	// +kubebuilder:scaffold:scheme
 }
 
@@ -90,13 +93,15 @@ func main() {
 	klog.InitFlags(nil)
 	flag.Parse()
 
+	ctrl.SetLogger(klog.NewKlogr())
+
 	if enabledController != "" && enabledController != allControllers {
 		enabledControllers = map[string]bool{
 			enabledController: true,
 		}
 	}
 
-	ctrl.SetLogger(klog.NewKlogr())
+	setupLog.V(4).Info("Enabled controllers", "controllers", enabledControllers)
 
 	// if the enable-http2 flag is false (the default), http/2 should be disabled
 	// due to its vulnerabilities. More specifically, disabling http/2 will
@@ -151,9 +156,11 @@ func main() {
 	// +kubebuilder:scaffold:builder
 
 	if isControllerEnabled(infrastructureController) {
+		setupLog.V(2).Info("Enabling infrastructure controller")
 		enableInfrastructure(mgr)
 	}
 	if isControllerEnabled(controlPlaneController) {
+		setupLog.V(2).Info("Enabling control-plane controller")
 		enableControlPlane(mgr)
 	}
 
@@ -190,18 +197,22 @@ func enableInfrastructure(mgr ctrl.Manager) {
 	}
 
 	if os.Getenv("ENABLE_WEBHOOKS") != "false" {
-		if err := infrastructurewebhookv1alpha1.SetupKinkClusterTemplateWebhookWithManager(mgr); err != nil {
-			setupLog.Error(err, "unable to create webhook", "webhook", "KinkClusterTemplate")
-			os.Exit(1)
-		}
+		setupLog.V(2).Info("Enabling webhook", "webhook", "KinkCluster")
 		if err := infrastructurewebhookv1alpha1.SetupKinkClusterWebhookWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create webhook", "webhook", "KinkCluster")
 			os.Exit(1)
 		}
+		setupLog.V(2).Info("Enabling webhook", "webhook", "KinkClusterTemplate")
+		if err := infrastructurewebhookv1alpha1.SetupKinkClusterTemplateWebhookWithManager(mgr); err != nil {
+			setupLog.Error(err, "unable to create webhook", "webhook", "KinkClusterTemplate")
+			os.Exit(1)
+		}
+		setupLog.V(2).Info("Enabling webhook", "webhook", "KinkMachine")
 		if err := infrastructurewebhookv1alpha1.SetupKinkMachineWebhookWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create webhook", "webhook", "KinkMachine")
 			os.Exit(1)
 		}
+		setupLog.V(2).Info("Enabling webhook", "webhook", "KinkMachineTemplate")
 		if err := infrastructurewebhookv1alpha1.SetupKinkMachineTemplateWebhookWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create webhook", "webhook", "KinkMachineTemplate")
 			os.Exit(1)
@@ -219,10 +230,12 @@ func enableControlPlane(mgr ctrl.Manager) {
 	}
 
 	if os.Getenv("ENABLE_WEBHOOKS") != "false" {
+		setupLog.V(2).Info("Enabling webhook", "webhook", "KinkControlPlane")
 		if err := controlplanewebhookv1alpha1.SetupKinkControlPlaneWebhookWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create webhook", "webhook", "KinkControlPlane")
 			os.Exit(1)
 		}
+		setupLog.V(2).Info("Enabling webhook", "webhook", "KinkControlPlaneTemplate")
 		if err := controlplanewebhookv1alpha1.SetupKinkControlPlaneTemplateWebhookWithManager(mgr); err != nil {
 			setupLog.Error(err, "unable to create webhook", "webhook", "KinkControlPlaneTemplate")
 			os.Exit(1)
