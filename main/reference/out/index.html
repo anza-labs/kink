@@ -561,6 +561,15 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#apiendpoint" class="md-nav__link">
+    <span class="md-ellipsis">
+      APIEndpoint
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#apiserver" class="md-nav__link">
     <span class="md-ellipsis">
       APIServer
@@ -960,6 +969,15 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#apiendpoint" class="md-nav__link">
+    <span class="md-ellipsis">
+      APIEndpoint
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#apiserver" class="md-nav__link">
     <span class="md-ellipsis">
       APIServer
@@ -1321,6 +1339,34 @@
 <li><a href="#kinkcontrolplanetemplate">KinkControlPlaneTemplate</a></li>
 <li><a href="#kinkcontrolplanetemplatelist">KinkControlPlaneTemplateList</a></li>
 </ul>
+<h4 id="apiendpoint">APIEndpoint</h4>
+<p>APIEndpoint represents a reachable Kubernetes API endpoint.</p>
+<p><em>Appears in:</em>
+- <a href="#kinkcontrolplanespec">KinkControlPlaneSpec</a></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+<th>Default</th>
+<th>Validation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>host</code> <em>string</em></td>
+<td>host is the hostname on which the API server is serving.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>port</code> <em>integer</em></td>
+<td>port is the port on which the API server is serving.</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
 <h4 id="apiserver">APIServer</h4>
 <p>APIServer represents a Kubernetes API server.</p>
 <p>Image:
@@ -1355,12 +1401,6 @@
 <td>Resources describes the compute resource requirements for the container.</td>
 <td></td>
 <td></td>
-</tr>
-<tr>
-<td><code>replicas</code> <em>integer</em></td>
-<td>Number of desired pods. Defaults to 1.</td>
-<td>1</td>
-<td>Maximum: 5 <br />Minimum: 1 <br /></td>
 </tr>
 <tr>
 <td><code>verbosity</code> <em>integer</em></td>
@@ -1410,12 +1450,6 @@
 <td>Resources describes the compute resource requirements for the container.</td>
 <td></td>
 <td></td>
-</tr>
-<tr>
-<td><code>replicas</code> <em>integer</em></td>
-<td>Number of desired pods. Defaults to 1.</td>
-<td>1</td>
-<td>Maximum: 5 <br />Minimum: 1 <br /></td>
 </tr>
 <tr>
 <td><code>verbosity</code> <em>integer</em></td>
@@ -1601,10 +1635,16 @@
 <td></td>
 </tr>
 <tr>
-<td><code>dnsName</code> <em>string</em></td>
-<td>DNSName specifies the cluster endpoint, most likely backed by Ingress.</td>
-<td>localhost</td>
+<td><code>controlPlaneEndpoint</code> <em><a href="#apiendpoint">APIEndpoint</a></em></td>
+<td>ControlPlaneEndpoint represents the endpoint used to communicate with the control plane.</td>
 <td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>replicas</code> <em>integer</em></td>
+<td>Number of desired ControlPlane replicas. Defaults to 1.</td>
+<td>1</td>
+<td>Maximum: 5 <br />Minimum: 1 <br /></td>
 </tr>
 <tr>
 <td><code>imagePullSecrets</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#localobjectreference-v1-core">LocalObjectReference</a> array</em></td>
@@ -1661,6 +1701,36 @@
 <tr>
 <td><code>version</code> <em>string</em></td>
 <td>Version represents the minimum Kubernetes version for the control plane machines<br />in the cluster.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>selector</code> <em>string</em></td>
+<td>Selector is the label selector in string format to avoid introspection<br />by clients, and is used to provide the CRD-based integration for the<br />scale subresource and additional integrations for things like kubectl<br />describe. The string will be in the same format as the query-param syntax.<br />More info about label selectors: http://kubernetes.io/docs/user-guide/labels#label-selectors</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>replicas</code> <em>integer</em></td>
+<td>Replicas is the total number of machines targeted by this control plane<br />(their labels match the selector).</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>updatedReplicas</code> <em>integer</em></td>
+<td>UpdatedReplicas is the total number of machines targeted by this control plane<br />that have the desired template spec.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>readyReplicas</code> <em>integer</em></td>
+<td>ReadyReplicas is the total number of fully running and ready control plane machines.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>unavailableReplicas</code> <em>integer</em></td>
+<td>UnavailableReplicas is the total number of unavailable machines targeted by this control plane.<br />This is the total number of machines that are still required for the deployment to have 100% available capacity.<br />They may either be machines that are running but not yet ready or machines<br />that still have not been created.</td>
 <td></td>
 <td></td>
 </tr>
@@ -1874,12 +1944,6 @@
 <td></td>
 </tr>
 <tr>
-<td><code>replicas</code> <em>integer</em></td>
-<td>Number of desired pods. Defaults to 1.</td>
-<td>1</td>
-<td>Maximum: 5 <br />Minimum: 1 <br /></td>
-</tr>
-<tr>
 <td><code>verbosity</code> <em>integer</em></td>
 <td>Verbosity specifies the log verbosity level for the container. Valid values range from 0 (silent) to 10 (most verbose).</td>
 <td>4</td>
@@ -1927,12 +1991,6 @@
 <td>Resources describes the compute resource requirements for the container.</td>
 <td></td>
 <td></td>
-</tr>
-<tr>
-<td><code>replicas</code> <em>integer</em></td>
-<td>Number of desired pods. Defaults to 1.</td>
-<td>1</td>
-<td>Maximum: 5 <br />Minimum: 1 <br /></td>
 </tr>
 <tr>
 <td><code>verbosity</code> <em>integer</em></td>
