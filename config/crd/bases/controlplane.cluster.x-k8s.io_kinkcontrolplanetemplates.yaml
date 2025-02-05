@@ -999,13 +999,6 @@ spec:
                             description: Image pull policy. One of Always, Never,
                               IfNotPresent.
                             type: string
-                          replicas:
-                            default: 1
-                            description: Number of desired pods. Defaults to 1.
-                            format: int32
-                            maximum: 5
-                            minimum: 1
-                            type: integer
                           resources:
                             description: Resources describes the compute resource
                               requirements for the container.
@@ -1075,6 +1068,23 @@ spec:
                             maximum: 10
                             minimum: 0
                             type: integer
+                        type: object
+                      controlPlaneEndpoint:
+                        description: ControlPlaneEndpoint represents the endpoint
+                          used to communicate with the control plane.
+                        properties:
+                          host:
+                            description: host is the hostname on which the API server
+                              is serving.
+                            type: string
+                          port:
+                            description: port is the port on which the API server
+                              is serving.
+                            format: int32
+                            type: integer
+                        required:
+                        - host
+                        - port
                         type: object
                       controllerManager:
                         description: ControllerManager defines the configuration for
@@ -1093,13 +1103,6 @@ spec:
                             description: Image pull policy. One of Always, Never,
                               IfNotPresent.
                             type: string
-                          replicas:
-                            default: 1
-                            description: Number of desired pods. Defaults to 1.
-                            format: int32
-                            maximum: 5
-                            minimum: 1
-                            type: integer
                           resources:
                             description: Resources describes the compute resource
                               requirements for the container.
@@ -1170,11 +1173,6 @@ spec:
                             minimum: 0
                             type: integer
                         type: object
-                      dnsName:
-                        default: localhost
-                        description: DNSName specifies the cluster endpoint, most
-                          likely backed by Ingress.
-                        type: string
                       imagePullSecrets:
                         description: |-
                           ImagePullSecrets is an optional list of references to secrets in the same namespace to use for pulling any of the images used by this PodSpec.
@@ -1317,6 +1315,14 @@ spec:
                                 type: object
                             type: object
                         type: object
+                      replicas:
+                        default: 1
+                        description: Number of desired ControlPlane replicas. Defaults
+                          to 1.
+                        format: int32
+                        maximum: 5
+                        minimum: 1
+                        type: integer
                       scheduler:
                         description: Scheduler defines the configuration for the Kubernetes
                           scheduler.
@@ -1334,13 +1340,6 @@ spec:
                             description: Image pull policy. One of Always, Never,
                               IfNotPresent.
                             type: string
-                          replicas:
-                            default: 1
-                            description: Number of desired pods. Defaults to 1.
-                            format: int32
-                            maximum: 5
-                            minimum: 1
-                            type: integer
                           resources:
                             description: Resources describes the compute resource
                               requirements for the container.
@@ -1420,7 +1419,6 @@ spec:
                     required:
                     - apiServer
                     - controllerManager
-                    - dnsName
                     - kine
                     - scheduler
                     - version

@@ -14,7 +14,10 @@
 
 package naming
 
-import "fmt"
+import (
+	"fmt"
+	"net"
+)
 
 func KineEndpoint(name, namespace string) string {
 	if namespace == "" {
@@ -62,11 +65,19 @@ func KubernetesDNSNames(name, namespace, publicDNSName string) []string {
 	return dnsNames
 }
 
-func PublicAPIServerEndpoint(publicDNSName string) string {
-	if publicDNSName != "" {
-		return fmt.Sprintf("https://%s:6443", publicDNSName)
+func PublicAPIServerEndpoint(name, namespace, host string, port int32) string {
+	if host == "" {
+		serviceName := APIServer(name)
+		if namespace != "" {
+			host = fmt.Sprintf("%s.%s.svc.cluster.local", serviceName, namespace)
+		} else {
+			host = serviceName
+		}
 	}
-	return "https://localhost:6443"
+	if port == 0 {
+		port = 6443
+	}
+	return fmt.Sprintf("https://%s", net.JoinHostPort(host, fmt.Sprint(port)))
 }
 
 func LocalAPIServerEndpoint(name, namespace string) string {

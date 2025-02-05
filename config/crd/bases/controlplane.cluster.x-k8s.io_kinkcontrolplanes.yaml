@@ -975,13 +975,6 @@ spec:
                   imagePullPolicy:
                     description: Image pull policy. One of Always, Never, IfNotPresent.
                     type: string
-                  replicas:
-                    default: 1
-                    description: Number of desired pods. Defaults to 1.
-                    format: int32
-                    maximum: 5
-                    minimum: 1
-                    type: integer
                   resources:
                     description: Resources describes the compute resource requirements
                       for the container.
@@ -1049,6 +1042,21 @@ spec:
                     maximum: 10
                     minimum: 0
                     type: integer
+                type: object
+              controlPlaneEndpoint:
+                description: ControlPlaneEndpoint represents the endpoint used to
+                  communicate with the control plane.
+                properties:
+                  host:
+                    description: host is the hostname on which the API server is serving.
+                    type: string
+                  port:
+                    description: port is the port on which the API server is serving.
+                    format: int32
+                    type: integer
+                required:
+                - host
+                - port
                 type: object
               controllerManager:
                 description: ControllerManager defines the configuration for the Kubernetes
@@ -1066,13 +1074,6 @@ spec:
                   imagePullPolicy:
                     description: Image pull policy. One of Always, Never, IfNotPresent.
                     type: string
-                  replicas:
-                    default: 1
-                    description: Number of desired pods. Defaults to 1.
-                    format: int32
-                    maximum: 5
-                    minimum: 1
-                    type: integer
                   resources:
                     description: Resources describes the compute resource requirements
                       for the container.
@@ -1141,11 +1142,6 @@ spec:
                     minimum: 0
                     type: integer
                 type: object
-              dnsName:
-                default: localhost
-                description: DNSName specifies the cluster endpoint, most likely backed
-                  by Ingress.
-                type: string
               imagePullSecrets:
                 description: |-
                   ImagePullSecrets is an optional list of references to secrets in the same namespace to use for pulling any of the images used by this PodSpec.
@@ -1286,6 +1282,14 @@ spec:
                         type: object
                     type: object
                 type: object
+              replicas:
+                default: 1
+                description: Number of desired ControlPlane replicas. Defaults to
+                  1.
+                format: int32
+                maximum: 5
+                minimum: 1
+                type: integer
               scheduler:
                 description: Scheduler defines the configuration for the Kubernetes
                   scheduler.
@@ -1302,13 +1306,6 @@ spec:
                   imagePullPolicy:
                     description: Image pull policy. One of Always, Never, IfNotPresent.
                     type: string
-                  replicas:
-                    default: 1
-                    description: Number of desired pods. Defaults to 1.
-                    format: int32
-                    maximum: 5
-                    minimum: 1
-                    type: integer
                   resources:
                     description: Resources describes the compute resource requirements
                       for the container.
@@ -1386,7 +1383,6 @@ spec:
             required:
             - apiServer
             - controllerManager
-            - dnsName
             - kine
             - scheduler
             - version
@@ -1403,6 +1399,39 @@ spec:
                 description: Ready denotes that the kink control plane is ready to
                   serve requests.
                 type: boolean
+              readyReplicas:
+                description: ReadyReplicas is the total number of fully running and
+                  ready control plane machines.
+                format: int32
+                type: integer
+              replicas:
+                description: |-
+                  Replicas is the total number of machines targeted by this control plane
+                  (their labels match the selector).
+                format: int32
+                type: integer
+              selector:
+                description: |-
+                  Selector is the label selector in string format to avoid introspection
+                  by clients, and is used to provide the CRD-based integration for the
+                  scale subresource and additional integrations for things like kubectl
+                  describe. The string will be in the same format as the query-param syntax.
+                  More info about label selectors: http://kubernetes.io/docs/user-guide/labels#label-selectors
+                type: string
+              unavailableReplicas:
+                description: |-
+                  UnavailableReplicas is the total number of unavailable machines targeted by this control plane.
+                  This is the total number of machines that are still required for the deployment to have 100% available capacity.
+                  They may either be machines that are running but not yet ready or machines
+                  that still have not been created.
+                format: int32
+                type: integer
+              updatedReplicas:
+                description: |-
+                  UpdatedReplicas is the total number of machines targeted by this control plane
+                  that have the desired template spec.
+                format: int32
+                type: integer
               version:
                 description: |-
                   Version represents the minimum Kubernetes version for the control plane machines

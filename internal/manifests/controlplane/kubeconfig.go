@@ -77,7 +77,12 @@ func (b *Kubeconfig) Build(ctx context.Context) ([]client.Object, error) {
 }
 
 func (b *Kubeconfig) ClusterAPI(ctx context.Context) (*corev1.Secret, error) {
-	endpoint := naming.PublicAPIServerEndpoint(b.KinkControlPlane.Spec.DNSName)
+	endpoint := naming.PublicAPIServerEndpoint(
+		b.KinkControlPlane.Name,
+		b.KinkControlPlane.Namespace,
+		b.KinkControlPlane.Spec.ControlPlaneEndpoint.Host,
+		b.KinkControlPlane.Spec.ControlPlaneEndpoint.Port,
+	)
 
 	selectorLabels := manifestutils.SelectorLabels(
 		b.KinkControlPlane.ObjectMeta,

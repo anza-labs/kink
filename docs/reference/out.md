@@ -17,6 +17,23 @@ Package v1alpha1 contains API Schema definitions for the controlplane v1alpha1 A
 
 
 
+#### APIEndpoint
+
+
+
+APIEndpoint represents a reachable Kubernetes API endpoint.
+
+
+
+_Appears in:_
+- [KinkControlPlaneSpec](#kinkcontrolplanespec)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `host` _string_ | host is the hostname on which the API server is serving. |  |  |
+| `port` _integer_ | port is the port on which the API server is serving. |  |  |
+
+
 #### APIServer
 
 
@@ -38,7 +55,6 @@ _Appears in:_
 | `image` _string_ | Image specifies the container image to use. |  |  |
 | `imagePullPolicy` _[PullPolicy](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#pullpolicy-v1-core)_ | Image pull policy. One of Always, Never, IfNotPresent. |  |  |
 | `resources` _[ResourceRequirements](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcerequirements-v1-core)_ | Resources describes the compute resource requirements for the container. |  |  |
-| `replicas` _integer_ | Number of desired pods. Defaults to 1. | 1 | Maximum: 5 <br />Minimum: 1 <br /> |
 | `verbosity` _integer_ | Verbosity specifies the log verbosity level for the container. Valid values range from 0 (silent) to 10 (most verbose). | 4 | Maximum: 10 <br />Minimum: 0 <br /> |
 | `extraArgs` _object (keys:string, values:string)_ | ExtraArgs defines additional arguments to be passed to the container executable. |  |  |
 
@@ -64,7 +80,6 @@ _Appears in:_
 | `image` _string_ | Image specifies the container image to use. |  |  |
 | `imagePullPolicy` _[PullPolicy](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#pullpolicy-v1-core)_ | Image pull policy. One of Always, Never, IfNotPresent. |  |  |
 | `resources` _[ResourceRequirements](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcerequirements-v1-core)_ | Resources describes the compute resource requirements for the container. |  |  |
-| `replicas` _integer_ | Number of desired pods. Defaults to 1. | 1 | Maximum: 5 <br />Minimum: 1 <br /> |
 | `verbosity` _integer_ | Verbosity specifies the log verbosity level for the container. Valid values range from 0 (silent) to 10 (most verbose). | 4 | Maximum: 10 <br />Minimum: 0 <br /> |
 | `extraArgs` _object (keys:string, values:string)_ | ExtraArgs defines additional arguments to be passed to the container executable. |  |  |
 
@@ -145,7 +160,8 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `version` _string_ | Version defines the desired Kubernetes version for the control plane.<br />The value must be a valid semantic version; also if the value provided by the user<br />does not start with the v prefix, it must be added. |  |  |
-| `dnsName` _string_ | DNSName specifies the cluster endpoint, most likely backed by Ingress. | localhost |  |
+| `controlPlaneEndpoint` _[APIEndpoint](#apiendpoint)_ | ControlPlaneEndpoint represents the endpoint used to communicate with the control plane. |  |  |
+| `replicas` _integer_ | Number of desired ControlPlane replicas. Defaults to 1. | 1 | Maximum: 5 <br />Minimum: 1 <br /> |
 | `imagePullSecrets` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#localobjectreference-v1-core) array_ | ImagePullSecrets is an optional list of references to secrets in the same namespace to use for pulling any of the images used by this PodSpec.<br />If specified, these secrets will be passed to individual puller implementations for them to use. |  |  |
 | `affinity` _[Affinity](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#affinity-v1-core)_ | Affinity specifies the scheduling constraints for Pods. |  |  |
 | `apiServer` _[APIServer](#apiserver)_ | APIServer defines the configuration for the Kubernetes API server. |  |  |
@@ -168,6 +184,11 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `version` _string_ | Version represents the minimum Kubernetes version for the control plane machines<br />in the cluster. |  |  |
+| `selector` _string_ | Selector is the label selector in string format to avoid introspection<br />by clients, and is used to provide the CRD-based integration for the<br />scale subresource and additional integrations for things like kubectl<br />describe. The string will be in the same format as the query-param syntax.<br />More info about label selectors: http://kubernetes.io/docs/user-guide/labels#label-selectors |  |  |
+| `replicas` _integer_ | Replicas is the total number of machines targeted by this control plane<br />(their labels match the selector). |  |  |
+| `updatedReplicas` _integer_ | UpdatedReplicas is the total number of machines targeted by this control plane<br />that have the desired template spec. |  |  |
+| `readyReplicas` _integer_ | ReadyReplicas is the total number of fully running and ready control plane machines. |  |  |
+| `unavailableReplicas` _integer_ | UnavailableReplicas is the total number of unavailable machines targeted by this control plane.<br />This is the total number of machines that are still required for the deployment to have 100% available capacity.<br />They may either be machines that are running but not yet ready or machines<br />that still have not been created. |  |  |
 | `initialized` _boolean_ | Initialized denotes that the kink control plane API Server is initialized and thus<br />it can accept requests. |  |  |
 | `ready` _boolean_ | Ready denotes that the kink control plane is ready to serve requests. |  |  |
 
@@ -278,7 +299,6 @@ _Appears in:_
 | `image` _string_ | Image specifies the container image to use. |  |  |
 | `imagePullPolicy` _[PullPolicy](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#pullpolicy-v1-core)_ | Image pull policy. One of Always, Never, IfNotPresent. |  |  |
 | `resources` _[ResourceRequirements](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcerequirements-v1-core)_ | Resources describes the compute resource requirements for the container. |  |  |
-| `replicas` _integer_ | Number of desired pods. Defaults to 1. | 1 | Maximum: 5 <br />Minimum: 1 <br /> |
 | `verbosity` _integer_ | Verbosity specifies the log verbosity level for the container. Valid values range from 0 (silent) to 10 (most verbose). | 4 | Maximum: 10 <br />Minimum: 0 <br /> |
 | `extraArgs` _object (keys:string, values:string)_ | ExtraArgs defines additional arguments to be passed to the container executable. |  |  |
 
@@ -304,7 +324,6 @@ _Appears in:_
 | `image` _string_ | Image specifies the container image to use. |  |  |
 | `imagePullPolicy` _[PullPolicy](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#pullpolicy-v1-core)_ | Image pull policy. One of Always, Never, IfNotPresent. |  |  |
 | `resources` _[ResourceRequirements](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcerequirements-v1-core)_ | Resources describes the compute resource requirements for the container. |  |  |
-| `replicas` _integer_ | Number of desired pods. Defaults to 1. | 1 | Maximum: 5 <br />Minimum: 1 <br /> |
 | `verbosity` _integer_ | Verbosity specifies the log verbosity level for the container. Valid values range from 0 (silent) to 10 (most verbose). | 4 | Maximum: 10 <br />Minimum: 0 <br /> |
 | `extraArgs` _object (keys:string, values:string)_ | ExtraArgs defines additional arguments to be passed to the container executable. |  |  |
 

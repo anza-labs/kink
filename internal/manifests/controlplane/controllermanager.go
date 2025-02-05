@@ -83,8 +83,11 @@ func (b *ControllerManager) Deployment() (*appsv1.Deployment, error) {
 	podAnnotations := manifestutils.PodAnnotations(b.KinkControlPlane, nil)
 
 	ha := false
-	replicas := b.KinkControlPlane.Spec.ControllerManager.Replicas
-	if replicas > 1 {
+	replicas := b.KinkControlPlane.Spec.Replicas
+	if replicas == nil {
+		replicas = ptr.To[int32](1)
+	}
+	if *replicas > 1 {
 		ha = true
 	}
 
@@ -106,7 +109,7 @@ func (b *ControllerManager) Deployment() (*appsv1.Deployment, error) {
 			Selector: &metav1.LabelSelector{
 				MatchLabels: selectorLabels,
 			},
-			Replicas: &replicas,
+			Replicas: replicas,
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels:      labels,

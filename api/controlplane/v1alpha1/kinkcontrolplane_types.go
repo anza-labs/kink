@@ -28,10 +28,17 @@ type KinkControlPlaneSpec struct {
 	// does not start with the v prefix, it must be added.
 	Version string `json:"version"`
 
-	// DNSName specifies the cluster endpoint, most likely backed by Ingress.
-	// +default="localhost"
-	// +kubebuilder:default="localhost"
-	DNSName string `json:"dnsName"`
+	// ControlPlaneEndpoint represents the endpoint used to communicate with the control plane.
+	// +optional
+	ControlPlaneEndpoint APIEndpoint `json:"controlPlaneEndpoint"`
+
+	// Number of desired ControlPlane replicas. Defaults to 1.
+	// +optional
+	// +default=1
+	// +kubebuilder:default=1
+	// +kubebuilder:validation:Minimum=1
+	// +kubebuilder:validation:Maximum=5
+	Replicas *int32 `json:"replicas,omitempty"`
 
 	// ImagePullSecrets is an optional list of references to secrets in the same namespace to use for pulling any of the images used by this PodSpec.
 	// If specified, these secrets will be passed to individual puller implementations for them to use.
@@ -53,6 +60,15 @@ type KinkControlPlaneSpec struct {
 
 	// ControllerManager defines the configuration for the Kubernetes controller manager.
 	ControllerManager ControllerManager `json:"controllerManager"`
+}
+
+// APIEndpoint represents a reachable Kubernetes API endpoint.
+type APIEndpoint struct {
+	// host is the hostname on which the API server is serving.
+	Host string `json:"host"`
+
+	// port is the port on which the API server is serving.
+	Port int32 `json:"port"`
 }
 
 // Kine represents ETCD-shim container.
@@ -96,14 +112,6 @@ type APIServer struct {
 type KubeComponent struct {
 	kinkcorev1alpha1.Container `json:",inline"`
 
-	// Number of desired pods. Defaults to 1.
-	// +optional
-	// +default=1
-	// +kubebuilder:default=1
-	// +kubebuilder:validation:Minimum=1
-	// +kubebuilder:validation:Maximum=5
-	Replicas int32 `json:"replicas,omitempty"`
-
 	// Verbosity specifies the log verbosity level for the container. Valid values range from 0 (silent) to 10 (most verbose).
 	// +optional
 	// +default=4
@@ -123,6 +131,35 @@ type KinkControlPlaneStatus struct {
 	// in the cluster.
 	// +optional
 	Version *string `json:"version,omitempty"`
+
+	// Selector is the label selector in string format to avoid introspection
+	// by clients, and is used to provide the CRD-based integration for the
+	// scale subresource and additional integrations for things like kubectl
+	// describe. The string will be in the same format as the query-param syntax.
+	// More info about label selectors: http://kubernetes.io/docs/user-guide/labels#label-selectors
+	// +optional
+	Selector string `json:"selector,omitempty"`
+
+	// Replicas is the total number of machines targeted by this control plane
+	// (their labels match the selector).
+	// +optional
+	Replicas int32 `json:"replicas"`
+
+	// UpdatedReplicas is the total number of machines targeted by this control plane
+	// that have the desired template spec.
+	// +optional
+	UpdatedReplicas int32 `json:"updatedReplicas"`
+
+	// ReadyReplicas is the total number of fully running and ready control plane machines.
+	// +optional
+	ReadyReplicas int32 `json:"readyReplicas"`
+
+	// UnavailableReplicas is the total number of unavailable machines targeted by this control plane.
+	// This is the total number of machines that are still required for the deployment to have 100% available capacity.
+	// They may either be machines that are running but not yet ready or machines
+	// that still have not been created.
+	// +optional
+	UnavailableReplicas int32 `json:"unavailableReplicas"`
 
 	// Initialized denotes that the kink control plane API Server is initialized and thus
 	// it can accept requests.

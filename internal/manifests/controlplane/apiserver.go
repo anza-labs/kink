@@ -85,7 +85,10 @@ func (b *APIServer) Deployment() (*appsv1.Deployment, error) {
 	annotations := manifestutils.Annotations(b.KinkControlPlane, nil)
 	podAnnotations := manifestutils.PodAnnotations(b.KinkControlPlane, nil)
 
-	replicas := b.KinkControlPlane.Spec.APIServer.Replicas
+	replicas := b.KinkControlPlane.Spec.Replicas
+	if replicas == nil {
+		replicas = ptr.To[int32](1)
+	}
 
 	podSpec := corev1.PodSpec{
 		Affinity:         manifestutils.Affinity(b.KinkControlPlane),
@@ -105,7 +108,7 @@ func (b *APIServer) Deployment() (*appsv1.Deployment, error) {
 			Selector: &metav1.LabelSelector{
 				MatchLabels: selectorLabels,
 			},
-			Replicas: &replicas,
+			Replicas: replicas,
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels:      labels,

@@ -192,7 +192,7 @@ func (b *Certificates) APIServer() *cmv1.Certificate {
 			DNSNames: naming.KubernetesDNSNames(
 				b.KinkControlPlane.Name,
 				b.KinkControlPlane.Namespace,
-				b.KinkControlPlane.Spec.DNSName,
+				b.KinkControlPlane.Spec.ControlPlaneEndpoint.Host,
 			),
 			IPAddresses: []string{"127.0.0.1"},
 		},
@@ -544,7 +544,7 @@ func (b *Certificates) ServiceAccountCertificate() *cmv1.Certificate {
 			DNSNames: naming.KubernetesDNSNames(
 				b.KinkControlPlane.Name,
 				b.KinkControlPlane.Namespace,
-				b.KinkControlPlane.Spec.DNSName,
+				b.KinkControlPlane.Spec.ControlPlaneEndpoint.Host,
 			),
 			IPAddresses: []string{"127.0.0.1"},
 		},

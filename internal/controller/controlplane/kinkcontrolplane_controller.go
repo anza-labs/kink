@@ -16,6 +16,7 @@ package controlplane
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	cmv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
@@ -82,16 +83,7 @@ func (r *KinkControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	}
 
 	// Handle finalizer logic
-	if kinkCP.ObjectMeta.DeletionTimestamp.IsZero() {
-		if !controllerutil.ContainsFinalizer(kinkCP, controlplaneFinalizer) {
-			log.V(3).Info("Adding finalizer")
-			controllerutil.AddFinalizer(kinkCP, controlplaneFinalizer)
-			if err := r.Update(ctx, kinkCP); err != nil {
-				log.Error(err, "Failed to update KinkControlPlane object with finalizer")
-				return ctrl.Result{}, err
-			}
-		}
-	} else {
+	if !kinkCP.ObjectMeta.DeletionTimestamp.IsZero() {
 		if controllerutil.ContainsFinalizer(kinkCP, controlplaneFinalizer) {
 			// Perform cleanup
 			log.V(3).Info("Performing cleanup and removing finalizer")
@@ -108,9 +100,29 @@ func (r *KinkControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		return ctrl.Result{}, nil
 	}
 
-	log.V(2).Info("Starting ControlPlane reconciliation")
-	if err := r.reconcile(ctx, kinkCP); err != nil {
+	log.V(2).Info("Starting owner reconciliation")
+	if err := r.checkOwnership(kinkCP); err != nil {
+		log.Error(err, "Failed to reconcile owner")
+		return ctrl.Result{}, err
+	}
+
+	if !controllerutil.ContainsFinalizer(kinkCP, controlplaneFinalizer) {
+		log.V(3).Info("Adding finalizer")
+		controllerutil.AddFinalizer(kinkCP, controlplaneFinalizer)
+		if err := r.Update(ctx, kinkCP); err != nil {
+			log.Error(err, "Failed to update KinkControlPlane object with finalizer")
+			return ctrl.Result{}, err
+		}
+	}
+
+	log.V(2).Info("Starting ControlPlane resource reconciliation")
+	if err := r.reconcileResources(ctx, kinkCP); err != nil {
 		log.Error(err, "Failed to reconcile resources")
+		return ctrl.Result{}, err
+	}
+
+	if err := r.reconcileStatus(ctx, kinkCP); err != nil {
+		log.Error(err, "Failed to reconcile status")
 		return ctrl.Result{}, err
 	}
 
@@ -118,9 +130,23 @@ func (r *KinkControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	return ctrl.Result{}, nil
 }
 
+func (r *KinkControlPlaneReconciler) checkOwnership(
+	kinkCP *controlplanev1alpha1.KinkControlPlane,
+) error {
+	owners := kinkCP.OwnerReferences
+
+	for _, owner := range owners {
+		if owner.Kind == "Cluster" {
+			return nil
+		}
+	}
+
+	return errors.New("missing OwnerReference from the Cluster controller, waiting for it")
+}
+
 // reconcile ensures that the necessary resources for the given KinkControlPlane
 // are built and applied in the cluster.
-func (r *KinkControlPlaneReconciler) reconcile(
+func (r *KinkControlPlaneReconciler) reconcileResources(
 	ctx context.Context,
 	kinkCP *controlplanev1alpha1.KinkControlPlane,
 ) error {
@@ -189,9 +215,14 @@ func (r *KinkControlPlaneReconciler) reconcile(
 		return fmt.Errorf("failed to ensure secrets: %w", err)
 	}
 
-	// TODO: get status of dependents and set it to KinK Cluster status
-
 	return nil
+}
+
+func (r *KinkControlPlaneReconciler) reconcileStatus(
+	ctx context.Context,
+	kinkCP *controlplanev1alpha1.KinkControlPlane,
+) error {
+	return errors.New("unimplemented")
 }
 
 // GetOwnedResourceTypes returns all the resource types the controller can own.
