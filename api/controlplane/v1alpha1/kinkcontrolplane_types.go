@@ -128,7 +128,7 @@ type KubeComponent struct {
 
 // KinkControlPlaneStatus defines the observed state of KinkControlPlane.
 type KinkControlPlaneStatus struct {
-	// Version represents the minimum Kubernetes version for the control plane machines
+	// Version represents the minimum Kubernetes version for the control plane replicas
 	// in the cluster.
 	// +optional
 	Version *string `json:"version,omitempty"`
@@ -141,26 +141,30 @@ type KinkControlPlaneStatus struct {
 	// +optional
 	Selector string `json:"selector,omitempty"`
 
-	// Replicas is the total number of machines targeted by this control plane
+	// Replicas is the total number of replicas targeted by this control plane
 	// (their labels match the selector).
 	// +optional
 	Replicas int32 `json:"replicas"`
 
-	// UpdatedReplicas is the total number of machines targeted by this control plane
+	// UpdatedReplicas is the total number of replicas targeted by this control plane
 	// that have the desired template spec.
 	// +optional
 	UpdatedReplicas int32 `json:"updatedReplicas"`
 
-	// ReadyReplicas is the total number of fully running and ready control plane machines.
+	// ReadyReplicas is the total number of fully running and ready control plane replicas.
 	// +optional
 	ReadyReplicas int32 `json:"readyReplicas"`
 
-	// UnavailableReplicas is the total number of unavailable machines targeted by this control plane.
-	// This is the total number of machines that are still required for the deployment to have 100% available capacity.
-	// They may either be machines that are running but not yet ready or machines
+	// UnavailableReplicas is the total number of unavailable replicas targeted by this control plane.
+	// This is the total number of replicas that are still required for the deployment to have 100% available capacity.
+	// They may either be replicas that are running but not yet ready or replicas
 	// that still have not been created.
 	// +optional
 	UnavailableReplicas int32 `json:"unavailableReplicas"`
+
+	// Conditions defines current service state of the KinkControlPlane.
+	// +optional
+	Conditions []metav1.Condition `json:"conditions,omitempty"`
 
 	// Initialized denotes that the kink control plane API Server is initialized and thus
 	// it can accept requests.

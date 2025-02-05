@@ -49,6 +49,10 @@ type KinkMachineStatus struct {
 	// Ready denotes that the kink machine infrastructure is fully provisioned.
 	// +optional
 	Ready bool `json:"ready"`
+
+	// Conditions defines current service state of the KinkMachine.
+	// +optional
+	Conditions []metav1.Condition `json:"conditions,omitempty"`
 }
 
 // +kubebuilder:object:root=true

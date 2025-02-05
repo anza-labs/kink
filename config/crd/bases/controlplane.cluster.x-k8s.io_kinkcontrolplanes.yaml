@@ -1391,6 +1391,63 @@ spec:
           status:
             description: KinkControlPlaneStatus defines the observed state of KinkControlPlane.
             properties:
+              conditions:
+                description: Conditions defines current service state of the KinkControlPlane.
+                items:
+                  description: Condition contains details for one aspect of the current
+                    state of this API Resource.
+                  properties:
+                    lastTransitionTime:
+                      description: |-
+                        lastTransitionTime is the last time the condition transitioned from one status to another.
+                        This should be when the underlying condition changed.  If that is not known, then using the time when the API field changed is acceptable.
+                      format: date-time
+                      type: string
+                    message:
+                      description: |-
+                        message is a human readable message indicating details about the transition.
+                        This may be an empty string.
+                      maxLength: 32768
+                      type: string
+                    observedGeneration:
+                      description: |-
+                        observedGeneration represents the .metadata.generation that the condition was set based upon.
+                        For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date
+                        with respect to the current state of the instance.
+                      format: int64
+                      minimum: 0
+                      type: integer
+                    reason:
+                      description: |-
+                        reason contains a programmatic identifier indicating the reason for the condition's last transition.
+                        Producers of specific condition types may define expected values and meanings for this field,
+                        and whether the values are considered a guaranteed API.
+                        The value should be a CamelCase string.
+                        This field may not be empty.
+                      maxLength: 1024
+                      minLength: 1
+                      pattern: ^[A-Za-z]([A-Za-z0-9_,:]*[A-Za-z0-9_])?$
+                      type: string
+                    status:
+                      description: status of the condition, one of True, False, Unknown.
+                      enum:
+                      - "True"
+                      - "False"
+                      - Unknown
+                      type: string
+                    type:
+                      description: type of condition in CamelCase or in foo.example.com/CamelCase.
+                      maxLength: 316
+                      pattern: ^([a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*/)?(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])$
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - message
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
               initialized:
                 description: |-
                   Initialized denotes that the kink control plane API Server is initialized and thus
@@ -1402,12 +1459,12 @@ spec:
                 type: boolean
               readyReplicas:
                 description: ReadyReplicas is the total number of fully running and
-                  ready control plane machines.
+                  ready control plane replicas.
                 format: int32
                 type: integer
               replicas:
                 description: |-
-                  Replicas is the total number of machines targeted by this control plane
+                  Replicas is the total number of replicas targeted by this control plane
                   (their labels match the selector).
                 format: int32
                 type: integer
@@ -1421,21 +1478,21 @@ spec:
                 type: string
               unavailableReplicas:
                 description: |-
-                  UnavailableReplicas is the total number of unavailable machines targeted by this control plane.
-                  This is the total number of machines that are still required for the deployment to have 100% available capacity.
-                  They may either be machines that are running but not yet ready or machines
+                  UnavailableReplicas is the total number of unavailable replicas targeted by this control plane.
+                  This is the total number of replicas that are still required for the deployment to have 100% available capacity.
+                  They may either be replicas that are running but not yet ready or replicas
                   that still have not been created.
                 format: int32
                 type: integer
               updatedReplicas:
                 description: |-
-                  UpdatedReplicas is the total number of machines targeted by this control plane
+                  UpdatedReplicas is the total number of replicas targeted by this control plane
                   that have the desired template spec.
                 format: int32
                 type: integer
               version:
                 description: |-
-                  Version represents the minimum Kubernetes version for the control plane machines
+                  Version represents the minimum Kubernetes version for the control plane replicas
                   in the cluster.
                 type: string
             required:

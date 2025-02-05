@@ -21,6 +21,7 @@ package v1alpha1
 import (
 	corev1alpha1 "github.com/anza-labs/kink/api/core/v1alpha1"
 	"k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
 
@@ -193,6 +194,13 @@ func (in *KinkControlPlaneStatus) DeepCopyInto(out *KinkControlPlaneStatus) {
 		in, out := &in.Version, &out.Version
 		*out = new(string)
 		**out = **in
+	}
+	if in.Conditions != nil {
+		in, out := &in.Conditions, &out.Conditions
+		*out = make([]metav1.Condition, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 }
 

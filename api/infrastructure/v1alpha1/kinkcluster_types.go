@@ -27,6 +27,10 @@ type KinkClusterStatus struct {
 	// Ready denotes that the kink cluster infrastructure is fully provisioned.
 	// +optional
 	Ready bool `json:"ready"`
+
+	// Conditions defines current service state of the KinkCluster.
+	// +optional
+	Conditions []metav1.Condition `json:"conditions,omitempty"`
 }
 
 // +kubebuilder:object:root=true

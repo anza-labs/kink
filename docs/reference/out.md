@@ -183,12 +183,13 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `version` _string_ | Version represents the minimum Kubernetes version for the control plane machines<br />in the cluster. |  |  |
+| `version` _string_ | Version represents the minimum Kubernetes version for the control plane replicas<br />in the cluster. |  |  |
 | `selector` _string_ | Selector is the label selector in string format to avoid introspection<br />by clients, and is used to provide the CRD-based integration for the<br />scale subresource and additional integrations for things like kubectl<br />describe. The string will be in the same format as the query-param syntax.<br />More info about label selectors: http://kubernetes.io/docs/user-guide/labels#label-selectors |  |  |
-| `replicas` _integer_ | Replicas is the total number of machines targeted by this control plane<br />(their labels match the selector). |  |  |
-| `updatedReplicas` _integer_ | UpdatedReplicas is the total number of machines targeted by this control plane<br />that have the desired template spec. |  |  |
-| `readyReplicas` _integer_ | ReadyReplicas is the total number of fully running and ready control plane machines. |  |  |
-| `unavailableReplicas` _integer_ | UnavailableReplicas is the total number of unavailable machines targeted by this control plane.<br />This is the total number of machines that are still required for the deployment to have 100% available capacity.<br />They may either be machines that are running but not yet ready or machines<br />that still have not been created. |  |  |
+| `replicas` _integer_ | Replicas is the total number of replicas targeted by this control plane<br />(their labels match the selector). |  |  |
+| `updatedReplicas` _integer_ | UpdatedReplicas is the total number of replicas targeted by this control plane<br />that have the desired template spec. |  |  |
+| `readyReplicas` _integer_ | ReadyReplicas is the total number of fully running and ready control plane replicas. |  |  |
+| `unavailableReplicas` _integer_ | UnavailableReplicas is the total number of unavailable replicas targeted by this control plane.<br />This is the total number of replicas that are still required for the deployment to have 100% available capacity.<br />They may either be replicas that are running but not yet ready or replicas<br />that still have not been created. |  |  |
+| `conditions` _[Condition](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#condition-v1-meta) array_ | Conditions defines current service state of the KinkControlPlane. |  |  |
 | `initialized` _boolean_ | Initialized denotes that the kink control plane API Server is initialized and thus<br />it can accept requests. |  |  |
 | `ready` _boolean_ | Ready denotes that the kink control plane is ready to serve requests. |  |  |
 
@@ -415,6 +416,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `ready` _boolean_ | Ready denotes that the kink cluster infrastructure is fully provisioned. |  |  |
+| `conditions` _[Condition](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#condition-v1-meta) array_ | Conditions defines current service state of the KinkCluster. |  |  |
 
 
 #### KinkClusterTemplate
@@ -584,6 +586,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `ready` _boolean_ | Ready denotes that the kink machine infrastructure is fully provisioned. |  |  |
+| `conditions` _[Condition](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#condition-v1-meta) array_ | Conditions defines current service state of the KinkMachine. |  |  |
 
 
 #### KinkMachineTemplate
