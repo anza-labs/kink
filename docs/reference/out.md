@@ -162,7 +162,7 @@ _Appears in:_
 | `version` _string_ | Version defines the desired Kubernetes version for the control plane.<br />The value must be a valid semantic version; also if the value provided by the user<br />does not start with the v prefix, it must be added. |  |  |
 | `controlPlaneEndpoint` _[APIEndpoint](#apiendpoint)_ | ControlPlaneEndpoint represents the endpoint used to communicate with the control plane. |  |  |
 | `replicas` _integer_ | Number of desired ControlPlane replicas. Defaults to 1. | 1 | Maximum: 5 <br />Minimum: 1 <br /> |
-| `imagePullSecrets` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#localobjectreference-v1-core) array_ | ImagePullSecrets is an optional list of references to secrets in the same namespace to use for pulling any of the images used by this PodSpec.<br />If specified, these secrets will be passed to individual puller implementations for them to use. |  |  |
+| `imagePullSecrets` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#localobjectreference-v1-core) array_ | ImagePullSecrets is an optional list of references to secrets in the same namespace to use<br />for pulling any of the images used by KinkControlPlane. If specified, these secrets will<br />be passed to individual puller implementations for them to use. |  |  |
 | `affinity` _[Affinity](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#affinity-v1-core)_ | Affinity specifies the scheduling constraints for Pods. |  |  |
 | `apiServer` _[APIServer](#apiserver)_ | APIServer defines the configuration for the Kubernetes API server. |  |  |
 | `kine` _[Kine](#kine)_ | Kine defines the configuration for the Kine component. |  |  |
