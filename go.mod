@@ -7,7 +7,7 @@ toolchain go1.23.6
 require (
 	dario.cat/mergo v1.0.1
 	github.com/Masterminds/semver/v3 v3.3.1
-	github.com/cert-manager/cert-manager v1.16.3
+	github.com/cert-manager/cert-manager v1.17.1
 	github.com/distribution/reference v0.6.0
 	github.com/stretchr/testify v1.10.0
 	k8s.io/api v0.32.2
