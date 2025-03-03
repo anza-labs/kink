@@ -228,7 +228,7 @@ ADDLICENSE_VERSION ?= v1.1.1
 CHAINSAW_VERSION ?= v0.2.12
 
 # renovate: datasource=github-tags depName=kubernetes-sigs/cluster-api
-CLUSTER_API_VERSION ?= v1.9.4
+CLUSTER_API_VERSION ?= v1.9.5
 
 # renovate: datasource=github-tags depName=kubernetes-sigs/controller-tools
 CONTROLLER_TOOLS_VERSION ?= v0.17.2
