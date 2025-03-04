@@ -168,6 +168,7 @@ type KinkControlPlaneStatus struct {
 
 	// Initialized denotes that the kink control plane API Server is initialized and thus
 	// it can accept requests.
+	// +optional
 	Initialized bool `json:"initialized"`
 
 	// Ready denotes that the kink control plane is ready to serve requests.

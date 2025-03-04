@@ -48,6 +48,16 @@
     {
       "customType": "regex",
       "fileMatch": [
+        "kind.yaml$"
+      ],
+      "matchStrings": [
+        "\\s+image:\\s(?<depName>.*?):(?<currentValue>\\S+)"
+      ],
+      "datasourceTemplate": "docker"
+    },
+    {
+      "customType": "regex",
+      "fileMatch": [
         "^Makefile$"
       ],
       "matchStrings": [

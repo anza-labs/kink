@@ -256,9 +256,9 @@ func (b *Certificates) SchedulerCertificate() *cmv1.Certificate {
 			Annotations: annotations,
 		},
 		Spec: cmv1.CertificateSpec{
-			CommonName: "system:kube-controller-manager",
+			CommonName: "system:kube-scheduler",
 			Subject: &cmv1.X509Subject{
-				Organizations: []string{"system:kube-controller-manager"},
+				Organizations: []string{"system:kube-scheduler"},
 			},
 			Duration:    &defaultCertResidualTime,
 			RenewBefore: &defaultRenewBefore,
