@@ -615,10 +615,9 @@
 <p>This software requires Cert Manager to manage SSL/TLS certificates. Cert Manager automates the creation, renewal, and management of certificates within Kubernetes clusters.</p>
 <p>For installation instructions, please visit the official documentation: <a href="https://cert-manager.io/docs/installation/">Cert Manager Installation</a>.</p>
 </div>
-<p>Let me know if you'd like to modify or expand on any details!
 <div class="language-sh highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nv">LATEST</span><span class="o">=</span><span class="s2">&quot;</span><span class="k">$(</span>curl<span class="w"> </span>-s<span class="w"> </span><span class="s1">&#39;https://api.github.com/repos/anza-labs/kink/releases/latest&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-r<span class="w"> </span><span class="s1">&#39;.tag_name&#39;</span><span class="k">)</span><span class="s2">&quot;</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>-k<span class="w"> </span><span class="s2">&quot;https://github.com/anza-labs/kink/?ref=</span><span class="si">${</span><span class="nv">LATEST</span><span class="si">}</span><span class="s2">&quot;</span>
-</span></code></pre></div></p>
+</span></code></pre></div>
 <p>This command:</p>
 <ol>
 <li>Fetches the latest release tag using the GitHub API.</li>
