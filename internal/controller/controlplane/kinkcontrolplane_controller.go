@@ -38,7 +38,7 @@ import (
 
 const (
 	// controlplaneFinalizer is name of control plane finalizer.
-	controlplaneFinalizer = "control-plane.kink.anza-labs.com/finalizer"
+	controlplaneFinalizer = "control-plane.kink.anza-labs.dev/finalizer"
 )
 
 // KinkControlPlaneReconciler reconciles a KinkControlPlane object.

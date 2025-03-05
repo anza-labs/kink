@@ -35,7 +35,7 @@ import (
 
 const (
 	// machineFinalizer is name of machine finalizer.
-	machineFinalizer = "machine.kink.anza-labs.com/finalizer"
+	machineFinalizer = "machine.kink.anza-labs.dev/finalizer"
 )
 
 // KinkMachineReconciler reconciles a KinkMachine object.

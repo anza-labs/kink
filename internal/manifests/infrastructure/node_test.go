@@ -116,8 +116,8 @@ func TestNode(t *testing.T) {
 		// validate
 		assert.Equal(t, expected.ObjectMeta.Name, actual.ObjectMeta.Name)
 		assert.Equal(t, expected.ObjectMeta.Namespace, actual.ObjectMeta.Namespace)
-		require.Contains(t, actual.Labels, "kink.anza-labs.com/node-port-range")
-		assert.Equal(t, actual.Labels["kink.anza-labs.com/node-port-range"], "30000-32767")
+		require.Contains(t, actual.Labels, "kink.anza-labs.dev/node-port-range")
+		assert.Equal(t, actual.Labels["kink.anza-labs.dev/node-port-range"], "30000-32767")
 		assert.Equal(t, expected.Spec, actual.Spec)
 	})
 }

@@ -32,7 +32,7 @@ import (
 
 const (
 	// clusterFinalizer is name of cluster finalizer.
-	clusterFinalizer = "cluster.kink.anza-labs.com/finalizer"
+	clusterFinalizer = "cluster.kink.anza-labs.dev/finalizer"
 )
 
 // KinkClusterReconciler reconciles a KinkCluster object.

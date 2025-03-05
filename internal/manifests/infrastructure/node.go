@@ -38,7 +38,7 @@ const (
 )
 
 var extraServiceLabels = map[string]string{
-	"kink.anza-labs.com/node-port-range": "30000-32767",
+	"kink.anza-labs.dev/node-port-range": "30000-32767",
 }
 
 type Node struct {

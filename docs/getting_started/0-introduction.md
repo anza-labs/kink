@@ -12,7 +12,6 @@ To install the `kink`, run the following commands. This will ensure you're alway
 
     For installation instructions, please visit the official documentation: [Cert Manager Installation](https://cert-manager.io/docs/installation/).
 
-Let me know if you'd like to modify or expand on any details!
 ```sh
 LATEST="$(curl -s 'https://api.github.com/repos/anza-labs/kink/releases/latest' | jq -r '.tag_name')"
 kubectl apply -k "https://github.com/anza-labs/kink/?ref=${LATEST}"
@@ -21,6 +20,6 @@ kubectl apply -k "https://github.com/anza-labs/kink/?ref=${LATEST}"
 This command:
 
 1. Fetches the latest release tag using the GitHub API.
-1. Applies the corresponding version of the `kink` to your Kubernetes cluster using `kubectl`.
+2. Applies the corresponding version of the `kink` to your Kubernetes cluster using `kubectl`.
 
 Once installed, the operator will begin monitoring the appropriate resources in your cluster based on the CRDs defined.
