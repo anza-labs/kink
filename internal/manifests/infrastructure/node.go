@@ -56,7 +56,7 @@ func (b *Node) Pod() *corev1.Pod {
 
 	image := b.KinkMachine.Spec.Image
 	if image == "" {
-		image = version.NodeBase()
+		image = version.NodeVM()
 	}
 
 	dataVolume := corev1.Volume{Name: "data"}
@@ -101,7 +101,7 @@ func (b *Node) Service() *corev1.Service {
 
 	image := b.KinkMachine.Spec.Image
 	if image == "" {
-		image = version.NodeBase()
+		image = version.NodeVM()
 	}
 
 	labels := manifestutils.Labels(

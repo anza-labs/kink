@@ -127,7 +127,7 @@ func Scheduler() string {
 	return scheduler
 }
 
-func NodeBase() string {
+func NodeVM() string {
 	return nodeVM
 }
 

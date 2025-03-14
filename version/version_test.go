@@ -24,6 +24,6 @@ func TestSmoke(t *testing.T) {
 	assert.Regexp(t, "^registry.k8s.io/kube-apiserver:v.+$", APIServer())
 	assert.Regexp(t, "^registry.k8s.io/kube-controller-manager:v.+$", ControllerManager())
 	assert.Regexp(t, "^registry.k8s.io/kube-scheduler:v.+$", Scheduler())
-	assert.Regexp(t, "^docker.io/kindest/base:v.+$", NodeBase())
+	assert.Regexp(t, "^ghcr.io/anza-labs/library/firecracker:v.+$", NodeVM())
 	assert.Regexp(t, "^ghcr.io/anza-labs/library/kine:.+$", Kine())
 }
