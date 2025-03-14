@@ -22,7 +22,6 @@ import (
 
 	infrastructurev1alpha1 "github.com/anza-labs/kink/api/infrastructure/v1alpha1"
 
-	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -51,7 +50,7 @@ func TestNode(t *testing.T) {
 
 		for name, tc := range map[string]struct {
 			km       *infrastructurev1alpha1.KinkMachine
-			expected *appsv1.StatefulSet
+			expected *corev1.Pod
 		}{} {
 			t.Run(name, func(t *testing.T) {
 				t.Parallel()
@@ -60,7 +59,7 @@ func TestNode(t *testing.T) {
 				node := (&Node{KinkMachine: tc.km})
 
 				// test
-				actual := node.StatefulSet()
+				actual := node.Pod()
 
 				// validate
 				assert.Equal(t, tc.expected, actual)

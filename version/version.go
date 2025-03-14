@@ -33,7 +33,7 @@ var (
 	apiServer         string
 	controllerManager string
 	scheduler         string
-	nodeBase          string
+	nodeVM            string
 	kine              string
 )
 
@@ -49,7 +49,7 @@ func init() {
 	apiServer = initAPIServer(vals.APIServer.Image)
 	controllerManager = initControllerManager(vals.ControllerManager.Image)
 	scheduler = initScheduler(vals.Scheduler.Image)
-	nodeBase = initNodeBase(vals.NodeBase.Image)
+	nodeVM = initNodeVM(vals.NodeVM.Image)
 	kine = initKine(vals.Kine.Image)
 
 }
@@ -92,7 +92,7 @@ func initScheduler(image values.Image) string {
 	return fmt.Sprintf("%s/%s:%s", registry, repository, tag)
 }
 
-func initNodeBase(image values.Image) string {
+func initNodeVM(image values.Image) string {
 	registry := image.Registry
 	if registry == "" {
 		registry = dockerRegistry
@@ -128,7 +128,7 @@ func Scheduler() string {
 }
 
 func NodeBase() string {
-	return nodeBase
+	return nodeVM
 }
 
 func Kine() string {

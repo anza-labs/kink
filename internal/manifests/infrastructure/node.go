@@ -22,11 +22,9 @@ import (
 	"github.com/anza-labs/kink/internal/naming"
 	"github.com/anza-labs/kink/version"
 
-	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -48,12 +46,12 @@ type Node struct {
 func (b *Node) Build() []client.Object {
 	objects := []client.Object{
 		b.Service(),
-		b.StatefulSet(),
+		b.Pod(),
 	}
 	return objects
 }
 
-func (b *Node) StatefulSet() *appsv1.StatefulSet {
+func (b *Node) Pod() *corev1.Pod {
 	name := naming.Node(b.KinkMachine.Name)
 
 	image := b.KinkMachine.Spec.Image
@@ -80,37 +78,22 @@ func (b *Node) StatefulSet() *appsv1.StatefulSet {
 		name, image, ComponentNode, ConceptInfra,
 		nil,
 	)
-	selectorLabels := manifestutils.SelectorLabels(b.KinkMachine.ObjectMeta, ComponentNode, ConceptInfra)
 	annotations := manifestutils.Annotations(b.KinkMachine, nil)
-	podAnnotations := manifestutils.PodAnnotations(b.KinkMachine, nil)
 
-	podSpec := corev1.PodSpec{
-		Affinity:         manifestutils.Affinity(b.KinkMachine),
-		Containers:       []corev1.Container{b.container(image)},
-		Volumes:          []corev1.Volume{dataVolume},
-		ImagePullSecrets: b.KinkMachine.Spec.ImagePullSecrets,
-	}
-
-	return &appsv1.StatefulSet{
+	return &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        name,
 			Namespace:   b.KinkMachine.Namespace,
 			Labels:      labels,
 			Annotations: annotations,
 		},
-		Spec: appsv1.StatefulSetSpec{
-			Selector: &metav1.LabelSelector{
-				MatchLabels: selectorLabels,
-			},
-			Replicas: ptr.To[int32](1),
-			Template: corev1.PodTemplateSpec{
-				ObjectMeta: metav1.ObjectMeta{
-					Labels:      labels,
-					Annotations: podAnnotations,
-				},
-				Spec: podSpec,
-			},
-		}}
+		Spec: corev1.PodSpec{
+			Affinity:         manifestutils.Affinity(b.KinkMachine),
+			Containers:       []corev1.Container{b.container(image)},
+			Volumes:          []corev1.Volume{dataVolume},
+			ImagePullSecrets: b.KinkMachine.Spec.ImagePullSecrets,
+		},
+	}
 }
 
 func (b *Node) Service() *corev1.Service {

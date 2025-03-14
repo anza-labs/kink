@@ -28,6 +28,6 @@ type Values struct {
 	APIServer         Config `yaml:"apiServer"`
 	ControllerManager Config `yaml:"controllerManager"`
 	Scheduler         Config `yaml:"scheduler"`
-	NodeBase          Config `yaml:"nodeBase"`
+	NodeVM            Config `yaml:"nodeVM"`
 	Kine              Config `yaml:"kine"`
 }

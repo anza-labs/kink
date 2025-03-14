@@ -10,13 +10,13 @@
   <img src="assets/kink.png" width="256p"/>
 </p>
 
-| Component               | Image                                     | Mode        |
-| ----------------------- | ----------------------------------------- | ----------- |
-| ETCD                    | `ghcr.io/anza-labs/library/kine`          | Deployment  |
-| Kube Scheduler          | `registry.k8s.io/kube-scheduler`          | Deployment  |
-| Kube API-Server         | `registry.k8s.io/kube-apiserver`          | Deployment  |
-| Kube Controller Manager | `registry.k8s.io/kube-controller-manager` | Deployment  |
-| Node                    | `docker.io/kindest/base`                  | StatefulSet |
+| Component               | Image                                     | Mode       |
+| ----------------------- | ----------------------------------------- | ---------- |
+| Kube Scheduler          | `registry.k8s.io/kube-scheduler`          | Deployment |
+| Kube API-Server         | `registry.k8s.io/kube-apiserver`          | Deployment |
+| Kube Controller Manager | `registry.k8s.io/kube-controller-manager` | Deployment |
+| ETCD                    | `ghcr.io/anza-labs/library/kine`          | Deployment |
+| Node                    | `ghcr.io/anza-labs/library/firecracker`   | Pod        |
 
 ```yaml
 kubectl apply -f - <<EOF
