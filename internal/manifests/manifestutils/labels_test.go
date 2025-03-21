@@ -50,12 +50,12 @@ func TestLabels(t *testing.T) {
 		labels := Labels(objectMeta, instanceName, image, "instance", "concept", []string{})
 
 		// validate
-		assert.Equal(t, "kink", labels["app.kubernetes.io/managed-by"])
-		assert.Equal(t, "my-ns.my-instance", labels["app.kubernetes.io/instance"])
-		assert.Equal(t, "v1.31.5", labels["app.kubernetes.io/version"])
-		assert.Equal(t, "concept", labels["app.kubernetes.io/part-of"])
-		assert.Equal(t, "instance", labels["app.kubernetes.io/component"])
-		assert.Equal(t, "my-instance", labels["cluster.x-k8s.io/cluster-name"])
+		assert.Equal(t, "kink", labels[LabelManagedBy])
+		assert.Equal(t, "my-ns.my-instance", labels[LabelInstance])
+		assert.Equal(t, "v1.31.5", labels[LabelVersion])
+		assert.Equal(t, "concept", labels[LabelPartOf])
+		assert.Equal(t, "instance", labels[LabelComponent])
+		assert.Equal(t, "my-instance", labels[LabelClusterName])
 	})
 
 	t.Run("Sha256Set", func(t *testing.T) {
@@ -72,12 +72,12 @@ func TestLabels(t *testing.T) {
 		labels := Labels(objectMeta, instanceName, image, "instance", "concept", []string{})
 
 		// validate
-		assert.Equal(t, "kink", labels["app.kubernetes.io/managed-by"])
-		assert.Equal(t, "my-ns.my-instance", labels["app.kubernetes.io/instance"])
-		assert.Equal(t, "ac0192b549007e22998eb74e8d8488dcfe70f1489520c3b144a6047ac5efbe9", labels["app.kubernetes.io/version"])
-		assert.Equal(t, "concept", labels["app.kubernetes.io/part-of"])
-		assert.Equal(t, "instance", labels["app.kubernetes.io/component"])
-		assert.Equal(t, "my-instance", labels["cluster.x-k8s.io/cluster-name"])
+		assert.Equal(t, "kink", labels[LabelManagedBy])
+		assert.Equal(t, "my-ns.my-instance", labels[LabelInstance])
+		assert.Equal(t, "ac0192b549007e22998eb74e8d8488dcfe70f1489520c3b144a6047ac5efbe9", labels[LabelVersion])
+		assert.Equal(t, "concept", labels[LabelPartOf])
+		assert.Equal(t, "instance", labels[LabelComponent])
+		assert.Equal(t, "my-instance", labels[LabelClusterName])
 	})
 
 	t.Run("TagSha256Set", func(t *testing.T) {
@@ -94,12 +94,12 @@ func TestLabels(t *testing.T) {
 		labels := Labels(objectMeta, instanceName, image, "instance", "concept", []string{})
 
 		// validate
-		assert.Equal(t, "kink", labels["app.kubernetes.io/managed-by"])
-		assert.Equal(t, "my-ns.my-instance", labels["app.kubernetes.io/instance"])
-		assert.Equal(t, "v1.31.5", labels["app.kubernetes.io/version"])
-		assert.Equal(t, "concept", labels["app.kubernetes.io/part-of"])
-		assert.Equal(t, "instance", labels["app.kubernetes.io/component"])
-		assert.Equal(t, "my-instance", labels["cluster.x-k8s.io/cluster-name"])
+		assert.Equal(t, "kink", labels[LabelManagedBy])
+		assert.Equal(t, "my-ns.my-instance", labels[LabelInstance])
+		assert.Equal(t, "v1.31.5", labels[LabelVersion])
+		assert.Equal(t, "concept", labels[LabelPartOf])
+		assert.Equal(t, "instance", labels[LabelComponent])
+		assert.Equal(t, "my-instance", labels[LabelClusterName])
 	})
 
 	t.Run("TagUnset", func(t *testing.T) {
@@ -116,12 +116,12 @@ func TestLabels(t *testing.T) {
 		labels := Labels(objectMeta, instanceName, image, "instance", "concept", []string{})
 
 		// validate
-		assert.Equal(t, "kink", labels["app.kubernetes.io/managed-by"])
-		assert.Equal(t, "my-ns.my-instance", labels["app.kubernetes.io/instance"])
-		assert.Equal(t, "latest", labels["app.kubernetes.io/version"])
-		assert.Equal(t, "concept", labels["app.kubernetes.io/part-of"])
-		assert.Equal(t, "instance", labels["app.kubernetes.io/component"])
-		assert.Equal(t, "my-instance", labels["cluster.x-k8s.io/cluster-name"])
+		assert.Equal(t, "kink", labels[LabelManagedBy])
+		assert.Equal(t, "my-ns.my-instance", labels[LabelInstance])
+		assert.Equal(t, "latest", labels[LabelVersion])
+		assert.Equal(t, "concept", labels[LabelPartOf])
+		assert.Equal(t, "instance", labels[LabelComponent])
+		assert.Equal(t, "my-instance", labels[LabelClusterName])
 	})
 
 	t.Run("PropagateDown", func(t *testing.T) {

@@ -29,6 +29,15 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+const (
+	LabelComponent   = "app.kubernetes.io/component"
+	LabelVersion     = "app.kubernetes.io/version"
+	LabelManagedBy   = "app.kubernetes.io/managed-by"
+	LabelInstance    = "app.kubernetes.io/instance"
+	LabelPartOf      = "app.kubernetes.io/part-of"
+	LabelClusterName = "cluster.x-k8s.io/cluster-name"
+)
+
 func IsFilteredSet(sourceSet string, filterSet []string) bool {
 	for _, basePattern := range filterSet {
 		pattern, _ := regexp.Compile(basePattern)
@@ -71,11 +80,11 @@ func Labels(
 	}
 	switch lenVersion := len(version); lenVersion {
 	case 3:
-		base["app.kubernetes.io/version"] = versionLabel
+		base[LabelVersion] = versionLabel
 	case 2:
-		base["app.kubernetes.io/version"] = naming.Truncate("%s", 63, version[len(version)-1])
+		base[LabelVersion] = naming.Truncate("%s", 63, version[len(version)-1])
 	default:
-		base["app.kubernetes.io/version"] = "latest"
+		base[LabelVersion] = "latest"
 	}
 
 	// Don't override the app name if it already exists
@@ -90,11 +99,11 @@ func Labels(
 // expected to be modified for the lifetime of the object.
 func SelectorLabels(instance metav1.ObjectMeta, component, concept string) map[string]string {
 	return map[string]string{
-		"app.kubernetes.io/managed-by":  "kink",
-		"app.kubernetes.io/instance":    naming.Truncate("%s.%s", 63, instance.Namespace, instance.Name),
-		"app.kubernetes.io/part-of":     concept,
-		"app.kubernetes.io/component":   component,
-		"cluster.x-k8s.io/cluster-name": instance.Name,
+		LabelManagedBy:   "kink",
+		LabelInstance:    naming.Truncate("%s.%s", 63, instance.Namespace, instance.Name),
+		LabelPartOf:      concept,
+		LabelComponent:   component,
+		LabelClusterName: instance.Name,
 	}
 }
 

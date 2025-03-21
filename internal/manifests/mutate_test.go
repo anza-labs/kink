@@ -21,6 +21,7 @@ package manifests
 import (
 	"testing"
 
+	"github.com/anza-labs/kink/internal/manifests/manifestutils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -985,17 +986,17 @@ func TestMutateStatefulSetArgs(t *testing.T) {
 
 func TestNoImmutableLabelChange(t *testing.T) {
 	existingSelectorLabels := map[string]string{
-		"app.kubernetes.io/component":  "test-component",
-		"app.kubernetes.io/instance":   "default.deployment",
-		"app.kubernetes.io/managed-by": "test-operator",
-		"app.kubernetes.io/part-of":    "test",
+		manifestutils.LabelComponent: "test-component",
+		manifestutils.LabelInstance:  "default.deployment",
+		manifestutils.LabelManagedBy: "test-operator",
+		manifestutils.LabelPartOf:    "test",
 	}
 	desiredLabels := map[string]string{
-		"app.kubernetes.io/component":  "test-component",
-		"app.kubernetes.io/instance":   "default.deployment",
-		"app.kubernetes.io/managed-by": "test-operator",
-		"app.kubernetes.io/part-of":    "test",
-		"extra-label":                  "true",
+		manifestutils.LabelComponent: "test-component",
+		manifestutils.LabelInstance:  "default.deployment",
+		manifestutils.LabelManagedBy: "test-operator",
+		manifestutils.LabelPartOf:    "test",
+		"extra-label":                "true",
 	}
 	err := hasImmutableLabelChange(existingSelectorLabels, desiredLabels)
 	require.NoError(t, err)
@@ -1004,16 +1005,16 @@ func TestNoImmutableLabelChange(t *testing.T) {
 
 func TestHasImmutableLabelChange(t *testing.T) {
 	existingSelectorLabels := map[string]string{
-		"app.kubernetes.io/component":  "test-component",
-		"app.kubernetes.io/instance":   "default.deployment",
-		"app.kubernetes.io/managed-by": "test-operator",
-		"app.kubernetes.io/part-of":    "test",
+		manifestutils.LabelComponent: "test-component",
+		manifestutils.LabelInstance:  "default.deployment",
+		manifestutils.LabelManagedBy: "test-operator",
+		manifestutils.LabelPartOf:    "test",
 	}
 	desiredLabels := map[string]string{
-		"app.kubernetes.io/component":  "test-component",
-		"app.kubernetes.io/instance":   "default.deployment",
-		"app.kubernetes.io/managed-by": "test-operator",
-		"app.kubernetes.io/part-of":    "not-test",
+		manifestutils.LabelComponent: "test-component",
+		manifestutils.LabelInstance:  "default.deployment",
+		manifestutils.LabelManagedBy: "test-operator",
+		manifestutils.LabelPartOf:    "not-test",
 	}
 	err := hasImmutableLabelChange(existingSelectorLabels, desiredLabels)
 	assert.Error(t, err)
@@ -1021,15 +1022,15 @@ func TestHasImmutableLabelChange(t *testing.T) {
 
 func TestMissingImmutableLabelChange(t *testing.T) {
 	existingSelectorLabels := map[string]string{
-		"app.kubernetes.io/component":  "test-component",
-		"app.kubernetes.io/instance":   "default.deployment",
-		"app.kubernetes.io/managed-by": "test-operator",
-		"app.kubernetes.io/part-of":    "test",
+		manifestutils.LabelComponent: "test-component",
+		manifestutils.LabelInstance:  "default.deployment",
+		manifestutils.LabelManagedBy: "test-operator",
+		manifestutils.LabelPartOf:    "test",
 	}
 	desiredLabels := map[string]string{
-		"app.kubernetes.io/component":  "test-component",
-		"app.kubernetes.io/instance":   "default.deployment",
-		"app.kubernetes.io/managed-by": "test-operator",
+		manifestutils.LabelComponent: "test-component",
+		manifestutils.LabelInstance:  "default.deployment",
+		manifestutils.LabelManagedBy: "test-operator",
 	}
 	err := hasImmutableLabelChange(existingSelectorLabels, desiredLabels)
 	assert.Error(t, err)
@@ -1051,19 +1052,19 @@ func TestMutateDeploymentError(t *testing.T) {
 				Spec: appsv1.DeploymentSpec{
 					Selector: &metav1.LabelSelector{
 						MatchLabels: map[string]string{
-							"app.kubernetes.io/component":  "test-component",
-							"app.kubernetes.io/instance":   "default.deployment",
-							"app.kubernetes.io/managed-by": "test-operator",
-							"app.kubernetes.io/part-of":    "test",
+							manifestutils.LabelComponent: "test-component",
+							manifestutils.LabelInstance:  "default.deployment",
+							manifestutils.LabelManagedBy: "test-operator",
+							manifestutils.LabelPartOf:    "test",
 						},
 					},
 					Template: corev1.PodTemplateSpec{
 						ObjectMeta: metav1.ObjectMeta{
 							Labels: map[string]string{
-								"app.kubernetes.io/component":  "test-component",
-								"app.kubernetes.io/instance":   "default.deployment",
-								"app.kubernetes.io/managed-by": "test-operator",
-								"app.kubernetes.io/part-of":    "test",
+								manifestutils.LabelComponent: "test-component",
+								manifestutils.LabelInstance:  "default.deployment",
+								manifestutils.LabelManagedBy: "test-operator",
+								manifestutils.LabelPartOf:    "test",
 							},
 						},
 						Spec: corev1.PodSpec{
@@ -1084,19 +1085,19 @@ func TestMutateDeploymentError(t *testing.T) {
 				Spec: appsv1.DeploymentSpec{
 					Selector: &metav1.LabelSelector{
 						MatchLabels: map[string]string{
-							"app.kubernetes.io/component":  "test-component",
-							"app.kubernetes.io/instance":   "default.deployment",
-							"app.kubernetes.io/managed-by": "test-operator",
-							"app.kubernetes.io/part-of":    "test",
+							manifestutils.LabelComponent: "test-component",
+							manifestutils.LabelInstance:  "default.deployment",
+							manifestutils.LabelManagedBy: "test-operator",
+							manifestutils.LabelPartOf:    "test",
 						},
 					},
 					Template: corev1.PodTemplateSpec{
 						ObjectMeta: metav1.ObjectMeta{
 							Labels: map[string]string{
-								"app.kubernetes.io/component":  "test-component",
-								"app.kubernetes.io/instance":   "default.deployment",
-								"app.kubernetes.io/managed-by": "test-operator",
-								"app.kubernetes.io/part-of":    "not-test",
+								manifestutils.LabelComponent: "test-component",
+								manifestutils.LabelInstance:  "default.deployment",
+								manifestutils.LabelManagedBy: "test-operator",
+								manifestutils.LabelPartOf:    "not-test",
 							},
 						},
 						Spec: corev1.PodSpec{
@@ -1121,19 +1122,19 @@ func TestMutateDeploymentError(t *testing.T) {
 				Spec: appsv1.DeploymentSpec{
 					Selector: &metav1.LabelSelector{
 						MatchLabels: map[string]string{
-							"app.kubernetes.io/component":  "test-component",
-							"app.kubernetes.io/instance":   "default.deployment",
-							"app.kubernetes.io/managed-by": "test-operator",
-							"app.kubernetes.io/part-of":    "test",
+							manifestutils.LabelComponent: "test-component",
+							manifestutils.LabelInstance:  "default.deployment",
+							manifestutils.LabelManagedBy: "test-operator",
+							manifestutils.LabelPartOf:    "test",
 						},
 					},
 					Template: corev1.PodTemplateSpec{
 						ObjectMeta: metav1.ObjectMeta{
 							Labels: map[string]string{
-								"app.kubernetes.io/component":  "test-component",
-								"app.kubernetes.io/instance":   "default.deployment",
-								"app.kubernetes.io/managed-by": "test-operator",
-								"app.kubernetes.io/part-of":    "test",
+								manifestutils.LabelComponent: "test-component",
+								manifestutils.LabelInstance:  "default.deployment",
+								manifestutils.LabelManagedBy: "test-operator",
+								manifestutils.LabelPartOf:    "test",
 							},
 						},
 						Spec: corev1.PodSpec{
@@ -1154,19 +1155,19 @@ func TestMutateDeploymentError(t *testing.T) {
 				Spec: appsv1.DeploymentSpec{
 					Selector: &metav1.LabelSelector{
 						MatchLabels: map[string]string{
-							"app.kubernetes.io/component":  "test-component",
-							"app.kubernetes.io/instance":   "default.deployment",
-							"app.kubernetes.io/managed-by": "test-operator",
-							"app.kubernetes.io/part-of":    "not-test",
+							manifestutils.LabelComponent: "test-component",
+							manifestutils.LabelInstance:  "default.deployment",
+							manifestutils.LabelManagedBy: "test-operator",
+							manifestutils.LabelPartOf:    "not-test",
 						},
 					},
 					Template: corev1.PodTemplateSpec{
 						ObjectMeta: metav1.ObjectMeta{
 							Labels: map[string]string{
-								"app.kubernetes.io/component":  "test-component",
-								"app.kubernetes.io/instance":   "default.deployment",
-								"app.kubernetes.io/managed-by": "test-operator",
-								"app.kubernetes.io/part-of":    "test",
+								manifestutils.LabelComponent: "test-component",
+								manifestutils.LabelInstance:  "default.deployment",
+								manifestutils.LabelManagedBy: "test-operator",
+								manifestutils.LabelPartOf:    "test",
 							},
 						},
 						Spec: corev1.PodSpec{
@@ -1208,19 +1209,19 @@ func TestMutateStatefulSetError(t *testing.T) {
 				Spec: appsv1.StatefulSetSpec{
 					Selector: &metav1.LabelSelector{
 						MatchLabels: map[string]string{
-							"app.kubernetes.io/component":  "test-component",
-							"app.kubernetes.io/instance":   "default.statefulset",
-							"app.kubernetes.io/managed-by": "test-operator",
-							"app.kubernetes.io/part-of":    "test",
+							manifestutils.LabelComponent: "test-component",
+							manifestutils.LabelInstance:  "default.statefulset",
+							manifestutils.LabelManagedBy: "test-operator",
+							manifestutils.LabelPartOf:    "test",
 						},
 					},
 					Template: corev1.PodTemplateSpec{
 						ObjectMeta: metav1.ObjectMeta{
 							Labels: map[string]string{
-								"app.kubernetes.io/component":  "test-component",
-								"app.kubernetes.io/instance":   "default.statefulset",
-								"app.kubernetes.io/managed-by": "test-operator",
-								"app.kubernetes.io/part-of":    "test",
+								manifestutils.LabelComponent: "test-component",
+								manifestutils.LabelInstance:  "default.statefulset",
+								manifestutils.LabelManagedBy: "test-operator",
+								manifestutils.LabelPartOf:    "test",
 							},
 						},
 						Spec: corev1.PodSpec{
@@ -1241,19 +1242,19 @@ func TestMutateStatefulSetError(t *testing.T) {
 				Spec: appsv1.StatefulSetSpec{
 					Selector: &metav1.LabelSelector{
 						MatchLabels: map[string]string{
-							"app.kubernetes.io/component":  "test-component",
-							"app.kubernetes.io/instance":   "default.statefulset",
-							"app.kubernetes.io/managed-by": "test-operator",
-							"app.kubernetes.io/part-of":    "test",
+							manifestutils.LabelComponent: "test-component",
+							manifestutils.LabelInstance:  "default.statefulset",
+							manifestutils.LabelManagedBy: "test-operator",
+							manifestutils.LabelPartOf:    "test",
 						},
 					},
 					Template: corev1.PodTemplateSpec{
 						ObjectMeta: metav1.ObjectMeta{
 							Labels: map[string]string{
-								"app.kubernetes.io/component":  "test-component",
-								"app.kubernetes.io/instance":   "default.statefulset",
-								"app.kubernetes.io/managed-by": "test-operator",
-								"app.kubernetes.io/part-of":    "not-test",
+								manifestutils.LabelComponent: "test-component",
+								manifestutils.LabelInstance:  "default.statefulset",
+								manifestutils.LabelManagedBy: "test-operator",
+								manifestutils.LabelPartOf:    "not-test",
 							},
 						},
 						Spec: corev1.PodSpec{
@@ -1278,19 +1279,19 @@ func TestMutateStatefulSetError(t *testing.T) {
 				Spec: appsv1.StatefulSetSpec{
 					Selector: &metav1.LabelSelector{
 						MatchLabels: map[string]string{
-							"app.kubernetes.io/component":  "test-component",
-							"app.kubernetes.io/instance":   "default.statefulset",
-							"app.kubernetes.io/managed-by": "test-operator",
-							"app.kubernetes.io/part-of":    "test",
+							manifestutils.LabelComponent: "test-component",
+							manifestutils.LabelInstance:  "default.statefulset",
+							manifestutils.LabelManagedBy: "test-operator",
+							manifestutils.LabelPartOf:    "test",
 						},
 					},
 					Template: corev1.PodTemplateSpec{
 						ObjectMeta: metav1.ObjectMeta{
 							Labels: map[string]string{
-								"app.kubernetes.io/component":  "test-component",
-								"app.kubernetes.io/instance":   "default.statefulset",
-								"app.kubernetes.io/managed-by": "test-operator",
-								"app.kubernetes.io/part-of":    "test",
+								manifestutils.LabelComponent: "test-component",
+								manifestutils.LabelInstance:  "default.statefulset",
+								manifestutils.LabelManagedBy: "test-operator",
+								manifestutils.LabelPartOf:    "test",
 							},
 						},
 						Spec: corev1.PodSpec{
@@ -1311,19 +1312,19 @@ func TestMutateStatefulSetError(t *testing.T) {
 				Spec: appsv1.StatefulSetSpec{
 					Selector: &metav1.LabelSelector{
 						MatchLabels: map[string]string{
-							"app.kubernetes.io/component":  "test-component",
-							"app.kubernetes.io/instance":   "default.statefulset",
-							"app.kubernetes.io/managed-by": "test-operator",
-							"app.kubernetes.io/part-of":    "not-test",
+							manifestutils.LabelComponent: "test-component",
+							manifestutils.LabelInstance:  "default.statefulset",
+							manifestutils.LabelManagedBy: "test-operator",
+							manifestutils.LabelPartOf:    "not-test",
 						},
 					},
 					Template: corev1.PodTemplateSpec{
 						ObjectMeta: metav1.ObjectMeta{
 							Labels: map[string]string{
-								"app.kubernetes.io/component":  "test-component",
-								"app.kubernetes.io/instance":   "default.statefulset",
-								"app.kubernetes.io/managed-by": "test-operator",
-								"app.kubernetes.io/part-of":    "test",
+								manifestutils.LabelComponent: "test-component",
+								manifestutils.LabelInstance:  "default.statefulset",
+								manifestutils.LabelManagedBy: "test-operator",
+								manifestutils.LabelPartOf:    "test",
 							},
 						},
 						Spec: corev1.PodSpec{
@@ -1365,20 +1366,20 @@ func TestMutateDeploymentLabelChange(t *testing.T) {
 				Spec: appsv1.DeploymentSpec{
 					Selector: &metav1.LabelSelector{
 						MatchLabels: map[string]string{
-							"app.kubernetes.io/component":  "test-component",
-							"app.kubernetes.io/instance":   "default.deployment",
-							"app.kubernetes.io/managed-by": "test-operator",
-							"app.kubernetes.io/part-of":    "test",
+							manifestutils.LabelComponent: "test-component",
+							manifestutils.LabelInstance:  "default.deployment",
+							manifestutils.LabelManagedBy: "test-operator",
+							manifestutils.LabelPartOf:    "test",
 						},
 					},
 					Template: corev1.PodTemplateSpec{
 						ObjectMeta: metav1.ObjectMeta{
 							Labels: map[string]string{
-								"app.kubernetes.io/component":  "test-component",
-								"app.kubernetes.io/instance":   "default.deployment",
-								"app.kubernetes.io/managed-by": "test-operator",
-								"app.kubernetes.io/part-of":    "test",
-								"user-label":                   "existing",
+								manifestutils.LabelComponent: "test-component",
+								manifestutils.LabelInstance:  "default.deployment",
+								manifestutils.LabelManagedBy: "test-operator",
+								manifestutils.LabelPartOf:    "test",
+								"user-label":                 "existing",
 							},
 						},
 						Spec: corev1.PodSpec{
@@ -1399,20 +1400,20 @@ func TestMutateDeploymentLabelChange(t *testing.T) {
 				Spec: appsv1.DeploymentSpec{
 					Selector: &metav1.LabelSelector{
 						MatchLabels: map[string]string{
-							"app.kubernetes.io/component":  "test-component",
-							"app.kubernetes.io/instance":   "default.deployment",
-							"app.kubernetes.io/managed-by": "test-operator",
-							"app.kubernetes.io/part-of":    "test",
+							manifestutils.LabelComponent: "test-component",
+							manifestutils.LabelInstance:  "default.deployment",
+							manifestutils.LabelManagedBy: "test-operator",
+							manifestutils.LabelPartOf:    "test",
 						},
 					},
 					Template: corev1.PodTemplateSpec{
 						ObjectMeta: metav1.ObjectMeta{
 							Labels: map[string]string{
-								"app.kubernetes.io/component":  "test-component",
-								"app.kubernetes.io/instance":   "default.deployment",
-								"app.kubernetes.io/managed-by": "test-operator",
-								"app.kubernetes.io/part-of":    "test",
-								"user-label":                   "desired",
+								manifestutils.LabelComponent: "test-component",
+								manifestutils.LabelInstance:  "default.deployment",
+								manifestutils.LabelManagedBy: "test-operator",
+								manifestutils.LabelPartOf:    "test",
+								"user-label":                 "desired",
 							},
 						},
 						Spec: corev1.PodSpec{
@@ -1437,20 +1438,20 @@ func TestMutateDeploymentLabelChange(t *testing.T) {
 				Spec: appsv1.DeploymentSpec{
 					Selector: &metav1.LabelSelector{
 						MatchLabels: map[string]string{
-							"app.kubernetes.io/component":  "test-component",
-							"app.kubernetes.io/instance":   "default.deployment",
-							"app.kubernetes.io/managed-by": "test-operator",
-							"app.kubernetes.io/part-of":    "test",
+							manifestutils.LabelComponent: "test-component",
+							manifestutils.LabelInstance:  "default.deployment",
+							manifestutils.LabelManagedBy: "test-operator",
+							manifestutils.LabelPartOf:    "test",
 						},
 					},
 					Template: corev1.PodTemplateSpec{
 						ObjectMeta: metav1.ObjectMeta{
 							Labels: map[string]string{
-								"app.kubernetes.io/component":  "test-component",
-								"app.kubernetes.io/instance":   "default.deployment",
-								"app.kubernetes.io/managed-by": "test-operator",
-								"app.kubernetes.io/part-of":    "test",
-								"user-label":                   "existing",
+								manifestutils.LabelComponent: "test-component",
+								manifestutils.LabelInstance:  "default.deployment",
+								manifestutils.LabelManagedBy: "test-operator",
+								manifestutils.LabelPartOf:    "test",
+								"user-label":                 "existing",
 							},
 						},
 						Spec: corev1.PodSpec{
@@ -1471,21 +1472,21 @@ func TestMutateDeploymentLabelChange(t *testing.T) {
 				Spec: appsv1.DeploymentSpec{
 					Selector: &metav1.LabelSelector{
 						MatchLabels: map[string]string{
-							"app.kubernetes.io/component":  "test-component",
-							"app.kubernetes.io/instance":   "default.deployment",
-							"app.kubernetes.io/managed-by": "test-operator",
-							"app.kubernetes.io/part-of":    "test",
+							manifestutils.LabelComponent: "test-component",
+							manifestutils.LabelInstance:  "default.deployment",
+							manifestutils.LabelManagedBy: "test-operator",
+							manifestutils.LabelPartOf:    "test",
 						},
 					},
 					Template: corev1.PodTemplateSpec{
 						ObjectMeta: metav1.ObjectMeta{
 							Labels: map[string]string{
-								"app.kubernetes.io/component":  "test-component",
-								"app.kubernetes.io/instance":   "default.deployment",
-								"app.kubernetes.io/managed-by": "test-operator",
-								"app.kubernetes.io/part-of":    "test",
-								"user-label":                   "existing",
-								"new-user-label":               "desired",
+								manifestutils.LabelComponent: "test-component",
+								manifestutils.LabelInstance:  "default.deployment",
+								manifestutils.LabelManagedBy: "test-operator",
+								manifestutils.LabelPartOf:    "test",
+								"user-label":                 "existing",
+								"new-user-label":             "desired",
 							},
 						},
 						Spec: corev1.PodSpec{
@@ -1528,20 +1529,20 @@ func TestMutateStatefulSetLabelChange(t *testing.T) {
 				Spec: appsv1.StatefulSetSpec{
 					Selector: &metav1.LabelSelector{
 						MatchLabels: map[string]string{
-							"app.kubernetes.io/component":  "test-component",
-							"app.kubernetes.io/instance":   "default.statefulset",
-							"app.kubernetes.io/managed-by": "test-operator",
-							"app.kubernetes.io/part-of":    "test",
+							manifestutils.LabelComponent: "test-component",
+							manifestutils.LabelInstance:  "default.statefulset",
+							manifestutils.LabelManagedBy: "test-operator",
+							manifestutils.LabelPartOf:    "test",
 						},
 					},
 					Template: corev1.PodTemplateSpec{
 						ObjectMeta: metav1.ObjectMeta{
 							Labels: map[string]string{
-								"app.kubernetes.io/component":  "test-component",
-								"app.kubernetes.io/instance":   "default.statefulset",
-								"app.kubernetes.io/managed-by": "test-operator",
-								"app.kubernetes.io/part-of":    "test",
-								"user-label":                   "existing",
+								manifestutils.LabelComponent: "test-component",
+								manifestutils.LabelInstance:  "default.statefulset",
+								manifestutils.LabelManagedBy: "test-operator",
+								manifestutils.LabelPartOf:    "test",
+								"user-label":                 "existing",
 							},
 						},
 						Spec: corev1.PodSpec{
@@ -1562,20 +1563,20 @@ func TestMutateStatefulSetLabelChange(t *testing.T) {
 				Spec: appsv1.StatefulSetSpec{
 					Selector: &metav1.LabelSelector{
 						MatchLabels: map[string]string{
-							"app.kubernetes.io/component":  "test-component",
-							"app.kubernetes.io/instance":   "default.statefulset",
-							"app.kubernetes.io/managed-by": "test-operator",
-							"app.kubernetes.io/part-of":    "test",
+							manifestutils.LabelComponent: "test-component",
+							manifestutils.LabelInstance:  "default.statefulset",
+							manifestutils.LabelManagedBy: "test-operator",
+							manifestutils.LabelPartOf:    "test",
 						},
 					},
 					Template: corev1.PodTemplateSpec{
 						ObjectMeta: metav1.ObjectMeta{
 							Labels: map[string]string{
-								"app.kubernetes.io/component":  "test-component",
-								"app.kubernetes.io/instance":   "default.statefulset",
-								"app.kubernetes.io/managed-by": "test-operator",
-								"app.kubernetes.io/part-of":    "test",
-								"user-label":                   "desired",
+								manifestutils.LabelComponent: "test-component",
+								manifestutils.LabelInstance:  "default.statefulset",
+								manifestutils.LabelManagedBy: "test-operator",
+								manifestutils.LabelPartOf:    "test",
+								"user-label":                 "desired",
 							},
 						},
 						Spec: corev1.PodSpec{
@@ -1600,20 +1601,20 @@ func TestMutateStatefulSetLabelChange(t *testing.T) {
 				Spec: appsv1.StatefulSetSpec{
 					Selector: &metav1.LabelSelector{
 						MatchLabels: map[string]string{
-							"app.kubernetes.io/component":  "test-component",
-							"app.kubernetes.io/instance":   "default.statefulset",
-							"app.kubernetes.io/managed-by": "test-operator",
-							"app.kubernetes.io/part-of":    "test",
+							manifestutils.LabelComponent: "test-component",
+							manifestutils.LabelInstance:  "default.statefulset",
+							manifestutils.LabelManagedBy: "test-operator",
+							manifestutils.LabelPartOf:    "test",
 						},
 					},
 					Template: corev1.PodTemplateSpec{
 						ObjectMeta: metav1.ObjectMeta{
 							Labels: map[string]string{
-								"app.kubernetes.io/component":  "test-component",
-								"app.kubernetes.io/instance":   "default.statefulset",
-								"app.kubernetes.io/managed-by": "test-operator",
-								"app.kubernetes.io/part-of":    "test",
-								"user-label":                   "existing",
+								manifestutils.LabelComponent: "test-component",
+								manifestutils.LabelInstance:  "default.statefulset",
+								manifestutils.LabelManagedBy: "test-operator",
+								manifestutils.LabelPartOf:    "test",
+								"user-label":                 "existing",
 							},
 						},
 						Spec: corev1.PodSpec{
@@ -1634,21 +1635,21 @@ func TestMutateStatefulSetLabelChange(t *testing.T) {
 				Spec: appsv1.StatefulSetSpec{
 					Selector: &metav1.LabelSelector{
 						MatchLabels: map[string]string{
-							"app.kubernetes.io/component":  "test-component",
-							"app.kubernetes.io/instance":   "default.statefulset",
-							"app.kubernetes.io/managed-by": "test-operator",
-							"app.kubernetes.io/part-of":    "test",
+							manifestutils.LabelComponent: "test-component",
+							manifestutils.LabelInstance:  "default.statefulset",
+							manifestutils.LabelManagedBy: "test-operator",
+							manifestutils.LabelPartOf:    "test",
 						},
 					},
 					Template: corev1.PodTemplateSpec{
 						ObjectMeta: metav1.ObjectMeta{
 							Labels: map[string]string{
-								"app.kubernetes.io/component":  "test-component",
-								"app.kubernetes.io/instance":   "default.statefulset",
-								"app.kubernetes.io/managed-by": "test-operator",
-								"app.kubernetes.io/part-of":    "test",
-								"user-label":                   "existing",
-								"new-user-label":               "desired",
+								manifestutils.LabelComponent: "test-component",
+								manifestutils.LabelInstance:  "default.statefulset",
+								manifestutils.LabelManagedBy: "test-operator",
+								manifestutils.LabelPartOf:    "test",
+								"user-label":                 "existing",
+								"new-user-label":             "desired",
 							},
 						},
 						Spec: corev1.PodSpec{

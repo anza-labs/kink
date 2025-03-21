@@ -18,16 +18,20 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
 
+	"github.com/Masterminds/semver/v3"
 	cmv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 
 	controlplanev1alpha1 "github.com/anza-labs/kink/api/controlplane/v1alpha1"
 	"github.com/anza-labs/kink/internal/controller/util"
 	"github.com/anza-labs/kink/internal/manifests/controlplane"
+	"github.com/anza-labs/kink/internal/manifests/manifestutils"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -168,7 +172,7 @@ func (r *KinkControlPlaneReconciler) reconcileResources(
 	if err != nil {
 		return fmt.Errorf("failed to find owned objects: %w", err)
 	}
-	// log.V(4).Info("Found objects", "objects", len(ownedObjects))
+	log.V(8).Info("Found objects", "objects", len(ownedObjects))
 
 	log.V(2).Info("Reconciling components", "object_count", len(ownedObjects), "expected_count", len(obj))
 	if err := util.ReconcileDesiredObjects(
@@ -222,7 +226,126 @@ func (r *KinkControlPlaneReconciler) reconcileStatus(
 	ctx context.Context,
 	kinkCP *controlplanev1alpha1.KinkControlPlane,
 ) error {
-	return errors.New("unimplemented")
+	logger := log.FromContext(ctx)
+
+	ownedObjects, err := util.FindOwnedObjects(
+		ctx,
+		r.Client,
+		r.Scheme,
+		kinkCP,
+		r.GetOwnedResourceTypes(util.Exclude[*corev1.Secret]{}),
+	)
+	if err != nil {
+		return fmt.Errorf("failed to find owned objects: %w", err)
+	}
+	logger.V(8).Info("Found objects", "objects", len(ownedObjects))
+
+	// Aggregated status variables.
+	hasReadyAPIServer := false
+	allReady := true
+	// Use a high initial value to find the minimums.
+	minReplicas := int32(math.MaxInt32)
+	minAvailable := int32(math.MaxInt32)
+	minReady := int32(math.MaxInt32)
+	minUpdated := int32(math.MaxInt32)
+	minUnavailable := int32(math.MaxInt32)
+	lowestVersion := semver.MustParse("v999.999.999")
+
+	var errs error
+	// Loop through all owned objects (e.g. Deployments).
+	for _, obj := range ownedObjects {
+		// Only consider Deployments in this example.
+		deployment, ok := obj.(*appsv1.Deployment)
+		if !ok {
+			continue
+		}
+
+		// Determine desired replicas (default to 1 if not set).
+		var desired int32 = 1
+		if deployment.Spec.Replicas != nil {
+			desired = *deployment.Spec.Replicas
+		}
+
+		// Extract status counts.
+		var (
+			replicas    = deployment.Status.Replicas
+			ready       = deployment.Status.ReadyReplicas
+			available   = deployment.Status.AvailableReplicas
+			updated     = deployment.Status.UpdatedReplicas
+			unavailable = deployment.Status.UnavailableReplicas
+		)
+
+		// If any deployment is not fully ready, then not all are ready.
+		if ready < desired {
+			allReady = false
+		}
+
+		// Track the smallest available, ready, updated replica count across components.
+		if replicas < minReplicas {
+			minReplicas = replicas
+		}
+		if available < minAvailable {
+			minAvailable = available
+		}
+		if ready < minReady {
+			minReady = ready
+		}
+		if updated < minUpdated {
+			minUpdated = updated
+		}
+		if unavailable < minUnavailable {
+			minUnavailable = unavailable
+		}
+
+		// Check if this Deployment is for the APIServer component.
+		// Here we assume that API server deployments are labeled with "component=apiserver".
+		if val, ok := deployment.Labels[manifestutils.LabelComponent]; ok && val == controlplane.ComponentAPIServer {
+			if ready > 0 {
+				hasReadyAPIServer = true
+			}
+		}
+
+		// Kine version is not considered for the ControlPlane version.
+		if val, ok := deployment.Labels[manifestutils.LabelComponent]; ok && val == controlplane.ComponentKine {
+			continue
+		}
+
+		// Retrieve the version from an label.
+		// We choose the lowest version (lexicographically) among all components.
+		if version, ok := deployment.Labels[manifestutils.LabelVersion]; ok && version != "" {
+			v, err := semver.NewVersion(version)
+			if err != nil {
+				errs = errors.Join(errs, err)
+				continue
+			}
+			if v.Compare(lowestVersion) < 0 {
+				lowestVersion = v
+			}
+		}
+	}
+
+	// Set status fields.
+	kinkCP.Status.Initialized = hasReadyAPIServer
+	kinkCP.Status.Ready = allReady
+	kinkCP.Status.Replicas = minReplicas
+	kinkCP.Status.ReadyReplicas = minReady
+	kinkCP.Status.UpdatedReplicas = minUpdated
+	kinkCP.Status.UnavailableReplicas = minUnavailable
+
+	// Set the Version to the lowest found, or fallback to the Spec version.
+	if lowestVersion.Major() != 999 {
+		kinkCP.Status.Version = ptr.To(lowestVersion.Original())
+	}
+
+	if !allReady {
+		errs = errors.Join(errs, errors.New("not all components are ready"))
+	}
+
+	if err := r.Status().Update(ctx, kinkCP); err != nil {
+		errs = errors.Join(errs, fmt.Errorf("failed to apply status changes: %w", err))
+	}
+
+	return errs
 }
 
 // GetOwnedResourceTypes returns all the resource types the controller can own.
