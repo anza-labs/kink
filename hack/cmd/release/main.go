@@ -25,12 +25,11 @@ import (
 	"strings"
 
 	semver "github.com/Masterminds/semver/v3"
-
-	"sigs.k8s.io/yaml"
 )
 
 const (
 	defaultConfigPath = "./docs/.crd-ref-docs.yaml"
+	defaultImageRef   = "ghcr.io/anza-labs/kink"
 )
 
 func runCommand(name string, args ...string) error {
@@ -141,32 +140,6 @@ func replaceKubernetesVersion(filePath, newVersion string) error {
 	return os.Rename(tempFilePath, filePath)
 }
 
-//lint:ignore U1000 this might be helpful when creating dist/
-func createKustomization(resources []string, imageName, newImageName, newTag string) map[string]interface{} {
-	return map[string]interface{}{
-		"namespace":  "kink-system",
-		"namePrefix": "kink-",
-		"resources":  resources,
-		"images": []map[string]string{
-			{
-				"name":    imageName,
-				"newName": newImageName,
-				"newTag":  newTag,
-			},
-		},
-	}
-}
-
-//lint:ignore U1000 this might be helpful when creating dist/
-func writeKustomization(kustomization map[string]interface{}, filepath string) error {
-	content, err := yaml.Marshal(kustomization)
-	if err != nil {
-		return fmt.Errorf("failed to marshal kustomization: %w", err)
-	}
-
-	return os.WriteFile(filepath, content, 0644)
-}
-
 func release(version, fullVersion string) error {
 	if err := gitCmd("add", "."); err != nil {
 		return err
@@ -189,6 +162,8 @@ func release(version, fullVersion string) error {
 func main() {
 	versionFlag := flag.String("version", "", "Tagged version to build")
 	configFlag := flag.String("config", defaultConfigPath, "Path to CRD ref-docs config")
+	newImageFlag := flag.String("image", defaultImageRef, "Default image reference")
+
 	flag.Parse()
 
 	version, err := parseVersion(*versionFlag)
@@ -196,7 +171,7 @@ func main() {
 		log.Fatalf("Failed to parse version: %v", err)
 	}
 
-	if err := makeCmd("manifests", "api-docs"); err != nil {
+	if err := makeCmd("generate", "manifests", "api-docs"); err != nil {
 		log.Fatalf("Failed to run make: %v", err)
 	}
 
@@ -211,6 +186,11 @@ func main() {
 
 	if err := branchPrep(version, *versionFlag); err != nil {
 		log.Fatalf("Failed to prepare branch: %v", err)
+	}
+
+	img := fmt.Sprintf("IMG=%s:%s", *newImageFlag, *versionFlag)
+	if err := makeCmd("build-installer", img); err != nil {
+		log.Fatalf("Failed to run make: %v", err)
 	}
 
 	if err := release(version, *versionFlag); err != nil {

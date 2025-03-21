@@ -34,6 +34,9 @@ type KinkControlPlaneTemplateStatus struct {
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:resource:path=kinkcontrolplanetemplates,scope=Namespaced,categories=cluster-api,shortName=kinktpl
+// +kubebuilder:conversion:hub
+// +kubebuilder:storageversion
 // +kubebuilder:subresource:status
 
 // KinkControlPlaneTemplate is the Schema for the kinkcontrolplanetemplates API.

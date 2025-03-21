@@ -22,11 +22,8 @@ import (
 	cmv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 
 	controlplanev1alpha1 "github.com/anza-labs/kink/api/controlplane/v1alpha1"
-	infrastructurev1alpha1 "github.com/anza-labs/kink/api/infrastructure/v1alpha1"
 	"github.com/anza-labs/kink/internal/controller/controlplane"
-	"github.com/anza-labs/kink/internal/controller/infrastructure"
 	controlplanewebhookv1alpha1 "github.com/anza-labs/kink/internal/webhook/controlplane/v1alpha1"
-	infrastructurewebhookv1alpha1 "github.com/anza-labs/kink/internal/webhook/infrastructure/v1alpha1"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -44,28 +41,13 @@ import (
 )
 
 var (
-	scheme             = runtime.NewScheme()
-	setupLog           = ctrl.Log.WithName("setup")
-	enabledControllers = map[string]bool{
-		controlPlaneController:   true,
-		infrastructureController: true,
-	}
+	scheme   = runtime.NewScheme()
+	setupLog = ctrl.Log.WithName("setup")
 )
-
-const (
-	allControllers           = "all"
-	controlPlaneController   = "control-plane"
-	infrastructureController = "infrastructure"
-)
-
-func isControllerEnabled(controllerName string) bool {
-	return enabledControllers[controllerName]
-}
 
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
-	utilruntime.Must(infrastructurev1alpha1.AddToScheme(scheme))
 	utilruntime.Must(controlplanev1alpha1.AddToScheme(scheme))
 	utilruntime.Must(cmv1.AddToScheme(scheme))
 	// +kubebuilder:scaffold:scheme
@@ -94,14 +76,6 @@ func main() {
 	flag.Parse()
 
 	ctrl.SetLogger(klog.NewKlogr())
-
-	if enabledController != "" && enabledController != allControllers {
-		enabledControllers = map[string]bool{
-			enabledController: true,
-		}
-	}
-
-	setupLog.V(4).Info("Enabled controllers", "controllers", enabledControllers)
 
 	// if the enable-http2 flag is false (the default), http/2 should be disabled
 	// due to its vulnerabilities. More specifically, disabling http/2 will
@@ -155,72 +129,7 @@ func main() {
 
 	// +kubebuilder:scaffold:builder
 
-	if isControllerEnabled(infrastructureController) {
-		setupLog.V(2).Info("Enabling infrastructure controller")
-		enableInfrastructure(mgr)
-	}
-	if isControllerEnabled(controlPlaneController) {
-		setupLog.V(2).Info("Enabling control-plane controller")
-		enableControlPlane(mgr)
-	}
-
-	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
-		setupLog.Error(err, "unable to set up health check")
-		os.Exit(1)
-	}
-	if err := mgr.AddReadyzCheck("readyz", healthz.Ping); err != nil {
-		setupLog.Error(err, "unable to set up ready check")
-		os.Exit(1)
-	}
-
-	setupLog.Info("starting manager")
-	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
-		setupLog.Error(err, "problem running manager")
-		os.Exit(1)
-	}
-}
-
-func enableInfrastructure(mgr ctrl.Manager) {
-	if err := (&infrastructure.KinkClusterReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "KinkCluster")
-		os.Exit(1)
-	}
-	if err := (&infrastructure.KinkMachineReconciler{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
-	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "KinkMachine")
-		os.Exit(1)
-	}
-
-	if os.Getenv("ENABLE_WEBHOOKS") != "false" {
-		setupLog.V(2).Info("Enabling webhook", "webhook", "KinkCluster")
-		if err := infrastructurewebhookv1alpha1.SetupKinkClusterWebhookWithManager(mgr); err != nil {
-			setupLog.Error(err, "unable to create webhook", "webhook", "KinkCluster")
-			os.Exit(1)
-		}
-		setupLog.V(2).Info("Enabling webhook", "webhook", "KinkClusterTemplate")
-		if err := infrastructurewebhookv1alpha1.SetupKinkClusterTemplateWebhookWithManager(mgr); err != nil {
-			setupLog.Error(err, "unable to create webhook", "webhook", "KinkClusterTemplate")
-			os.Exit(1)
-		}
-		setupLog.V(2).Info("Enabling webhook", "webhook", "KinkMachine")
-		if err := infrastructurewebhookv1alpha1.SetupKinkMachineWebhookWithManager(mgr); err != nil {
-			setupLog.Error(err, "unable to create webhook", "webhook", "KinkMachine")
-			os.Exit(1)
-		}
-		setupLog.V(2).Info("Enabling webhook", "webhook", "KinkMachineTemplate")
-		if err := infrastructurewebhookv1alpha1.SetupKinkMachineTemplateWebhookWithManager(mgr); err != nil {
-			setupLog.Error(err, "unable to create webhook", "webhook", "KinkMachineTemplate")
-			os.Exit(1)
-		}
-	}
-}
-
-func enableControlPlane(mgr ctrl.Manager) {
+	setupLog.V(2).Info("Enabling control-plane controller")
 	if err := (&controlplane.KinkControlPlaneReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
@@ -240,5 +149,20 @@ func enableControlPlane(mgr ctrl.Manager) {
 			setupLog.Error(err, "unable to create webhook", "webhook", "KinkControlPlaneTemplate")
 			os.Exit(1)
 		}
+	}
+
+	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
+		setupLog.Error(err, "unable to set up health check")
+		os.Exit(1)
+	}
+	if err := mgr.AddReadyzCheck("readyz", healthz.Ping); err != nil {
+		setupLog.Error(err, "unable to set up ready check")
+		os.Exit(1)
+	}
+
+	setupLog.Info("starting manager")
+	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
+		setupLog.Error(err, "problem running manager")
+		os.Exit(1)
 	}
 }

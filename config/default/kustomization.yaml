@@ -10,7 +10,8 @@ namePrefix: kink-
 labels:
   - includeSelectors: false
     pairs:
-      cluster.x-k8s.io/provider: infrastructure-kink
+      cluster.x-k8s.io/provider: kink
+
 resources:
   - ../crd
   - ../rbac

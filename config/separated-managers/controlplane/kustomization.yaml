@@ -1,6 +1,0 @@
-resources:
-- ../../default
-patches:
-- path: manager_controlplane_patch.yaml
-  target:
-    kind: Deployment

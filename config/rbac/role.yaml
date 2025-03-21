@@ -40,7 +40,6 @@ rules:
   - apps
   resources:
   - deployments
-  - statefulsets
   verbs:
   - create
   - delete
@@ -53,14 +52,12 @@ rules:
   - apps
   resources:
   - deployments/finalizers
-  - statefulsets/finalizers
   verbs:
   - update
 - apiGroups:
   - apps
   resources:
   - deployments/status
-  - statefulsets/status
   verbs:
   - get
   - patch
@@ -95,17 +92,6 @@ rules:
   - patch
   - update
 - apiGroups:
-  - cluster.x-k8s.io
-  resources:
-  - clusters
-  - clusters/status
-  - machines
-  - machines/status
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
   - controlplane.cluster.x-k8s.io
   resources:
   - kinkcontrolplanes
@@ -127,35 +113,6 @@ rules:
   - controlplane.cluster.x-k8s.io
   resources:
   - kinkcontrolplanes/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - infrastructure.cluster.x-k8s.io
-  resources:
-  - kinkclusters
-  - kinkmachines
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - infrastructure.cluster.x-k8s.io
-  resources:
-  - kinkclusters/finalizers
-  - kinkmachines/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - infrastructure.cluster.x-k8s.io
-  resources:
-  - kinkclusters/status
-  - kinkmachines/status
   verbs:
   - get
   - patch

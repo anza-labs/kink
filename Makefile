@@ -149,12 +149,9 @@ docker-push-controller: ## Push docker image with the controller.
 
 .PHONY: build-installer
 build-installer: manifests generate kustomize ## Generate a consolidated YAML with CRDs and deployment.
-	mkdir -p dist/infrastructure-kink/$(VERSION)
 	mkdir -p dist/controlplane-kink/$(VERSION)
 	cd config/manager && $(KUSTOMIZE) edit set image controller=$(REPOSITORY)/kink-controller:$(TAG)
-	$(KUSTOMIZE) build config/separated-managers/infrastructure > dist/infrastructure-kink/$(VERSION)/infrastructure-components.yaml
-	$(KUSTOMIZE) build config/separated-managers/controlplane > dist/controlplane-kink/$(VERSION)/controlplane-components.yaml
-	cp hack/templates/*.yaml dist/infrastructure-kink/$(VERSION)
+	$(KUSTOMIZE) build config/default > dist/controlplane-kink/$(VERSION)/controlplane-components.yaml
 
 ##@ Documentation
 
@@ -181,6 +178,7 @@ cluster: kind ctlptl clusterctl kustomize
 		--core=cluster-api:$(CLUSTER_API_VERSION) \
 		--bootstrap=kubeadm:$(CLUSTER_API_VERSION) \
 		--control-plane=kubeadm:$(CLUSTER_API_VERSION) \
+		--infrastructure=docker:$(CLUSTER_API_VERSION) \
 		--validate=true \
 		--wait-providers \
 		--wait-provider-timeout=360
@@ -191,12 +189,10 @@ cluster-reset: kind ctlptl
 
 .PHONY: deploy
 deploy: manifests kustomize build-installer ## Deploy controller to the K8s cluster specified in ~/.kube/config.
-	$(KUBECTL) apply -f dist/infrastructure-kink/$(VERSION)/infrastructure-components.yaml
 	$(KUBECTL) apply -f dist/controlplane-kink/$(VERSION)/controlplane-components.yaml
 
 .PHONY: undeploy
 undeploy: kustomize build-installer ## Undeploy controller from the K8s cluster specified in ~/.kube/config. Call with ignore-not-found=true to ignore resource not found errors during deletion.
-	$(KUBECTL) delete --ignore-not-found=$(ignore-not-found) -f dist/infrastructure-kink/$(VERSION)/infrastructure-components.yaml
 	$(KUBECTL) delete --ignore-not-found=$(ignore-not-found) -f dist/controlplane-kink/$(VERSION)/controlplane-components.yaml
 
 ##@ Dependencies

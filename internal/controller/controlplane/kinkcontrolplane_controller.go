@@ -168,7 +168,7 @@ func (r *KinkControlPlaneReconciler) reconcileResources(
 	if err != nil {
 		return fmt.Errorf("failed to find owned objects: %w", err)
 	}
-	log.V(4).Info("Found objects", "objects", ownedObjects)
+	// log.V(4).Info("Found objects", "objects", len(ownedObjects))
 
 	log.V(2).Info("Reconciling components", "object_count", len(ownedObjects), "expected_count", len(obj))
 	if err := util.ReconcileDesiredObjects(
@@ -201,7 +201,7 @@ func (r *KinkControlPlaneReconciler) reconcileResources(
 	if err != nil {
 		return fmt.Errorf("failed to find owned secrets: %w", err)
 	}
-	log.V(4).Info("Found objects", "objects", ownedSecrets)
+	log.V(8).Info("Found objects", "objects", ownedSecrets)
 
 	log.V(2).Info("Reconciling kubeconfigs", "object_count", len(ownedSecrets), "expected_count", len(kc))
 	if err := util.ReconcileDesiredObjects(

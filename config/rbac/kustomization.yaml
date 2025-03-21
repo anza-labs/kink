@@ -24,18 +24,9 @@ resources:
 # if you do not want those helpers be installed with your Project.
 - controlplane_kinkcontrolplanetemplate_editor_role.yaml
 - controlplane_kinkcontrolplanetemplate_viewer_role.yaml
-- infrastructure_kinkclustertemplate_editor_role.yaml
-- infrastructure_kinkclustertemplate_viewer_role.yaml
-- infrastructure_kinkmachinetemplate_editor_role.yaml
-- infrastructure_kinkmachinetemplate_viewer_role.yaml
-- infrastructure_kinkmachine_editor_role.yaml
-- infrastructure_kinkmachine_viewer_role.yaml
-- infrastructure_kinkcluster_editor_role.yaml
-- infrastructure_kinkcluster_viewer_role.yaml
 # For each CRD, "Editor" and "Viewer" roles are scaffolded by
 # default, aiding admins in cluster management. Those roles are
 # not used by the Project itself. You can comment the following lines
 # if you do not want those helpers be installed with your Project.
 - controlplane_kinkcontrolplane_editor_role.yaml
 - controlplane_kinkcontrolplane_viewer_role.yaml
-

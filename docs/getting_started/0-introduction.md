@@ -12,14 +12,24 @@ To install the `kink`, run the following commands. This will ensure you're alway
 
     For installation instructions, please visit the official documentation: [Cert Manager Installation](https://cert-manager.io/docs/installation/).
 
+### Using kustomization
+
+This method applies the latest configuration by fetching the latest release tag from GitHub.
+
 ```sh
 LATEST="$(curl -s 'https://api.github.com/repos/anza-labs/kink/releases/latest' | jq -r '.tag_name')"
-kubectl apply -k "https://github.com/anza-labs/kink/?ref=${LATEST}"
+kubectl apply -k "https://github.com/anza-labs/kink//config/default?ref=${LATEST}"
 ```
 
-This command:
+<!-- ### Using release manifests
 
-1. Fetches the latest release tag using the GitHub API.
-2. Applies the corresponding version of the `kink` to your Kubernetes cluster using `kubectl`.
+Alternatively, you can deploy the operator using the release manifest directly from GitHub.
 
-Once installed, the operator will begin monitoring the appropriate resources in your cluster based on the CRDs defined.
+```sh
+LATEST="$(curl -s 'https://api.github.com/repos/anza-labs/kink/releases/latest' | jq -r '.tag_name')"
+kubectl apply -f "https://github.com/anza-labs/kink/releases/download/${LATEST}/registry-operator.yaml"
+``` -->
+
+## Updating the Operator
+
+To update to the latest version, rerun the installation command for your chosen method.

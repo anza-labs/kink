@@ -20,7 +20,6 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	controlplanev1alpha1 "github.com/anza-labs/kink/api/controlplane/v1alpha1"
-	infrastructurev1alpha1 "github.com/anza-labs/kink/api/infrastructure/v1alpha1"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -32,11 +31,6 @@ func TestAnnotationsPropagateDown(t *testing.T) {
 	// prepare
 	for _, instance := range []client.Object{
 		&controlplanev1alpha1.KinkControlPlane{
-			ObjectMeta: metav1.ObjectMeta{
-				Annotations: map[string]string{"myapp": "mycomponent"},
-			},
-		},
-		&infrastructurev1alpha1.KinkMachine{
 			ObjectMeta: metav1.ObjectMeta{
 				Annotations: map[string]string{"myapp": "mycomponent"},
 			},
@@ -59,15 +53,6 @@ func TestAnnotationsFilter(t *testing.T) {
 	// prepare
 	for _, instance := range []client.Object{
 		&controlplanev1alpha1.KinkControlPlane{
-			ObjectMeta: metav1.ObjectMeta{
-				Annotations: map[string]string{
-					"test.bar.io":  "foo",
-					"test.io/port": "1234",
-					"test.io/path": "/test",
-				},
-			},
-		},
-		&infrastructurev1alpha1.KinkMachine{
 			ObjectMeta: metav1.ObjectMeta{
 				Annotations: map[string]string{
 					"test.bar.io":  "foo",

@@ -16,10 +16,8 @@ package manifestutils
 
 import (
 	controlplanev1alpha1 "github.com/anza-labs/kink/api/controlplane/v1alpha1"
-	infrastructurev1alpha1 "github.com/anza-labs/kink/api/infrastructure/v1alpha1"
 
 	corev1 "k8s.io/api/core/v1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 const (
@@ -28,19 +26,7 @@ const (
 )
 
 // Affinity return the affinty rules for Registry pod.
-func Affinity(instance client.Object) *corev1.Affinity {
-	switch instance := instance.(type) {
-	case *controlplanev1alpha1.KinkControlPlane:
-		if instance.Spec.Affinity != nil {
-			return instance.Spec.Affinity
-		}
-
-	case *infrastructurev1alpha1.KinkMachine:
-		if instance.Spec.Affinity != nil {
-			return instance.Spec.Affinity
-		}
-	}
-
+func Affinity(instance *controlplanev1alpha1.KinkControlPlane) *corev1.Affinity {
 	return &corev1.Affinity{
 		NodeAffinity: &corev1.NodeAffinity{
 			RequiredDuringSchedulingIgnoredDuringExecution: &corev1.NodeSelector{

@@ -2,12 +2,8 @@
 # since it depends on service name and namespace that are out of this kustomize package.
 # It should be run by config/default
 resources:
-- bases/infrastructure.cluster.x-k8s.io_kinkclusters.yaml
-- bases/infrastructure.cluster.x-k8s.io_kinkmachines.yaml
-- bases/infrastructure.cluster.x-k8s.io_kinkmachinetemplates.yaml
-- bases/infrastructure.cluster.x-k8s.io_kinkclustertemplates.yaml
-- bases/controlplane.cluster.x-k8s.io_kinkcontrolplanes.yaml
-- bases/controlplane.cluster.x-k8s.io_kinkcontrolplanetemplates.yaml
+  - bases/controlplane.cluster.x-k8s.io_kinkcontrolplanes.yaml
+  - bases/controlplane.cluster.x-k8s.io_kinkcontrolplanetemplates.yaml
 # +kubebuilder:scaffold:crdkustomizeresource
 labels:
   - includeSelectors: false
@@ -16,20 +12,12 @@ labels:
 patches:
 # [WEBHOOK] To enable webhook, uncomment all the sections with [WEBHOOK] prefix.
 # patches here are for enabling the conversion webhook for each CRD
-- path: patches/webhook_in_kinkclustertemplates.yaml
-- path: patches/webhook_in_kinkclusters.yaml
-- path: patches/webhook_in_kinkmachines.yaml
-- path: patches/webhook_in_kinkmachinetemplates.yaml
-- path: patches/webhook_in_controlplane_kinkcontrolplanes.yaml
-- path: patches/webhook_in_controlplane_kinkcontrolplanetemplates.yaml
+  - path: patches/webhook_in_controlplane_kinkcontrolplanes.yaml
+  - path: patches/webhook_in_controlplane_kinkcontrolplanetemplates.yaml
 # +kubebuilder:scaffold:crdkustomizewebhookpatch
 
 # [CERTMANAGER] To enable cert-manager, uncomment all the sections with [CERTMANAGER] prefix.
 # patches here are for enabling the CA injection for each CRD
-#- path: patches/cainjection_in_kinkclustertemplates.yaml
-#- path: patches/cainjection_in_kinkclusters.yaml
-#- path: patches/cainjection_in_kinkmachines.yaml
-#- path: patches/cainjection_in_kinkmachinetemplates.yaml
 #- path: patches/cainjection_in_controlplane_kinkcontrolplanes.yaml
 #- path: patches/cainjection_in_controlplane_kinkcontrolplanetemplates.yaml
 # +kubebuilder:scaffold:crdkustomizecainjectionpatch

@@ -13,11 +13,6 @@ scheduler:
     registry: "registry.k8s.io"
     repository: "kube-scheduler"
     tag: "v1.32.3"
-nodeVM:
-  image:
-    registry: "ghcr.io"
-    repository: "anza-labs/library/firecracker"
-    tag: "v1.10.1"
 kine:
   image:
     registry: "ghcr.io"

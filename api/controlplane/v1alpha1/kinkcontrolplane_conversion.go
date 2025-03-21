@@ -12,4 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package infrastructure
+package v1alpha1
+
+// Hub marks this type as a conversion hub.
+func (*KinkControlPlane) Hub() {}

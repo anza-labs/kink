@@ -177,7 +177,17 @@ type KinkControlPlaneStatus struct {
 }
 
 // +kubebuilder:object:root=true
+// +kubebuilder:resource:path=kinkcontrolplanes,scope=Namespaced,categories=cluster-api,shortName=kink
+// +kubebuilder:conversion:hub
+// +kubebuilder:storageversion
 // +kubebuilder:subresource:status
+// +kubebuilder:printcolumn:name="Cluster",type="string",JSONPath=".metadata.labels.cluster\\.x-k8s\\.io/cluster-name"
+// +kubebuilder:printcolumn:name="Replicas",type="string",JSONPath=".status.replicas"
+// +kubebuilder:printcolumn:name="Ready",type="string",JSONPath=".status.readyReplicas"
+// +kubebuilder:printcolumn:name="Updated",type="string",JSONPath=".status.updatedReplicas"
+// +kubebuilder:printcolumn:name="Unavailable",type="string",JSONPath=".status.unavailableReplicas"
+// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=".metadata.creationTimestamp"
+// +kubebuilder:printcolumn:name="Version",type="string",JSONPath=".status.version"
 
 // KinkControlPlane is the Schema for the kinkcontrolplanes API.
 type KinkControlPlane struct {

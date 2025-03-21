@@ -8,13 +8,39 @@ metadata:
 spec:
   group: controlplane.cluster.x-k8s.io
   names:
+    categories:
+    - cluster-api
     kind: KinkControlPlane
     listKind: KinkControlPlaneList
     plural: kinkcontrolplanes
+    shortNames:
+    - kink
     singular: kinkcontrolplane
   scope: Namespaced
   versions:
-  - name: v1alpha1
+  - additionalPrinterColumns:
+    - jsonPath: .metadata.labels.cluster\.x-k8s\.io/cluster-name
+      name: Cluster
+      type: string
+    - jsonPath: .status.replicas
+      name: Replicas
+      type: string
+    - jsonPath: .status.readyReplicas
+      name: Ready
+      type: string
+    - jsonPath: .status.updatedReplicas
+      name: Updated
+      type: string
+    - jsonPath: .status.unavailableReplicas
+      name: Unavailable
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
+    - jsonPath: .status.version
+      name: Version
+      type: string
+    name: v1alpha1
     schema:
       openAPIV3Schema:
         description: KinkControlPlane is the Schema for the kinkcontrolplanes API.

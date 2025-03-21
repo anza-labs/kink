@@ -20,10 +20,8 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	controlplanev1alpha1 "github.com/anza-labs/kink/api/controlplane/v1alpha1"
-	infrastructurev1alpha1 "github.com/anza-labs/kink/api/infrastructure/v1alpha1"
 
 	corev1 "k8s.io/api/core/v1"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func TestAffinity(t *testing.T) {
@@ -32,24 +30,17 @@ func TestAffinity(t *testing.T) {
 	t.Run("default", func(t *testing.T) {
 		t.Parallel()
 
-		for _, instance := range []client.Object{
-			&controlplanev1alpha1.KinkControlPlane{
-				Spec: controlplanev1alpha1.KinkControlPlaneSpec{
-					Affinity: nil,
-				},
+		instance := &controlplanev1alpha1.KinkControlPlane{
+			Spec: controlplanev1alpha1.KinkControlPlaneSpec{
+				Affinity: nil,
 			},
-			&infrastructurev1alpha1.KinkMachine{
-				Spec: infrastructurev1alpha1.KinkMachineSpec{
-					Affinity: nil,
-				},
-			},
-		} {
-			// test
-			affinty := Affinity(instance)
-
-			// verify
-			assert.NotNil(t, affinty)
 		}
+
+		// test
+		affinty := Affinity(instance)
+
+		// verify
+		assert.NotNil(t, affinty)
 	})
 
 	t.Run("affinity", func(t *testing.T) {
@@ -64,24 +55,17 @@ func TestAffinity(t *testing.T) {
 			},
 		})
 
-		for _, instance := range []client.Object{
-			&controlplanev1alpha1.KinkControlPlane{
-				Spec: controlplanev1alpha1.KinkControlPlaneSpec{
-					Affinity: expected,
-				},
+		instance := &controlplanev1alpha1.KinkControlPlane{
+			Spec: controlplanev1alpha1.KinkControlPlaneSpec{
+				Affinity: expected,
 			},
-			&infrastructurev1alpha1.KinkMachine{
-				Spec: infrastructurev1alpha1.KinkMachineSpec{
-					Affinity: expected,
-				},
-			},
-		} {
-			// test
-			affinty := Affinity(instance)
-
-			// verify
-			assert.NotNil(t, affinty)
 		}
+
+		// test
+		affinty := Affinity(instance)
+
+		// verify
+		assert.NotNil(t, affinty)
 	})
 }
 

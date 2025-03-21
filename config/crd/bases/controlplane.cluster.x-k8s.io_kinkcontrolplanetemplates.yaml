@@ -8,9 +8,13 @@ metadata:
 spec:
   group: controlplane.cluster.x-k8s.io
   names:
+    categories:
+    - cluster-api
     kind: KinkControlPlaneTemplate
     listKind: KinkControlPlaneTemplateList
     plural: kinkcontrolplanetemplates
+    shortNames:
+    - kinktpl
     singular: kinkcontrolplanetemplate
   scope: Namespaced
   versions:

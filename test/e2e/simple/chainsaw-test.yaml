@@ -52,13 +52,12 @@ spec:
             namespace: capi-kubeadm-bootstrap-system
           status:
             availableReplicas: 1
-    # FIXME: this is failing, we need 2 deployments
-    # - assert:
-    #     resource:
-    #       apiVersion: apps/v1
-    #       kind: Deployment
-    #       metadata:
-    #         name: kink-controller-manager
-    #         namespace: kink-system
-    #       status:
-    #         availableReplicas: 1
+    - assert:
+        resource:
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: kink-controller-manager
+            namespace: kink-system
+          status:
+            availableReplicas: 1
