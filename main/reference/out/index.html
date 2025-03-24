@@ -588,6 +588,33 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#gateway" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gateway
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hostnameorip" class="md-nav__link">
+    <span class="md-ellipsis">
+      HostnameOrIP
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ingress" class="md-nav__link">
+    <span class="md-ellipsis">
+      Ingress
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#kine" class="md-nav__link">
     <span class="md-ellipsis">
       Kine
@@ -804,6 +831,33 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#gateway" class="md-nav__link">
+    <span class="md-ellipsis">
+      Gateway
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hostnameorip" class="md-nav__link">
+    <span class="md-ellipsis">
+      HostnameOrIP
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ingress" class="md-nav__link">
+    <span class="md-ellipsis">
+      Ingress
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#kine" class="md-nav__link">
     <span class="md-ellipsis">
       Kine
@@ -969,7 +1023,7 @@
 </thead>
 <tbody>
 <tr>
-<td><code>host</code> <em>string</em></td>
+<td><code>host</code> <em><a href="#hostnameorip">HostnameOrIP</a></em></td>
 <td>host is the hostname on which the API server is serving.</td>
 <td></td>
 <td></td>
@@ -977,6 +1031,24 @@
 <tr>
 <td><code>port</code> <em>integer</em></td>
 <td>port is the port on which the API server is serving.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>serviceType</code> <em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#servicetype-v1-core">ServiceType</a></em></td>
+<td>ServiceType</td>
+<td>ClusterIP</td>
+<td></td>
+</tr>
+<tr>
+<td><code>gateway</code> <em><a href="#gateway">Gateway</a></em></td>
+<td>Gateway</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>ingress</code> <em><a href="#ingress">Ingress</a></em></td>
+<td>Ingress</td>
 <td></td>
 <td></td>
 </tr>
@@ -1075,6 +1147,61 @@
 <tr>
 <td><code>extraArgs</code> <em>object (keys:string, values:string)</em></td>
 <td>ExtraArgs defines additional arguments to be passed to the container executable.</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h4 id="gateway">Gateway</h4>
+<p>Gateway</p>
+<p><em>Appears in:</em>
+- <a href="#apiendpoint">APIEndpoint</a></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+<th>Default</th>
+<th>Validation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>gatewayClassName</code> <em>string</em></td>
+<td>GatewayClassName used for this Gateway. This is the name of a<br />GatewayClass resource.</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h4 id="hostnameorip">HostnameOrIP</h4>
+<p><em>Underlying type:</em> <em>string</em></p>
+<p>HostnameOrIP</p>
+<p><em>Appears in:</em>
+- <a href="#apiendpoint">APIEndpoint</a></p>
+<h4 id="ingress">Ingress</h4>
+<p>Ingress</p>
+<p><em>Appears in:</em>
+- <a href="#apiendpoint">APIEndpoint</a></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+<th>Default</th>
+<th>Validation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>annotations</code> <em>object (keys:string, values:string)</em></td>
+<td>Annotations is an unstructured key value map stored with a resource that may be<br />set by external tools to store and retrieve arbitrary metadata. They are not<br />queryable and should be preserved when modifying objects.</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>ingressClassName</code> <em>string</em></td>
+<td>GatewayClassName used for this Gateway. This is the name of a<br />GatewayClass resource.</td>
 <td></td>
 <td></td>
 </tr>
@@ -1251,7 +1378,7 @@
 </tr>
 <tr>
 <td><code>controlPlaneEndpoint</code> <em><a href="#apiendpoint">APIEndpoint</a></em></td>
-<td>ControlPlaneEndpoint represents the endpoint used to communicate with the control plane.</td>
+<td>ControlPlaneEndpoint represents the endpoint used to communicate with the control plane.<br />Based on it, an ingress will be provisioned.</td>
 <td></td>
 <td></td>
 </tr>
