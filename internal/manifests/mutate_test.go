@@ -21,9 +21,10 @@ package manifests
 import (
 	"testing"
 
-	"github.com/anza-labs/kink/internal/manifests/manifestutils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/anza-labs/kink/internal/manifests/manifestutils"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
