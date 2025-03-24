@@ -156,6 +156,13 @@ func (b *Certificates) ClusterCAIssuer() *cmv1.Issuer {
 func (b *Certificates) APIServer() *cmv1.Certificate {
 	name := naming.APIServerCertificate(b.KinkControlPlane.Name)
 
+	ipAddresses := []string{"127.0.0.1"}
+
+	host := b.KinkControlPlane.Spec.ControlPlaneEndpoint.Host
+	if host.IsIP() {
+		ipAddresses = append(ipAddresses, string(host))
+	}
+
 	selectorLabels := manifestutils.SelectorLabels(
 		b.KinkControlPlane.ObjectMeta,
 		ComponentCertificates, ConceptControlPlane,
@@ -192,9 +199,9 @@ func (b *Certificates) APIServer() *cmv1.Certificate {
 			DNSNames: naming.KubernetesDNSNames(
 				b.KinkControlPlane.Name,
 				b.KinkControlPlane.Namespace,
-				b.KinkControlPlane.Spec.ControlPlaneEndpoint.Host,
+				string(b.KinkControlPlane.Spec.ControlPlaneEndpoint.Host),
 			),
-			IPAddresses: []string{"127.0.0.1"},
+			IPAddresses: ipAddresses,
 		},
 	}
 }
@@ -544,7 +551,7 @@ func (b *Certificates) ServiceAccountCertificate() *cmv1.Certificate {
 			DNSNames: naming.KubernetesDNSNames(
 				b.KinkControlPlane.Name,
 				b.KinkControlPlane.Namespace,
-				b.KinkControlPlane.Spec.ControlPlaneEndpoint.Host,
+				string(b.KinkControlPlane.Spec.ControlPlaneEndpoint.Host),
 			),
 			IPAddresses: []string{"127.0.0.1"},
 		},

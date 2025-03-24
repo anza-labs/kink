@@ -5,4 +5,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: localhost:5005/kink-controller
-  newTag: dev-e6646d-dirty
+  newTag: dev-23635c

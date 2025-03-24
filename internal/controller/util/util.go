@@ -22,6 +22,8 @@ import (
 	"errors"
 	"fmt"
 
+	cmv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
+
 	"github.com/anza-labs/kink/internal/manifests"
 
 	rbacv1 "k8s.io/api/rbac/v1"
@@ -101,6 +103,10 @@ func FindOwnedObjects(
 			return nil, err
 		}
 		for uid, object := range objs {
+			if _, ok := object.GetAnnotations()[cmv1.CertificateNameKey]; ok {
+				ownedObjects[uid] = object
+				continue
+			}
 			ownerUID := owner.GetUID()
 			for _, ref := range object.GetOwnerReferences() {
 				if ref.UID == ownerUID {

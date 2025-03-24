@@ -26,10 +26,10 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	networkingv1 "k8s.io/api/networking/v1"
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
+	gatewayapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
 
 type ImmutableFieldChangeErr struct {
@@ -87,10 +87,15 @@ func MutateFuncFor(existing, desired client.Object) controllerutil.MutateFn {
 			wantSts := desired.(*appsv1.StatefulSet)
 			return mutateStatefulSet(sts, wantSts)
 
-		case *networkingv1.Ingress:
-			ing := existing.(*networkingv1.Ingress)
-			wantIng := desired.(*networkingv1.Ingress)
-			mutateIngress(ing, wantIng)
+		case *gatewayapiv1.Gateway:
+			gw := existing.(*gatewayapiv1.Gateway)
+			wantGw := desired.(*gatewayapiv1.Gateway)
+			mutateGateway(gw, wantGw)
+
+		case *gatewayapiv1.HTTPRoute:
+			rt := existing.(*gatewayapiv1.HTTPRoute)
+			wantRt := desired.(*gatewayapiv1.HTTPRoute)
+			mutateHTTPRoute(rt, wantRt)
 
 		case *corev1.Secret:
 			pr := existing.(*corev1.Secret)
@@ -135,12 +140,19 @@ func mutateConfigMap(existing, desired *corev1.ConfigMap) {
 	existing.Data = desired.Data
 }
 
-func mutateIngress(existing, desired *networkingv1.Ingress) {
+func mutateGateway(existing, desired *gatewayapiv1.Gateway) {
 	existing.Labels = desired.Labels
 	existing.Annotations = desired.Annotations
-	existing.Spec.DefaultBackend = desired.Spec.DefaultBackend
+	existing.Spec.GatewayClassName = desired.Spec.GatewayClassName
+	existing.Spec.Listeners = desired.Spec.Listeners
+}
+
+func mutateHTTPRoute(existing, desired *gatewayapiv1.HTTPRoute) {
+	existing.Labels = desired.Labels
+	existing.Annotations = desired.Annotations
+	existing.Spec.CommonRouteSpec = desired.Spec.CommonRouteSpec
+	existing.Spec.Hostnames = desired.Spec.Hostnames
 	existing.Spec.Rules = desired.Spec.Rules
-	existing.Spec.TLS = desired.Spec.TLS
 }
 
 func mutateService(existing, desired *corev1.Service) {

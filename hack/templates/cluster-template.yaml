@@ -30,6 +30,11 @@ metadata:
   name: test
 spec:
   version: v1.32.3
+  gateway:
+    gatewayClassName: nginx
+  controlPlaneEndpoint:
+    host: kink.test.local
+    port: 6443
 ---
 apiVersion: cluster.x-k8s.io/v1beta1
 kind: MachineDeployment

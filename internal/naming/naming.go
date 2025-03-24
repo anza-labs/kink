@@ -70,6 +70,10 @@ func KineServerCertificate(base string) string {
 	return DNSName(Truncate("%s-etcd-server", 63, base))
 }
 
+func KinePersistentVolumeClaim(base string) string {
+	return DNSName(Truncate("%s-kine", 63, base))
+}
+
 func KineContainer() string {
 	return "kine"
 }

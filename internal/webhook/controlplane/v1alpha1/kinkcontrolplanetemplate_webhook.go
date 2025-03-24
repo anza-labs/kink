@@ -22,13 +22,10 @@ import (
 
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
-	logf "sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 	"sigs.k8s.io/controller-runtime/pkg/webhook/admission"
 )
-
-// kinkcontrolplanetemplatelog is for logging in this file.
-var kinkcontrolplanetemplatelog = logf.Log.WithName("kinkcontrolplanetemplate-resource")
 
 // SetupKinkControlPlaneTemplateWebhookWithManager registers the webhook for KinkControlPlaneTemplate in the manager.
 func SetupKinkControlPlaneTemplateWebhookWithManager(mgr ctrl.Manager) error {
@@ -44,9 +41,7 @@ func SetupKinkControlPlaneTemplateWebhookWithManager(mgr ctrl.Manager) error {
 // KinkControlPlaneTemplateCustomDefaulter struct is responsible for setting default values
 // on the custom resource of the
 // Kind KinkControlPlaneTemplate when those are created or updated.
-type KinkControlPlaneTemplateCustomDefaulter struct {
-	// TODO(user): Add more fields as needed for defaulting
-}
+type KinkControlPlaneTemplateCustomDefaulter struct{}
 
 var _ webhook.CustomDefaulter = &KinkControlPlaneTemplateCustomDefaulter{}
 
@@ -55,12 +50,13 @@ func (d *KinkControlPlaneTemplateCustomDefaulter) Default(
 	ctx context.Context,
 	obj runtime.Object,
 ) error {
-	kinkcontrolplanetemplate, ok := obj.(*controlplanev1alpha1.KinkControlPlaneTemplate)
+	log := log.FromContext(ctx)
 
+	kinkcontrolplanetemplate, ok := obj.(*controlplanev1alpha1.KinkControlPlaneTemplate)
 	if !ok {
 		return fmt.Errorf("expected an KinkControlPlaneTemplate object but got %T", obj)
 	}
-	kinkcontrolplanetemplatelog.Info("Defaulting for KinkControlPlaneTemplate", "name", kinkcontrolplanetemplate.GetName())
+	log.Info("Defaulting for KinkControlPlaneTemplate", "name", kinkcontrolplanetemplate.GetName())
 
 	// TODO(user): fill in your defaulting logic.
 
@@ -73,9 +69,7 @@ func (d *KinkControlPlaneTemplateCustomDefaulter) Default(
 
 // KinkControlPlaneTemplateCustomValidator struct is responsible for validating the KinkControlPlaneTemplate resource
 // when it is created, updated, or deleted.
-type KinkControlPlaneTemplateCustomValidator struct {
-	// TODO(user): Add more fields as needed for validation
-}
+type KinkControlPlaneTemplateCustomValidator struct{}
 
 var _ webhook.CustomValidator = &KinkControlPlaneTemplateCustomValidator{}
 
@@ -85,11 +79,13 @@ func (v *KinkControlPlaneTemplateCustomValidator) ValidateCreate(
 	ctx context.Context,
 	obj runtime.Object,
 ) (admission.Warnings, error) {
+	log := log.FromContext(ctx)
+
 	kinkcontrolplanetemplate, ok := obj.(*controlplanev1alpha1.KinkControlPlaneTemplate)
 	if !ok {
 		return nil, fmt.Errorf("expected a KinkControlPlaneTemplate object but got %T", obj)
 	}
-	kinkcontrolplanetemplatelog.Info("Validation for KinkControlPlaneTemplate upon creation",
+	log.Info("Validation for KinkControlPlaneTemplate upon creation",
 		"name", kinkcontrolplanetemplate.GetName())
 
 	// TODO(user): fill in your validation logic upon object creation.
@@ -103,16 +99,18 @@ func (v *KinkControlPlaneTemplateCustomValidator) ValidateUpdate(
 	ctx context.Context,
 	oldObj, newObj runtime.Object,
 ) (admission.Warnings, error) {
+	log := log.FromContext(ctx)
+
 	kinkcontrolplanetemplate, ok := newObj.(*controlplanev1alpha1.KinkControlPlaneTemplate)
 	if !ok {
 		return nil, fmt.Errorf("expected a KinkControlPlaneTemplate object for the newObj but got %T", newObj)
 	}
-	kinkcontrolplanetemplatelog.Info("Validation for KinkControlPlaneTemplate upon update",
+	log.Info("Validation for KinkControlPlaneTemplate upon update",
 		"name", kinkcontrolplanetemplate.GetName())
 
 	// TODO(user): fill in your validation logic upon object update.
 
-	return nil, nil
+	return nil, validate(kinkcontrolplanetemplate.Spec.Template.Spec)
 }
 
 // ValidateDelete implements webhook.CustomValidator so a webhook will be registered
@@ -121,14 +119,16 @@ func (v *KinkControlPlaneTemplateCustomValidator) ValidateDelete(
 	ctx context.Context,
 	obj runtime.Object,
 ) (admission.Warnings, error) {
+	log := log.FromContext(ctx)
+
 	kinkcontrolplanetemplate, ok := obj.(*controlplanev1alpha1.KinkControlPlaneTemplate)
 	if !ok {
 		return nil, fmt.Errorf("expected a KinkControlPlaneTemplate object but got %T", obj)
 	}
-	kinkcontrolplanetemplatelog.Info("Validation for KinkControlPlaneTemplate upon deletion",
+	log.Info("Validation for KinkControlPlaneTemplate upon deletion",
 		"name", kinkcontrolplanetemplate.GetName())
 
 	// TODO(user): fill in your validation logic upon object deletion.
 
-	return nil, nil
+	return nil, validate(kinkcontrolplanetemplate.Spec.Template.Spec)
 }

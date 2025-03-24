@@ -143,22 +143,43 @@ func (b *Kine) Service() *corev1.Service {
 }
 
 func (b *Kine) volumes() []corev1.Volume {
-	dataVolume := corev1.Volume{Name: "data"}
+	source := corev1.VolumeSource{
+		EmptyDir: &corev1.EmptyDirVolumeSource{},
+	}
+
 	if b.KinkControlPlane.Spec.Kine.Persistence != nil {
 		persistence := b.KinkControlPlane.Spec.Kine.Persistence
-		if persistence.PersistentVolumeClaim != nil {
-			dataVolume.PersistentVolumeClaim = persistence.PersistentVolumeClaim
-		} else {
-			dataVolume.EmptyDir = &corev1.EmptyDirVolumeSource{}
-			if persistence.EmptyDir != nil {
-				dataVolume.EmptyDir.Medium = persistence.EmptyDir.Medium
-				dataVolume.EmptyDir.SizeLimit = persistence.EmptyDir.SizeLimit
+		if persistence.EmptyDir != nil {
+			source = corev1.VolumeSource{
+				EmptyDir: persistence.EmptyDir,
+			}
+		} else if persistence.Ephemeral != nil {
+			source = corev1.VolumeSource{
+				Ephemeral: persistence.Ephemeral,
+			}
+		} else if persistence.HostPath != nil {
+			source = corev1.VolumeSource{
+				HostPath: persistence.HostPath,
+			}
+		} else if persistence.PersistentVolumeClaim != nil {
+			source = corev1.VolumeSource{
+				PersistentVolumeClaim: persistence.PersistentVolumeClaim,
+			}
+		} else if persistence.PersistentVolumeClaimTemplate != nil {
+			source = corev1.VolumeSource{
+				PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+					ClaimName: naming.KinePersistentVolumeClaim(b.KinkControlPlane.Name),
+					ReadOnly:  false,
+				},
 			}
 		}
 	}
 
 	return []corev1.Volume{
-		dataVolume,
+		{
+			Name:         "data",
+			VolumeSource: source,
+		},
 		{
 			Name: "tls",
 			VolumeSource: corev1.VolumeSource{

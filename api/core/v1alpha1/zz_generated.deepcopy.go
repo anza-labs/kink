@@ -46,10 +46,25 @@ func (in *Persistence) DeepCopyInto(out *Persistence) {
 		*out = new(v1.EmptyDirVolumeSource)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.Ephemeral != nil {
+		in, out := &in.Ephemeral, &out.Ephemeral
+		*out = new(v1.EphemeralVolumeSource)
+		(*in).DeepCopyInto(*out)
+	}
+	if in.HostPath != nil {
+		in, out := &in.HostPath, &out.HostPath
+		*out = new(v1.HostPathVolumeSource)
+		(*in).DeepCopyInto(*out)
+	}
 	if in.PersistentVolumeClaim != nil {
 		in, out := &in.PersistentVolumeClaim, &out.PersistentVolumeClaim
 		*out = new(v1.PersistentVolumeClaimVolumeSource)
 		**out = **in
+	}
+	if in.PersistentVolumeClaimTemplate != nil {
+		in, out := &in.PersistentVolumeClaimTemplate, &out.PersistentVolumeClaimTemplate
+		*out = new(v1.PersistentVolumeClaimSpec)
+		(*in).DeepCopyInto(*out)
 	}
 }
 

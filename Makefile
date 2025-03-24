@@ -173,7 +173,7 @@ endif
 
 .PHONY: cluster
 cluster: kind ctlptl clusterctl kustomize
-	@PATH=${LOCALBIN}:$(PATH) $(CTLPTL) apply -f hack/kind.yaml
+	PATH=${LOCALBIN}:$(PATH) $(CTLPTL) apply -f hack/kind.yaml
 	$(CLUSTERCTL) init \
 		--core=cluster-api:$(CLUSTER_API_VERSION) \
 		--bootstrap=kubeadm:$(CLUSTER_API_VERSION) \
@@ -182,6 +182,21 @@ cluster: kind ctlptl clusterctl kustomize
 		--validate=true \
 		--wait-providers \
 		--wait-provider-timeout=360
+	$(CONTAINER_TOOL) run \
+		--rm --interactive --tty --detach \
+		--name cloud-provider-kind \
+		--network kind \
+		-v /var/run/docker.sock:/var/run/docker.sock \
+		ghcr.io/anza-labs/library/cloud-provider-kind:${CLOUD_PROVIDER_KIND_VERSION} || true
+	$(KUBECTL) apply -f \
+		 https://github.com/kubernetes-sigs/gateway-api/releases/download/$(GATEWAY_API_VERSION)/standard-install.yaml
+	$(KUBECTL) apply -f \
+		https://raw.githubusercontent.com/nginx/nginx-gateway-fabric/$(NGINX_GATEWAY_FABRIC_VERSION)/deploy/crds.yaml
+	$(KUBECTL) apply -f \
+		https://raw.githubusercontent.com/nginx/nginx-gateway-fabric/$(NGINX_GATEWAY_FABRIC_VERSION)/deploy/default/deploy.yaml
+	$(KUBECTL) apply -f \
+		https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-$(NGINX_INGRESS_VERSION)/deploy/static/provider/cloud/deploy.yaml
+
 
 .PHONY: cluster-reset
 cluster-reset: kind ctlptl
@@ -223,6 +238,9 @@ ADDLICENSE_VERSION ?= v1.1.1
 # renovate: datasource=github-tags depName=kyverno/chainsaw
 CHAINSAW_VERSION ?= v0.2.12
 
+# renovate: datasource=docker depName=ghcr.io/anza-labs/library/cloud-provider-kind
+CLOUD_PROVIDER_KIND_VERSION ?= v0.6.0
+
 CLUSTER_API_VERSION ?= $(shell grep 'sigs.k8s.io/cluster-api ' ./go.mod | cut -d ' ' -f 2)
 
 # renovate: datasource=github-tags depName=kubernetes-sigs/controller-tools
@@ -234,8 +252,17 @@ CRD_REF_DOCS_VERSION ?= v0.1.0
 # renovate: datasource=github-tags depName=tilt-dev/ctlptl
 CTLPTL_VERSION ?= v0.8.40
 
+# renovate: datasource=github-tags depName=kubernetes-sigs/gateway-api
+GATEWAY_API_VERSION ?= v1.2.0
+
 # renovate: datasource=github-tags depName=golangci/golangci-lint
 GOLANGCI_LINT_VERSION ?= v1.64.8
+
+# renovate: datasource=github-tags depName=nginx/nginx-gateway-fabric
+NGINX_GATEWAY_FABRIC_VERSION ?= v1.6.2
+
+# renovate: datasource=github-tags depName=kubernetes/ingress-nginx
+NGINX_INGRESS_VERSION ?= v1.12.0
 
 # renovate: datasource=github-tags depName=kubernetes-sigs/kind
 KIND_VERSION ?= v0.27.0

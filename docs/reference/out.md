@@ -29,8 +29,11 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `host` _string_ | host is the hostname on which the API server is serving. |  |  |
+| `host` _[HostnameOrIP](#hostnameorip)_ | host is the hostname on which the API server is serving. |  |  |
 | `port` _integer_ | port is the port on which the API server is serving. |  |  |
+| `serviceType` _[ServiceType](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#servicetype-v1-core)_ | ServiceType | ClusterIP |  |
+| `gateway` _[Gateway](#gateway)_ | Gateway |  |  |
+| `ingress` _[Ingress](#ingress)_ | Ingress |  |  |
 
 
 #### APIServer
@@ -81,6 +84,52 @@ _Appears in:_
 | `resources` _[ResourceRequirements](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcerequirements-v1-core)_ | Resources describes the compute resource requirements for the container. |  |  |
 | `verbosity` _integer_ | Verbosity specifies the log verbosity level for the container. Valid values range from 0 (silent) to 10 (most verbose). | 4 | Maximum: 10 <br />Minimum: 0 <br /> |
 | `extraArgs` _object (keys:string, values:string)_ | ExtraArgs defines additional arguments to be passed to the container executable. |  |  |
+
+
+#### Gateway
+
+
+
+Gateway
+
+
+
+_Appears in:_
+- [APIEndpoint](#apiendpoint)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `gatewayClassName` _string_ | GatewayClassName used for this Gateway. This is the name of a<br />GatewayClass resource. |  |  |
+
+
+#### HostnameOrIP
+
+_Underlying type:_ _string_
+
+HostnameOrIP
+
+
+
+_Appears in:_
+- [APIEndpoint](#apiendpoint)
+
+
+
+#### Ingress
+
+
+
+Ingress
+
+
+
+_Appears in:_
+- [APIEndpoint](#apiendpoint)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `annotations` _object (keys:string, values:string)_ | Annotations is an unstructured key value map stored with a resource that may be<br />set by external tools to store and retrieve arbitrary metadata. They are not<br />queryable and should be preserved when modifying objects. |  |  |
+| `ingressClassName` _string_ | GatewayClassName used for this Gateway. This is the name of a<br />GatewayClass resource. |  |  |
 
 
 #### Kine
@@ -159,7 +208,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `version` _string_ | Version defines the desired Kubernetes version for the control plane.<br />The value must be a valid semantic version; also if the value provided by the user<br />does not start with the v prefix, it must be added. |  |  |
-| `controlPlaneEndpoint` _[APIEndpoint](#apiendpoint)_ | ControlPlaneEndpoint represents the endpoint used to communicate with the control plane. |  |  |
+| `controlPlaneEndpoint` _[APIEndpoint](#apiendpoint)_ | ControlPlaneEndpoint represents the endpoint used to communicate with the control plane.<br />Based on it, an ingress will be provisioned. |  |  |
 | `replicas` _integer_ | Number of desired ControlPlane replicas. Defaults to 1. | 1 | Maximum: 5 <br />Minimum: 1 <br /> |
 | `imagePullSecrets` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#localobjectreference-v1-core) array_ | ImagePullSecrets is an optional list of references to secrets in the same namespace to use<br />for pulling any of the images used by KinkControlPlane. If specified, these secrets will<br />be passed to individual puller implementations for them to use. |  |  |
 | `affinity` _[Affinity](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#affinity-v1-core)_ | Affinity specifies the scheduling constraints for Pods. |  |  |

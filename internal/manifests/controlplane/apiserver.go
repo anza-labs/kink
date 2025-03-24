@@ -16,6 +16,7 @@ package controlplane
 
 import (
 	"fmt"
+	"maps"
 	"path"
 
 	controlplanev1alpha1 "github.com/anza-labs/kink/api/controlplane/v1alpha1"
@@ -25,10 +26,12 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	netv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	gatewayapiv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
 
 const (
@@ -60,6 +63,28 @@ func (b *APIServer) Build() ([]client.Object, error) {
 		return nil, fmt.Errorf("failed to build Deployment: %w", err)
 	}
 	objects = append(objects, depl)
+
+	if b.KinkControlPlane.Spec.ControlPlaneEndpoint.Gateway != nil {
+		gtw, err := b.Gateway()
+		if err != nil {
+			return nil, fmt.Errorf("failed to build Gateway: %w", err)
+		}
+		objects = append(objects, gtw)
+
+		rte, err := b.HTTPRoute()
+		if err != nil {
+			return nil, fmt.Errorf("failed to build HTTPRoute: %w", err)
+		}
+		objects = append(objects, rte)
+	}
+
+	if b.KinkControlPlane.Spec.ControlPlaneEndpoint.Ingress != nil {
+		ing, err := b.Ingress()
+		if err != nil {
+			return nil, fmt.Errorf("failed to build Ingress: %w", err)
+		}
+		objects = append(objects, ing)
+	}
 
 	return objects, nil
 }
@@ -149,13 +174,185 @@ func (b *APIServer) Service() (*corev1.Service, error) {
 		},
 		Spec: corev1.ServiceSpec{
 			Selector: selectorLabels,
-			Type:     corev1.ServiceTypeClusterIP,
+			Type:     b.KinkControlPlane.Spec.ControlPlaneEndpoint.ServiceType,
 			Ports: []corev1.ServicePort{
 				{
 					Name:       "server",
 					Port:       6443,
 					TargetPort: intstr.FromString("server"),
 					Protocol:   corev1.ProtocolTCP,
+				},
+			},
+		},
+	}, nil
+}
+
+func (b *APIServer) Gateway() (*gatewayapiv1.Gateway, error) {
+	name := naming.APIServer(b.KinkControlPlane.Name)
+	certName := naming.APIServerCertificate(b.KinkControlPlane.Name)
+
+	image, err := manifestutils.Image(
+		b.KinkControlPlane.Spec.APIServer.Image,
+		b.KinkControlPlane.Spec.Version,
+		version.APIServer(),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to assess image: %w", err)
+	}
+
+	labels := manifestutils.Labels(
+		b.KinkControlPlane.ObjectMeta,
+		name, image, ComponentAPIServer, ConceptControlPlane,
+		nil,
+	)
+	annotations := manifestutils.Annotations(b.KinkControlPlane, nil)
+
+	host := gatewayapiv1.Hostname(b.KinkControlPlane.Spec.ControlPlaneEndpoint.Host)
+	port := gatewayapiv1.PortNumber(b.KinkControlPlane.Spec.ControlPlaneEndpoint.Port)
+	gatewayClassName := gatewayapiv1.ObjectName(b.KinkControlPlane.Spec.ControlPlaneEndpoint.Gateway.GatewayClassName)
+
+	return &gatewayapiv1.Gateway{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:        name,
+			Namespace:   b.KinkControlPlane.Namespace,
+			Labels:      labels,
+			Annotations: annotations,
+		},
+		Spec: gatewayapiv1.GatewaySpec{
+			GatewayClassName: gatewayClassName,
+			Listeners: []gatewayapiv1.Listener{
+				{
+					Name:     gatewayapiv1.SectionName(name),
+					Hostname: &host,
+					Port:     port,
+					Protocol: gatewayapiv1.TLSProtocolType,
+					TLS: &gatewayapiv1.GatewayTLSConfig{
+						Mode: ptr.To(gatewayapiv1.TLSModePassthrough),
+						CertificateRefs: []gatewayapiv1.SecretObjectReference{
+							{
+								Name: gatewayapiv1.ObjectName(certName),
+							},
+						},
+					},
+				},
+			},
+		},
+	}, nil
+}
+
+func (b *APIServer) HTTPRoute() (*gatewayapiv1.HTTPRoute, error) {
+	name := naming.APIServer(b.KinkControlPlane.Name)
+
+	image, err := manifestutils.Image(
+		b.KinkControlPlane.Spec.APIServer.Image,
+		b.KinkControlPlane.Spec.Version,
+		version.APIServer(),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to assess image: %w", err)
+	}
+
+	labels := manifestutils.Labels(
+		b.KinkControlPlane.ObjectMeta,
+		name, image, ComponentAPIServer, ConceptControlPlane,
+		nil,
+	)
+	annotations := manifestutils.Annotations(b.KinkControlPlane, nil)
+
+	host := gatewayapiv1.Hostname(b.KinkControlPlane.Spec.ControlPlaneEndpoint.Host)
+
+	return &gatewayapiv1.HTTPRoute{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:        name,
+			Namespace:   b.KinkControlPlane.Namespace,
+			Labels:      labels,
+			Annotations: annotations,
+		},
+		Spec: gatewayapiv1.HTTPRouteSpec{
+			CommonRouteSpec: gatewayapiv1.CommonRouteSpec{
+				ParentRefs: []gatewayapiv1.ParentReference{
+					{
+						Name: gatewayapiv1.ObjectName(name),
+					},
+				},
+			},
+			Hostnames: []gatewayapiv1.Hostname{host},
+			Rules: []gatewayapiv1.HTTPRouteRule{
+				{
+					BackendRefs: []gatewayapiv1.HTTPBackendRef{
+						{
+							BackendRef: gatewayapiv1.BackendRef{
+								BackendObjectReference: gatewayapiv1.BackendObjectReference{
+									Name: gatewayapiv1.ObjectName(name),
+									Port: ptr.To(gatewayapiv1.PortNumber(6443)),
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}, nil
+}
+
+func (b *APIServer) Ingress() (*netv1.Ingress, error) {
+	name := naming.APIServer(b.KinkControlPlane.Name)
+
+	image, err := manifestutils.Image(
+		b.KinkControlPlane.Spec.APIServer.Image,
+		b.KinkControlPlane.Spec.Version,
+		version.APIServer(),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to assess image: %w", err)
+	}
+
+	labels := manifestutils.Labels(
+		b.KinkControlPlane.ObjectMeta,
+		name, image, ComponentAPIServer, ConceptControlPlane,
+		nil,
+	)
+	annotations := manifestutils.Annotations(b.KinkControlPlane, nil)
+	maps.Insert(annotations, maps.All(b.KinkControlPlane.Spec.ControlPlaneEndpoint.Ingress.Annotations))
+
+	return &netv1.Ingress{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:        name,
+			Namespace:   b.KinkControlPlane.Namespace,
+			Labels:      labels,
+			Annotations: annotations,
+		},
+		Spec: netv1.IngressSpec{
+			IngressClassName: &b.KinkControlPlane.Spec.ControlPlaneEndpoint.Ingress.IngressClassName,
+			TLS: []netv1.IngressTLS{
+				{
+					Hosts: []string{
+						string(b.KinkControlPlane.Spec.ControlPlaneEndpoint.Host),
+					},
+					SecretName: naming.APIServerCertificate(b.KinkControlPlane.Name),
+				},
+			},
+			Rules: []netv1.IngressRule{
+				{
+					Host: string(b.KinkControlPlane.Spec.ControlPlaneEndpoint.Host),
+					IngressRuleValue: netv1.IngressRuleValue{
+						HTTP: &netv1.HTTPIngressRuleValue{
+							Paths: []netv1.HTTPIngressPath{
+								{
+									Path:     "/",
+									PathType: ptr.To(netv1.PathTypePrefix),
+									Backend: netv1.IngressBackend{
+										Service: &netv1.IngressServiceBackend{
+											Name: name,
+											Port: netv1.ServiceBackendPort{
+												Name: "server",
+											},
+										},
+									},
+								},
+							},
+						},
+					},
 				},
 			},
 		},

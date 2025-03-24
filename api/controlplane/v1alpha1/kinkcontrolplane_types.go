@@ -15,6 +15,8 @@
 package v1alpha1
 
 import (
+	"net"
+
 	kinkcorev1alpha1 "github.com/anza-labs/kink/api/core/v1alpha1"
 
 	corev1 "k8s.io/api/core/v1"
@@ -29,8 +31,9 @@ type KinkControlPlaneSpec struct {
 	Version string `json:"version"`
 
 	// ControlPlaneEndpoint represents the endpoint used to communicate with the control plane.
+	// Based on it, an ingress will be provisioned.
 	// +optional
-	ControlPlaneEndpoint APIEndpoint `json:"controlPlaneEndpoint"`
+	ControlPlaneEndpoint *APIEndpoint `json:"controlPlaneEndpoint,omitempty"`
 
 	// Number of desired ControlPlane replicas. Defaults to 1.
 	// +optional
@@ -66,10 +69,37 @@ type KinkControlPlaneSpec struct {
 // APIEndpoint represents a reachable Kubernetes API endpoint.
 type APIEndpoint struct {
 	// host is the hostname on which the API server is serving.
-	Host string `json:"host"`
+	Host HostnameOrIP `json:"host"`
 
 	// port is the port on which the API server is serving.
 	Port int32 `json:"port"`
+
+	// ServiceType
+	// +optional
+	// +default="ClusterIP"
+	// +kubebuilder:default="ClusterIP"
+	ServiceType corev1.ServiceType `json:"serviceType"`
+
+	// Gateway
+	// +optional
+	Gateway *Gateway `json:"gateway,omitempty"`
+
+	// Ingress
+	// +optional
+	Ingress *Ingress `json:"ingress,omitempty"`
+}
+
+// HostnameOrIP
+type HostnameOrIP string
+
+// IsIP checks if the value is a valid IP address
+func (h HostnameOrIP) IsIP() bool {
+	return net.ParseIP(string(h)) != nil
+}
+
+// IsHostname checks if the value is a valid hostname
+func (h HostnameOrIP) IsHostname() bool {
+	return !h.IsIP()
 }
 
 // Kine represents ETCD-shim container.
@@ -124,6 +154,26 @@ type KubeComponent struct {
 	// ExtraArgs defines additional arguments to be passed to the container executable.
 	// +optional
 	ExtraArgs map[string]string `json:"extraArgs,omitempty"`
+}
+
+// Gateway
+type Gateway struct {
+	// GatewayClassName used for this Gateway. This is the name of a
+	// GatewayClass resource.
+	GatewayClassName string `json:"gatewayClassName"`
+}
+
+// Ingress
+type Ingress struct {
+	// Annotations is an unstructured key value map stored with a resource that may be
+	// set by external tools to store and retrieve arbitrary metadata. They are not
+	// queryable and should be preserved when modifying objects.
+	// +optional
+	Annotations map[string]string `json:"annotations,omitempty"`
+
+	// GatewayClassName used for this Gateway. This is the name of a
+	// GatewayClass resource.
+	IngressClassName string `json:"ingressClassName"`
 }
 
 // KinkControlPlaneStatus defines the observed state of KinkControlPlane.
