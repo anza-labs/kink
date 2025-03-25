@@ -22,6 +22,9 @@ go.work
 # Generated release manifests
 dist/
 
+# Temporary files
+*.tmp
+
 # editor and IDE paraphernalia
 .idea
 .vscode

@@ -1118,7 +1118,7 @@ spec:
                             format: int32
                             type: integer
                           serviceType:
-                            default: ClusterIP
+                            default: LoadBalancer
                             description: ServiceType
                             type: string
                         required:

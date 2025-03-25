@@ -31,7 +31,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `host` _[HostnameOrIP](#hostnameorip)_ | host is the hostname on which the API server is serving. |  |  |
 | `port` _integer_ | port is the port on which the API server is serving. |  |  |
-| `serviceType` _[ServiceType](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#servicetype-v1-core)_ | ServiceType | ClusterIP |  |
+| `serviceType` _[ServiceType](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#servicetype-v1-core)_ | ServiceType | LoadBalancer |  |
 | `gateway` _[Gateway](#gateway)_ | Gateway. |  |  |
 | `ingress` _[Ingress](#ingress)_ | Ingress. |  |  |
 

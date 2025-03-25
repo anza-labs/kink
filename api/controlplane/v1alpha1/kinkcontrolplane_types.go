@@ -75,8 +75,8 @@ type APIEndpoint struct {
 
 	// ServiceType
 	// +optional
-	// +default="ClusterIP"
-	// +kubebuilder:default="ClusterIP"
+	// +default="LoadBalancer"
+	// +kubebuilder:default="LoadBalancer"
 	ServiceType corev1.ServiceType `json:"serviceType"`
 
 	// Gateway.

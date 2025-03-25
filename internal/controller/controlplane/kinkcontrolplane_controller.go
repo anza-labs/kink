@@ -27,11 +27,13 @@ import (
 	"github.com/anza-labs/kink/internal/controller/util"
 	"github.com/anza-labs/kink/internal/manifests/controlplane"
 	"github.com/anza-labs/kink/internal/manifests/manifestutils"
+	"github.com/anza-labs/kink/internal/naming"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	netv1 "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/utils/ptr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
@@ -54,6 +56,7 @@ type KinkControlPlaneReconciler struct {
 }
 
 //nolint:lll // kubebuilder directives cannot be split into lines
+// +kubebuilder:rbac:groups=core,resources=nodes,verbs=get;list;watch
 // +kubebuilder:rbac:groups=controlplane.cluster.x-k8s.io,resources=kinkcontrolplanes,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=controlplane.cluster.x-k8s.io,resources=kinkcontrolplanes/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=controlplane.cluster.x-k8s.io,resources=kinkcontrolplanes/finalizers,verbs=update
@@ -133,6 +136,11 @@ func (r *KinkControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	log.V(2).Info("Starting ControlPlane resource reconciliation")
 	if err := r.reconcileResources(ctx, kinkCP); err != nil {
 		log.Error(err, "Failed to reconcile resources")
+		return ctrl.Result{}, err
+	}
+
+	if err := r.reconcileEndpoint(ctx, kinkCP); err != nil {
+		log.Error(err, "Failed to reconcile endpoint")
 		return ctrl.Result{}, err
 	}
 
@@ -348,6 +356,11 @@ func (r *KinkControlPlaneReconciler) reconcileStatus(
 		kinkCP.Status.Version = ptr.To(lowestVersion.Original())
 	}
 
+	if kinkCP.Spec.ControlPlaneEndpoint.Host == "" {
+		errs = errors.Join(errs, errors.New("endpoint not ready"))
+		allReady = false
+	}
+
 	if !allReady {
 		errs = errors.Join(errs, errors.New("not all components are ready"))
 	}
@@ -357,6 +370,61 @@ func (r *KinkControlPlaneReconciler) reconcileStatus(
 	}
 
 	return errs
+}
+
+func (r *KinkControlPlaneReconciler) reconcileEndpoint(
+	ctx context.Context,
+	kinkCP *controlplanev1alpha1.KinkControlPlane,
+) error {
+	if kinkCP.Spec.ControlPlaneEndpoint.Host != "" {
+		return nil
+	}
+
+	svc := &corev1.Service{}
+	err := r.Get(ctx, types.NamespacedName{
+		Name:      naming.APIServer(kinkCP.Name),
+		Namespace: kinkCP.Namespace,
+	}, svc)
+	if err != nil {
+		return fmt.Errorf("failed to get API server service: %w", err)
+	}
+
+	switch svc.Spec.Type {
+	case corev1.ServiceTypeNodePort:
+		if len(svc.Spec.Ports) == 0 {
+			return fmt.Errorf("API server service has no ports")
+		}
+		kinkCP.Spec.ControlPlaneEndpoint.Port = svc.Spec.Ports[0].NodePort
+
+		nodes := &corev1.NodeList{}
+		if err := r.List(ctx, nodes); err != nil {
+			return fmt.Errorf("failed to list nodes: %w", err)
+		}
+		for _, node := range nodes.Items {
+			for _, addr := range node.Status.Addresses {
+				if addr.Type == corev1.NodeExternalIP {
+					kinkCP.Spec.ControlPlaneEndpoint.Host = controlplanev1alpha1.HostnameOrIP(addr.Address)
+					return r.Update(ctx, kinkCP)
+				}
+			}
+		}
+		return fmt.Errorf("no node with external IP found")
+
+	case corev1.ServiceTypeLoadBalancer:
+		if len(svc.Spec.Ports) == 0 {
+			return fmt.Errorf("API server service has no ports")
+		}
+		kinkCP.Spec.ControlPlaneEndpoint.Port = svc.Spec.Ports[0].Port
+
+		if len(svc.Status.LoadBalancer.Ingress) == 0 || svc.Status.LoadBalancer.Ingress[0].IP == "" {
+			return fmt.Errorf("LoadBalancer service has no external IP")
+		}
+		kinkCP.Spec.ControlPlaneEndpoint.Host = controlplanev1alpha1.HostnameOrIP(svc.Status.LoadBalancer.Ingress[0].IP)
+		return r.Update(ctx, kinkCP)
+
+	default:
+		return fmt.Errorf("unsupported service type: %s", svc.Spec.Type)
+	}
 }
 
 // GetOwnedResourceTypes returns all the resource types the controller can own.
