@@ -32,8 +32,7 @@ type KinkControlPlaneSpec struct {
 
 	// ControlPlaneEndpoint represents the endpoint used to communicate with the control plane.
 	// Based on it, an ingress will be provisioned.
-	// +optional
-	ControlPlaneEndpoint *APIEndpoint `json:"controlPlaneEndpoint,omitempty"`
+	ControlPlaneEndpoint APIEndpoint `json:"controlPlaneEndpoint,omitempty"`
 
 	// Number of desired ControlPlane replicas. Defaults to 1.
 	// +optional
