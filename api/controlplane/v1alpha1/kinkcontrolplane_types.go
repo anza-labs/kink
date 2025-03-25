@@ -80,24 +80,24 @@ type APIEndpoint struct {
 	// +kubebuilder:default="ClusterIP"
 	ServiceType corev1.ServiceType `json:"serviceType"`
 
-	// Gateway
+	// Gateway.
 	// +optional
 	Gateway *Gateway `json:"gateway,omitempty"`
 
-	// Ingress
+	// Ingress.
 	// +optional
 	Ingress *Ingress `json:"ingress,omitempty"`
 }
 
-// HostnameOrIP
+// HostnameOrIP.
 type HostnameOrIP string
 
-// IsIP checks if the value is a valid IP address
+// IsIP checks if the value is a valid IP address.
 func (h HostnameOrIP) IsIP() bool {
 	return net.ParseIP(string(h)) != nil
 }
 
-// IsHostname checks if the value is a valid hostname
+// IsHostname checks if the value is a valid hostname.
 func (h HostnameOrIP) IsHostname() bool {
 	return !h.IsIP()
 }
@@ -156,14 +156,14 @@ type KubeComponent struct {
 	ExtraArgs map[string]string `json:"extraArgs,omitempty"`
 }
 
-// Gateway
+// Gateway.
 type Gateway struct {
 	// GatewayClassName used for this Gateway. This is the name of a
 	// GatewayClass resource.
 	GatewayClassName string `json:"gatewayClassName"`
 }
 
-// Ingress
+// Ingress.
 type Ingress struct {
 	// Annotations is an unstructured key value map stored with a resource that may be
 	// set by external tools to store and retrieve arbitrary metadata. They are not
