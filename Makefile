@@ -256,7 +256,7 @@ CTLPTL_VERSION ?= v0.8.40
 GATEWAY_API_VERSION ?= v1.2.0
 
 # renovate: datasource=github-tags depName=golangci/golangci-lint
-GOLANGCI_LINT_VERSION ?= v1.64.8
+GOLANGCI_LINT_VERSION ?= v2.0.1
 
 # renovate: datasource=github-tags depName=nginx/nginx-gateway-fabric
 NGINX_GATEWAY_FABRIC_VERSION ?= v1.6.2
