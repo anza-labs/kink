@@ -257,7 +257,7 @@ CRD_REF_DOCS_VERSION ?= v0.1.0
 CTLPTL_VERSION ?= v0.8.40
 
 # renovate: datasource=github-tags depName=kubernetes-sigs/gateway-api
-GATEWAY_API_VERSION ?= v1.2.0
+GATEWAY_API_VERSION ?= v1.2.1
 
 # renovate: datasource=github-tags depName=golangci/golangci-lint
 GOLANGCI_LINT_VERSION ?= v2.0.1
