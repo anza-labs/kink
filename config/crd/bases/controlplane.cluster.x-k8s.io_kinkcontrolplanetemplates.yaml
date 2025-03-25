@@ -1079,7 +1079,7 @@ spec:
                           Based on it, an ingress will be provisioned.
                         properties:
                           gateway:
-                            description: Gateway
+                            description: Gateway.
                             properties:
                               gatewayClassName:
                                 description: |-
@@ -1094,7 +1094,7 @@ spec:
                               is serving.
                             type: string
                           ingress:
-                            description: Ingress
+                            description: Ingress.
                             properties:
                               annotations:
                                 additionalProperties:

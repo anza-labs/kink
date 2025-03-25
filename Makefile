@@ -65,12 +65,16 @@ test: manifests generate ## Run tests.
 test-e2e: chainsaw ## Run the e2e tests against a k8s instance using Kyverno Chainsaw.
 	$(CHAINSAW) test ${CHAINSAW_ARGS}
 
+.PHONY: fmt
+fmt: golangci-lint ## Run golangci-lint formatters.
+	$(GOLANGCI_LINT) fmt
+
 .PHONY: lint
-lint: golangci-lint ## Run golangci-lint linter.
+lint: golangci-lint ## Run golangci-lint linters.
 	$(GOLANGCI_LINT) run
 
 .PHONY: lint-fix
-lint-fix: golangci-lint ## Run golangci-lint linter and perform fixes.
+lint-fix: golangci-lint ## Run golangci-lint linters and perform fixes.
 	$(GOLANGCI_LINT) run --fix
 
 .PHONY: lint-manifests
@@ -113,7 +117,7 @@ serve-docs: ## Serve dev documentation on port 8000
 
 .PHONY: diff
 diff: ## Run git diff-index to check if any changes are made.
-	git --no-pager diff HEAD --
+	git --no-pager diff --exit-code HEAD --
 
 .PHONY: publish
 publish: ## Runs the script that publishes the latest documentation.
@@ -256,7 +260,7 @@ CTLPTL_VERSION ?= v0.8.40
 GATEWAY_API_VERSION ?= v1.2.0
 
 # renovate: datasource=github-tags depName=golangci/golangci-lint
-GOLANGCI_LINT_VERSION ?= v1.64.8
+GOLANGCI_LINT_VERSION ?= v2.0.1
 
 # renovate: datasource=github-tags depName=nginx/nginx-gateway-fabric
 NGINX_GATEWAY_FABRIC_VERSION ?= v1.6.2

@@ -98,7 +98,7 @@ func (r *KinkControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	}
 
 	// Handle finalizer logic
-	if !kinkCP.ObjectMeta.DeletionTimestamp.IsZero() {
+	if !kinkCP.DeletionTimestamp.IsZero() {
 		if controllerutil.ContainsFinalizer(kinkCP, controlplaneFinalizer) {
 			// Perform cleanup
 			log.V(3).Info("Performing cleanup and removing finalizer")

@@ -32,8 +32,8 @@ _Appears in:_
 | `host` _[HostnameOrIP](#hostnameorip)_ | host is the hostname on which the API server is serving. |  |  |
 | `port` _integer_ | port is the port on which the API server is serving. |  |  |
 | `serviceType` _[ServiceType](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#servicetype-v1-core)_ | ServiceType | ClusterIP |  |
-| `gateway` _[Gateway](#gateway)_ | Gateway |  |  |
-| `ingress` _[Ingress](#ingress)_ | Ingress |  |  |
+| `gateway` _[Gateway](#gateway)_ | Gateway. |  |  |
+| `ingress` _[Ingress](#ingress)_ | Ingress. |  |  |
 
 
 #### APIServer
@@ -90,7 +90,7 @@ _Appears in:_
 
 
 
-Gateway
+Gateway.
 
 
 
@@ -106,7 +106,7 @@ _Appears in:_
 
 _Underlying type:_ _string_
 
-HostnameOrIP
+HostnameOrIP.
 
 
 
@@ -119,7 +119,7 @@ _Appears in:_
 
 
 
-Ingress
+Ingress.
 
 
 
