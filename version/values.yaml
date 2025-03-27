@@ -18,3 +18,13 @@ kine:
     registry: "ghcr.io"
     repository: "anza-labs/library/kine"
     tag: "0.13.10"
+konnectivityServer:
+  image:
+    registry: "registry.k8s.io"
+    repository: "kas-network-proxy/proxy-server"
+    tag: "v0.32.0"
+konnectivityAgent:
+  image:
+    registry: "registry.k8s.io"
+    repository: "kas-network-proxy/proxy-agent"
+    tag: "v0.32.0"

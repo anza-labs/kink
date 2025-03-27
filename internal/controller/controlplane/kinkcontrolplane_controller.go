@@ -26,12 +26,14 @@ import (
 	controlplanev1alpha1 "github.com/anza-labs/kink/api/controlplane/v1alpha1"
 	"github.com/anza-labs/kink/internal/controller/util"
 	"github.com/anza-labs/kink/internal/manifests/controlplane"
+	"github.com/anza-labs/kink/internal/manifests/managedcluster"
 	"github.com/anza-labs/kink/internal/manifests/manifestutils"
 	"github.com/anza-labs/kink/internal/naming"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	netv1 "k8s.io/api/networking/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/utils/ptr"
@@ -139,11 +141,19 @@ func (r *KinkControlPlaneReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		return ctrl.Result{}, err
 	}
 
+	log.V(2).Info("Reconciling endpoint")
 	if err := r.reconcileEndpoint(ctx, kinkCP); err != nil {
 		log.Error(err, "Failed to reconcile endpoint")
 		return ctrl.Result{}, err
 	}
 
+	log.V(2).Info("Reconciling managed cluster resources")
+	if err := r.reconcileManagedClusterResources(ctx, kinkCP); err != nil {
+		log.Error(err, "Failed to reconcile managed cluster resources")
+		return ctrl.Result{}, err
+	}
+
+	log.V(2).Info("Reconciling status")
 	if err := r.reconcileStatus(ctx, kinkCP); err != nil {
 		log.Error(err, "Failed to reconcile status")
 		return ctrl.Result{}, err
@@ -214,12 +224,22 @@ func (r *KinkControlPlaneReconciler) reconcileResources(
 		return fmt.Errorf("failed to build kubeconfigs: %w", err)
 	}
 
+	ls, err := metav1.LabelSelectorAsSelector(&metav1.LabelSelector{
+		MatchLabels: map[string]string{
+			manifestutils.LabelSecret: manifestutils.LabelValueKubeconfig,
+		},
+	})
+	if err != nil {
+		return fmt.Errorf("failed to create label selector: %w", err)
+	}
+
 	ownedSecrets, err := util.FindOwnedObjects(
 		ctx,
 		r.Client,
 		r.Scheme,
 		kinkCP,
 		r.GetOwnedResourceTypes(util.Only[*corev1.Secret]{}),
+		&client.ListOptions{LabelSelector: ls},
 	)
 	if err != nil {
 		return fmt.Errorf("failed to find owned secrets: %w", err)
@@ -236,6 +256,65 @@ func (r *KinkControlPlaneReconciler) reconcileResources(
 		ownedSecrets,
 	); err != nil {
 		return fmt.Errorf("failed to ensure secrets: %w", err)
+	}
+
+	return nil
+}
+
+// reconcile ensures that the necessary resources for the given cluster
+// are built and applied in the managed cluster.
+func (r *KinkControlPlaneReconciler) reconcileManagedClusterResources(
+	ctx context.Context,
+	kinkCP *controlplanev1alpha1.KinkControlPlane,
+) error {
+	log := log.FromContext(ctx)
+
+	log.V(2).Info("Building client")
+	endpoint := naming.LocalAPIServerEndpoint(kinkCP.Name, kinkCP.Namespace)
+
+	key := types.NamespacedName{
+		Name:      naming.AdminCertificate(kinkCP.Name),
+		Namespace: kinkCP.Namespace,
+	}
+
+	cfg, err := manifestutils.NewKubeconfigFor(ctx, r.Client, kinkCP.Name, endpoint, key)
+	if err != nil {
+		return fmt.Errorf("failed to create kubeconfig: %w", err)
+	}
+
+	cli, err := manifestutils.ClientFromKubeconfig(cfg)
+	if err != nil {
+		return fmt.Errorf("failed to create client: %w", err)
+	}
+
+	log.V(2).Info("Building components")
+	obj, err := (&managedcluster.Builder{}).Build(kinkCP)
+	if err != nil {
+		return fmt.Errorf("failed to build components: %w", err)
+	}
+
+	ownedObjects, err := util.FindOwnedObjects(
+		ctx,
+		cli,
+		r.Scheme,
+		kinkCP,
+		r.GetOwnedResourceTypes(util.Exclude[*corev1.Secret]{}),
+	)
+	if err != nil {
+		return fmt.Errorf("failed to find owned objects: %w", err)
+	}
+	log.V(8).Info("Found objects", "objects", len(ownedObjects))
+
+	log.V(2).Info("Reconciling components", "object_count", len(ownedObjects), "expected_count", len(obj))
+	if err := util.ReconcileDesiredObjects(
+		ctx,
+		r.Client,
+		kinkCP,
+		r.Scheme,
+		obj,
+		ownedObjects,
+	); err != nil {
+		return fmt.Errorf("failed to ensure resources: %w", err)
 	}
 
 	return nil
@@ -325,7 +404,7 @@ func (r *KinkControlPlaneReconciler) reconcileStatus(
 		}
 
 		// Kine version is not considered for the ControlPlane version.
-		if val, ok := deployment.Labels[manifestutils.LabelComponent]; ok && val == controlplane.ComponentKine {
+		if val, ok := deployment.Labels[manifestutils.LabelComponent]; !ok || val == controlplane.ComponentKine {
 			continue
 		}
 
@@ -341,6 +420,11 @@ func (r *KinkControlPlaneReconciler) reconcileStatus(
 				lowestVersion = v
 			}
 		}
+	}
+
+	if kinkCP.Status.IP == "" {
+		allReady = false
+		hasReadyAPIServer = false
 	}
 
 	// Set status fields.
@@ -376,9 +460,10 @@ func (r *KinkControlPlaneReconciler) reconcileEndpoint(
 	ctx context.Context,
 	kinkCP *controlplanev1alpha1.KinkControlPlane,
 ) error {
-	if kinkCP.Spec.ControlPlaneEndpoint.Host != "" {
-		return nil
-	}
+	var (
+		host       = ""
+		port int32 = 0
+	)
 
 	svc := &corev1.Service{}
 	err := r.Get(ctx, types.NamespacedName{
@@ -394,37 +479,62 @@ func (r *KinkControlPlaneReconciler) reconcileEndpoint(
 		if len(svc.Spec.Ports) == 0 {
 			return fmt.Errorf("API server service has no ports")
 		}
-		kinkCP.Spec.ControlPlaneEndpoint.Port = svc.Spec.Ports[0].NodePort
+		port = svc.Spec.Ports[0].NodePort
 
 		nodes := &corev1.NodeList{}
 		if err := r.List(ctx, nodes); err != nil {
 			return fmt.Errorf("failed to list nodes: %w", err)
 		}
+	outer:
 		for _, node := range nodes.Items {
 			for _, addr := range node.Status.Addresses {
 				if addr.Type == corev1.NodeExternalIP {
-					kinkCP.Spec.ControlPlaneEndpoint.Host = controlplanev1alpha1.HostnameOrIP(addr.Address)
-					return r.Update(ctx, kinkCP)
+					host = addr.Address
+					break outer
 				}
 			}
 		}
-		return fmt.Errorf("no node with external IP found")
 
 	case corev1.ServiceTypeLoadBalancer:
 		if len(svc.Spec.Ports) == 0 {
 			return fmt.Errorf("API server service has no ports")
 		}
-		kinkCP.Spec.ControlPlaneEndpoint.Port = svc.Spec.Ports[0].Port
+		port = svc.Spec.Ports[0].NodePort
 
 		if len(svc.Status.LoadBalancer.Ingress) == 0 || svc.Status.LoadBalancer.Ingress[0].IP == "" {
 			return fmt.Errorf("LoadBalancer service has no external IP")
 		}
-		kinkCP.Spec.ControlPlaneEndpoint.Host = controlplanev1alpha1.HostnameOrIP(svc.Status.LoadBalancer.Ingress[0].IP)
-		return r.Update(ctx, kinkCP)
+		host = svc.Status.LoadBalancer.Ingress[0].IP
 
 	default:
 		return fmt.Errorf("unsupported service type: %s", svc.Spec.Type)
 	}
+
+	updated := false
+
+	cpe := kinkCP.Spec.ControlPlaneEndpoint
+	if host != string(cpe.Host) || port != cpe.Port {
+		updated = true
+		kinkCP.Spec.ControlPlaneEndpoint.Host = controlplanev1alpha1.HostnameOrIP(host)
+		kinkCP.Spec.ControlPlaneEndpoint.Port = port
+		if err := r.Update(ctx, kinkCP); err != nil {
+			return fmt.Errorf("failed to update endpoint: %w", err)
+		}
+	}
+
+	if kinkCP.Status.IP != host {
+		updated = true
+		kinkCP.Status.IP = host
+		if err := r.Status().Update(ctx, kinkCP); err != nil {
+			return fmt.Errorf("failed to update status.ip: %w", err)
+		}
+	}
+
+	if updated {
+		return fmt.Errorf("IP changed, controller needs to regenerate certificates")
+	}
+
+	return nil
 }
 
 // GetOwnedResourceTypes returns all the resource types the controller can own.

@@ -264,7 +264,7 @@ func (b *ControllerManager) container(image string, ha bool) corev1.Container {
 		Name:      naming.ControllerManagerContainer(),
 		Image:     image,
 		Command:   []string{"kube-controller-manager"},
-		Args:      buildArgs(args),
+		Args:      manifestutils.BuildKubernetesArgs(args),
 		Resources: resources,
 		Ports: []corev1.ContainerPort{
 			{

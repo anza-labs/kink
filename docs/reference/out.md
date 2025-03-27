@@ -31,9 +31,6 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `host` _[HostnameOrIP](#hostnameorip)_ | host is the hostname on which the API server is serving. |  |  |
 | `port` _integer_ | port is the port on which the API server is serving. |  |  |
-| `serviceType` _[ServiceType](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#servicetype-v1-core)_ | ServiceType | LoadBalancer |  |
-| `gateway` _[Gateway](#gateway)_ | Gateway. |  |  |
-| `ingress` _[Ingress](#ingress)_ | Ingress. |  |  |
 
 
 #### APIServer
@@ -86,6 +83,25 @@ _Appears in:_
 | `extraArgs` _object (keys:string, values:string)_ | ExtraArgs defines additional arguments to be passed to the container executable. |  |  |
 
 
+#### EndpointsTemplate
+
+
+
+EndpointsTemplate.
+
+
+
+_Appears in:_
+- [KinkControlPlaneSpec](#kinkcontrolplanespec)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `domain` _string_ | Domain. |  |  |
+| `serviceType` _[ServiceType](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#servicetype-v1-core)_ | ServiceType | LoadBalancer | Enum: [LoadBalancer NodePort] <br /> |
+| `gateway` _[Gateway](#gateway)_ | Gateway. |  |  |
+| `ingress` _[Ingress](#ingress)_ | Ingress. |  |  |
+
+
 #### Gateway
 
 
@@ -95,7 +111,7 @@ Gateway.
 
 
 _Appears in:_
-- [APIEndpoint](#apiendpoint)
+- [EndpointsTemplate](#endpointstemplate)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
@@ -124,7 +140,7 @@ Ingress.
 
 
 _Appears in:_
-- [APIEndpoint](#apiendpoint)
+- [EndpointsTemplate](#endpointstemplate)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
@@ -208,11 +224,14 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `version` _string_ | Version defines the desired Kubernetes version for the control plane.<br />The value must be a valid semantic version; also if the value provided by the user<br />does not start with the v prefix, it must be added. |  |  |
-| `controlPlaneEndpoint` _[APIEndpoint](#apiendpoint)_ | ControlPlaneEndpoint represents the endpoint used to communicate with the control plane.<br />Based on it, an ingress will be provisioned. |  |  |
+| `endpointsTemplate` _[EndpointsTemplate](#endpointstemplate)_ | EndpointsTemplate. |  |  |
+| `controlPlaneEndpoint` _[APIEndpoint](#apiendpoint)_ | ControlPlaneEndpoint represents the endpoint used to communicate with the control plane.<br />Based on it, an ingress will be provisioned.<br />This field is set by the controller. |  |  |
 | `replicas` _integer_ | Number of desired ControlPlane replicas. Defaults to 1. | 1 | Maximum: 5 <br />Minimum: 1 <br /> |
 | `imagePullSecrets` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#localobjectreference-v1-core) array_ | ImagePullSecrets is an optional list of references to secrets in the same namespace to use<br />for pulling any of the images used by KinkControlPlane. If specified, these secrets will<br />be passed to individual puller implementations for them to use. |  |  |
 | `affinity` _[Affinity](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#affinity-v1-core)_ | Affinity specifies the scheduling constraints for Pods. |  |  |
 | `apiServer` _[APIServer](#apiserver)_ | APIServer defines the configuration for the Kubernetes API server. |  |  |
+| `konnectivityServer` _[KonnectivityServer](#konnectivityserver)_ | KonnectivityServer defines the configuration for the API Proxy server. |  |  |
+| `konnectivityAgent` _[KonnectivityAgent](#konnectivityagent)_ | KonnectivityAgent defines the configuration for the API Proxy agent. |  |  |
 | `kine` _[Kine](#kine)_ | Kine defines the configuration for the Kine component. |  |  |
 | `scheduler` _[Scheduler](#scheduler)_ | Scheduler defines the configuration for the Kubernetes scheduler. |  |  |
 | `controllerManager` _[ControllerManager](#controllermanager)_ | ControllerManager defines the configuration for the Kubernetes controller manager. |  |  |
@@ -330,6 +349,54 @@ _Appears in:_
 
 
 
+#### KonnectivityAgent
+
+
+
+KonnectivityAgent represents a API Proxy agent.
+
+
+Image:
+  - Defaults to registry.k8s.io/kas-network-proxy/proxy-agent
+
+
+
+_Appears in:_
+- [KinkControlPlaneSpec](#kinkcontrolplanespec)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `image` _string_ | Image specifies the container image to use. |  |  |
+| `imagePullPolicy` _[PullPolicy](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#pullpolicy-v1-core)_ | Image pull policy. One of Always, Never, IfNotPresent. |  |  |
+| `resources` _[ResourceRequirements](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcerequirements-v1-core)_ | Resources describes the compute resource requirements for the container. |  |  |
+| `verbosity` _integer_ | Verbosity specifies the log verbosity level for the container. Valid values range from 0 (silent) to 10 (most verbose). | 4 | Maximum: 10 <br />Minimum: 0 <br /> |
+| `extraArgs` _object (keys:string, values:string)_ | ExtraArgs defines additional arguments to be passed to the container executable. |  |  |
+
+
+#### KonnectivityServer
+
+
+
+KonnectivityServer represents a API Proxy server.
+
+
+Image:
+  - Defaults to registry.k8s.io/kas-network-proxy/proxy-server
+
+
+
+_Appears in:_
+- [KinkControlPlaneSpec](#kinkcontrolplanespec)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `image` _string_ | Image specifies the container image to use. |  |  |
+| `imagePullPolicy` _[PullPolicy](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#pullpolicy-v1-core)_ | Image pull policy. One of Always, Never, IfNotPresent. |  |  |
+| `resources` _[ResourceRequirements](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#resourcerequirements-v1-core)_ | Resources describes the compute resource requirements for the container. |  |  |
+| `verbosity` _integer_ | Verbosity specifies the log verbosity level for the container. Valid values range from 0 (silent) to 10 (most verbose). | 4 | Maximum: 10 <br />Minimum: 0 <br /> |
+| `extraArgs` _object (keys:string, values:string)_ | ExtraArgs defines additional arguments to be passed to the container executable. |  |  |
+
+
 #### KubeComponent
 
 
@@ -341,6 +408,8 @@ KubeComponent defines the base configuration for Kink control plane components.
 _Appears in:_
 - [APIServer](#apiserver)
 - [ControllerManager](#controllermanager)
+- [KonnectivityAgent](#konnectivityagent)
+- [KonnectivityServer](#konnectivityserver)
 - [Scheduler](#scheduler)
 
 | Field | Description | Default | Validation |

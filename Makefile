@@ -177,7 +177,7 @@ endif
 
 .PHONY: cluster
 cluster: kind ctlptl clusterctl kustomize
-	PATH=${LOCALBIN}:$(PATH) $(CTLPTL) apply -f hack/kind.yaml
+	@PATH=${LOCALBIN}:$(PATH) $(CTLPTL) apply -f hack/kind.yaml
 	$(CLUSTERCTL) init \
 		--core=cluster-api:$(CLUSTER_API_VERSION) \
 		--bootstrap=kubeadm:$(CLUSTER_API_VERSION) \
@@ -191,7 +191,7 @@ cluster: kind ctlptl clusterctl kustomize
 		--name cloud-provider-kind \
 		--network kind \
 		-v /var/run/docker.sock:/var/run/docker.sock \
-		ghcr.io/anza-labs/library/cloud-provider-kind:${CLOUD_PROVIDER_KIND_VERSION} || true
+		registry.k8s.io/cloud-provider-kind/cloud-controller-manager:${CLOUD_PROVIDER_KIND_VERSION} || true
 	$(KUBECTL) apply -f \
 		 https://github.com/kubernetes-sigs/gateway-api/releases/download/$(GATEWAY_API_VERSION)/standard-install.yaml
 	$(KUBECTL) apply -f \
@@ -242,7 +242,7 @@ ADDLICENSE_VERSION ?= v1.1.1
 # renovate: datasource=github-tags depName=kyverno/chainsaw
 CHAINSAW_VERSION ?= v0.2.12
 
-# renovate: datasource=docker depName=ghcr.io/anza-labs/library/cloud-provider-kind
+# renovate: datasource=docker depName=registry.k8s.io/cloud-provider-kind/cloud-controller-manager
 CLOUD_PROVIDER_KIND_VERSION ?= v0.6.0
 
 CLUSTER_API_VERSION ?= $(shell grep 'sigs.k8s.io/cluster-api ' ./go.mod | cut -d ' ' -f 2)

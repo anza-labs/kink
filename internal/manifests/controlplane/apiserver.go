@@ -29,9 +29,11 @@ import (
 	netv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/apiserver/pkg/apis/apiserver"
 	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	gatewayapiv1 "sigs.k8s.io/gateway-api/apis/v1"
+	"sigs.k8s.io/yaml"
 )
 
 const (
@@ -43,6 +45,9 @@ const (
 	etcdCAFile          = "ca.crt"
 	etcdCertificateFile = "tls.crt"
 	etcdKeyFile         = "tls.key"
+
+	egressSelectorConfigurationPath = "/etc/konnectivity"
+	egressSelectorConfigurationFile = "egress-selector-configuration.yaml"
 )
 
 type APIServer struct {
@@ -64,7 +69,13 @@ func (b *APIServer) Build() ([]client.Object, error) {
 	}
 	objects = append(objects, depl)
 
-	if b.KinkControlPlane.Spec.ControlPlaneEndpoint.Gateway != nil {
+	cm, err := b.ConfigMap()
+	if err != nil {
+		return nil, fmt.Errorf("failed to build ConfigMap: %w", err)
+	}
+	objects = append(objects, cm)
+
+	if b.KinkControlPlane.Spec.EndpointsTemplate.Gateway != nil {
 		gtw, err := b.Gateway()
 		if err != nil {
 			return nil, fmt.Errorf("failed to build Gateway: %w", err)
@@ -78,7 +89,7 @@ func (b *APIServer) Build() ([]client.Object, error) {
 		objects = append(objects, rte)
 	}
 
-	if b.KinkControlPlane.Spec.ControlPlaneEndpoint.Ingress != nil {
+	if b.KinkControlPlane.Spec.EndpointsTemplate.Ingress != nil {
 		ing, err := b.Ingress()
 		if err != nil {
 			return nil, fmt.Errorf("failed to build Ingress: %w", err)
@@ -89,8 +100,22 @@ func (b *APIServer) Build() ([]client.Object, error) {
 	return objects, nil
 }
 
-func (b *APIServer) Deployment() (*appsv1.Deployment, error) {
-	name := naming.APIServer(b.KinkControlPlane.Name)
+func (b *APIServer) ConfigMap() (*corev1.ConfigMap, error) {
+	esc, err := egressSelectorConfiguration()
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate EgressSelectorConfiguration: %w", err)
+	}
+
+	data := map[string]string{
+		egressSelectorConfigurationFile: esc,
+	}
+
+	hash, err := manifestutils.GetConfigMapSHA(data)
+	if err != nil {
+		return nil, fmt.Errorf("failed to calculate ConfigMap hash: %w", err)
+	}
+
+	name := naming.ConfigMap(b.KinkControlPlane.Name, hash)
 
 	image, err := manifestutils.Image(
 		b.KinkControlPlane.Spec.APIServer.Image,
@@ -106,6 +131,68 @@ func (b *APIServer) Deployment() (*appsv1.Deployment, error) {
 		name, image, ComponentAPIServer, ConceptControlPlane,
 		nil,
 	)
+	annotations := manifestutils.Annotations(b.KinkControlPlane, nil)
+
+	return &corev1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:        name,
+			Namespace:   b.KinkControlPlane.Namespace,
+			Labels:      labels,
+			Annotations: annotations,
+		},
+		Data: data,
+	}, nil
+}
+
+func egressSelectorConfiguration() (string, error) {
+	cfg := map[string]any{
+		"apiVersion": "apiserver.k8s.io/v1beta1",
+		"kind":       "EgressSelectorConfiguration",
+		"egressSelections": []map[string]any{
+			{
+				"name": "cluster",
+				"connection": map[string]any{
+					"proxyProtocol": apiserver.ProtocolGRPC,
+					"transport": map[string]any{
+						"uds": map[string]any{
+							"udsName": path.Join(egressSelectorConfigurationPath, egressSelectorConfigurationFile),
+						},
+					},
+				},
+			},
+		},
+	}
+
+	b, err := yaml.Marshal(cfg)
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal EgressSelectorConfiguration: %w", err)
+	}
+
+	return string(b), nil
+}
+
+func (b *APIServer) Deployment() (*appsv1.Deployment, error) {
+	name := naming.APIServer(b.KinkControlPlane.Name)
+
+	apiServerImage, err := manifestutils.Image(
+		b.KinkControlPlane.Spec.APIServer.Image,
+		b.KinkControlPlane.Spec.Version,
+		version.APIServer(),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to assess API Server image: %w", err)
+	}
+
+	konnectivityImage := b.KinkControlPlane.Spec.KonnectivityServer.Image
+	if konnectivityImage == "" {
+		konnectivityImage = version.KonnectivityServer()
+	}
+
+	labels := manifestutils.Labels(
+		b.KinkControlPlane.ObjectMeta,
+		name, apiServerImage, ComponentAPIServer, ConceptControlPlane,
+		nil,
+	)
 	selectorLabels := manifestutils.SelectorLabels(b.KinkControlPlane.ObjectMeta, ComponentAPIServer, ConceptControlPlane)
 	annotations := manifestutils.Annotations(b.KinkControlPlane, nil)
 	podAnnotations := manifestutils.PodAnnotations(b.KinkControlPlane, nil)
@@ -115,10 +202,18 @@ func (b *APIServer) Deployment() (*appsv1.Deployment, error) {
 		replicas = ptr.To[int32](1)
 	}
 
+	vol, err := b.volumes()
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate volumes: %w", err)
+	}
+
 	podSpec := corev1.PodSpec{
-		Affinity:         manifestutils.Affinity(b.KinkControlPlane),
-		Containers:       []corev1.Container{b.container(image)},
-		Volumes:          b.volumes(),
+		Affinity: manifestutils.Affinity(b.KinkControlPlane),
+		Containers: []corev1.Container{
+			b.containerAPIServer(apiServerImage),
+			b.containerKonnectivity(konnectivityImage),
+		},
+		Volumes:          vol,
 		ImagePullSecrets: b.KinkControlPlane.Spec.ImagePullSecrets,
 	}
 
@@ -174,12 +269,24 @@ func (b *APIServer) Service() (*corev1.Service, error) {
 		},
 		Spec: corev1.ServiceSpec{
 			Selector: selectorLabels,
-			Type:     b.KinkControlPlane.Spec.ControlPlaneEndpoint.ServiceType,
+			Type:     b.KinkControlPlane.Spec.EndpointsTemplate.ServiceType,
 			Ports: []corev1.ServicePort{
 				{
 					Name:       "server",
 					Port:       6443,
 					TargetPort: intstr.FromString("server"),
+					Protocol:   corev1.ProtocolTCP,
+				},
+				{
+					Name:       "agent",
+					Port:       8132,
+					TargetPort: intstr.FromString("agent"),
+					Protocol:   corev1.ProtocolTCP,
+				},
+				{
+					Name:       "admin",
+					Port:       8133,
+					TargetPort: intstr.FromString("admin"),
 					Protocol:   corev1.ProtocolTCP,
 				},
 			},
@@ -209,7 +316,7 @@ func (b *APIServer) Gateway() (*gatewayapiv1.Gateway, error) {
 
 	host := gatewayapiv1.Hostname(b.KinkControlPlane.Spec.ControlPlaneEndpoint.Host)
 	port := gatewayapiv1.PortNumber(b.KinkControlPlane.Spec.ControlPlaneEndpoint.Port)
-	gatewayClassName := gatewayapiv1.ObjectName(b.KinkControlPlane.Spec.ControlPlaneEndpoint.Gateway.GatewayClassName)
+	gatewayClassName := gatewayapiv1.ObjectName(b.KinkControlPlane.Spec.EndpointsTemplate.Gateway.GatewayClassName)
 
 	return &gatewayapiv1.Gateway{
 		ObjectMeta: metav1.ObjectMeta{
@@ -313,7 +420,7 @@ func (b *APIServer) Ingress() (*netv1.Ingress, error) {
 		nil,
 	)
 	annotations := manifestutils.Annotations(b.KinkControlPlane, nil)
-	maps.Insert(annotations, maps.All(b.KinkControlPlane.Spec.ControlPlaneEndpoint.Ingress.Annotations))
+	maps.Insert(annotations, maps.All(b.KinkControlPlane.Spec.EndpointsTemplate.Ingress.Annotations))
 
 	return &netv1.Ingress{
 		ObjectMeta: metav1.ObjectMeta{
@@ -323,7 +430,7 @@ func (b *APIServer) Ingress() (*netv1.Ingress, error) {
 			Annotations: annotations,
 		},
 		Spec: netv1.IngressSpec{
-			IngressClassName: &b.KinkControlPlane.Spec.ControlPlaneEndpoint.Ingress.IngressClassName,
+			IngressClassName: &b.KinkControlPlane.Spec.EndpointsTemplate.Ingress.IngressClassName,
 			TLS: []netv1.IngressTLS{
 				{
 					Hosts: []string{
@@ -359,7 +466,21 @@ func (b *APIServer) Ingress() (*netv1.Ingress, error) {
 	}, nil
 }
 
-func (b *APIServer) volumes() []corev1.Volume {
+func (b *APIServer) volumes() ([]corev1.Volume, error) {
+	esc, err := egressSelectorConfiguration()
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate EgressSelectorConfiguration: %w", err)
+	}
+
+	data := map[string]string{
+		egressSelectorConfigurationFile: esc,
+	}
+
+	hash, err := manifestutils.GetConfigMapSHA(data)
+	if err != nil {
+		return nil, fmt.Errorf("failed to calculate ConfigMap hash: %w", err)
+	}
+
 	return []corev1.Volume{
 		{
 			Name: "etcd",
@@ -397,10 +518,35 @@ func (b *APIServer) volumes() []corev1.Volume {
 				},
 			},
 		},
-	}
+		{
+			Name: "kubeconfig",
+			VolumeSource: corev1.VolumeSource{
+				Secret: &corev1.SecretVolumeSource{
+					SecretName:  naming.Kubeconfig(naming.KonnectivityServer(b.KinkControlPlane.Name)),
+					DefaultMode: ptr.To[int32](420),
+				},
+			},
+		},
+		{
+			Name: "uds",
+			VolumeSource: corev1.VolumeSource{
+				EmptyDir: &corev1.EmptyDirVolumeSource{},
+			},
+		},
+		{
+			Name: "configs",
+			VolumeSource: corev1.VolumeSource{
+				ConfigMap: &corev1.ConfigMapVolumeSource{
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: naming.ConfigMap(b.KinkControlPlane.Name, hash),
+					},
+				},
+			},
+		},
+	}, nil
 }
 
-func (b *APIServer) volumeMounts() []corev1.VolumeMount {
+func (b *APIServer) volumeMountsAPIServer() []corev1.VolumeMount {
 	return []corev1.VolumeMount{
 		{
 			Name:      "etcd",
@@ -422,10 +568,38 @@ func (b *APIServer) volumeMounts() []corev1.VolumeMount {
 			ReadOnly:  true,
 			MountPath: serviceAccountsPKIPath,
 		},
+		{
+			Name:      "uds",
+			MountPath: udsPath,
+		},
+		{
+			Name:      "configs",
+			ReadOnly:  true,
+			MountPath: egressSelectorConfigurationPath,
+		},
 	}
 }
 
-func (b *APIServer) container(image string) corev1.Container {
+func (b *APIServer) volumeMountsKonnectivity() []corev1.VolumeMount {
+	return []corev1.VolumeMount{
+		{
+			Name:      "root-ca",
+			ReadOnly:  true,
+			MountPath: rootPKIPath,
+		},
+		{
+			Name:      "uds",
+			MountPath: udsPath,
+		},
+		{
+			Name:      "kubeconfig",
+			ReadOnly:  true,
+			MountPath: kubeconfigPath,
+		},
+	}
+}
+
+func (b *APIServer) containerAPIServer(image string) corev1.Container {
 	cfg := b.KinkControlPlane.Spec.APIServer
 	resources := cfg.Resources
 	verbosity := cfg.Verbosity
@@ -444,6 +618,7 @@ func (b *APIServer) container(image string) corev1.Container {
 		"etcd-servers":                     naming.KineEndpoint(b.KinkControlPlane.Name, b.KinkControlPlane.Namespace),
 		"authorization-mode":               "Node,RBAC",
 		"service-cluster-ip-range":         "10.32.0.0/24",
+		"egress-selector-config-file":      path.Join(egressSelectorConfigurationPath, egressSelectorConfigurationFile),
 	}
 	for arg, value := range cfg.ExtraArgs {
 		if _, ok := args[arg]; !ok {
@@ -455,7 +630,7 @@ func (b *APIServer) container(image string) corev1.Container {
 		Name:      naming.APIServerContainer(),
 		Image:     image,
 		Command:   []string{"kube-apiserver"},
-		Args:      buildArgs(args),
+		Args:      manifestutils.BuildKubernetesArgs(args),
 		Resources: resources,
 		Ports: []corev1.ContainerPort{
 			{
@@ -464,7 +639,7 @@ func (b *APIServer) container(image string) corev1.Container {
 				Protocol:      corev1.ProtocolTCP,
 			},
 		},
-		VolumeMounts:    b.volumeMounts(),
+		VolumeMounts:    b.volumeMountsAPIServer(),
 		ImagePullPolicy: b.KinkControlPlane.Spec.APIServer.ImagePullPolicy,
 		SecurityContext: nil,
 		StartupProbe: &corev1.Probe{
@@ -496,6 +671,82 @@ func (b *APIServer) container(image string) corev1.Container {
 				},
 			},
 			InitialDelaySeconds: 10,
+		},
+	}
+}
+
+func (b *APIServer) containerKonnectivity(image string) corev1.Container {
+	cfg := b.KinkControlPlane.Spec.KonnectivityServer
+	resources := cfg.Resources
+	verbosity := cfg.Verbosity
+
+	args := map[string]string{ // TODO: add default flags
+		"v":                        fmt.Sprint(verbosity),
+		"mode":                     "grpc",
+		"cluster-cert":             path.Join(rootPKIPath, rootCertFile),
+		"cluster-key":              path.Join(rootPKIPath, rootKeyFile),
+		"uds-name":                 path.Join(udsPath, udsName),
+		"delete-existing-uds-file": "true",
+		"server-port":              "0",
+		"agent-port":               "8132",
+		"admin-port":               "8133",
+		"health-port":              "8134",
+		"agent-namespace":          "kube-system",
+		"agent-service-account":    "konnectivity-agent",
+		"kubeconfig":               path.Join(kubeconfigPath, kubeconfigName),
+		"authentication-audience":  "system:konnectivity-server",
+	}
+	for arg, value := range cfg.ExtraArgs {
+		if _, ok := args[arg]; !ok {
+			args[arg] = value
+		}
+	}
+
+	return corev1.Container{
+		Name:      naming.KonnectivityContainer(),
+		Image:     image,
+		Command:   []string{"/proxy-server"},
+		Args:      manifestutils.BuildKubernetesArgs(args),
+		Resources: resources,
+		Ports: []corev1.ContainerPort{
+			{
+				Name:          "agent",
+				ContainerPort: 8132,
+				Protocol:      corev1.ProtocolTCP,
+			},
+			{
+				Name:          "admin",
+				ContainerPort: 8133,
+				Protocol:      corev1.ProtocolTCP,
+			},
+			{
+				Name:          "health",
+				ContainerPort: 8134,
+				Protocol:      corev1.ProtocolTCP,
+			},
+		},
+		VolumeMounts:    b.volumeMountsKonnectivity(),
+		ImagePullPolicy: b.KinkControlPlane.Spec.KonnectivityServer.ImagePullPolicy,
+		SecurityContext: nil,
+		LivenessProbe: &corev1.Probe{
+			ProbeHandler: corev1.ProbeHandler{
+				HTTPGet: &corev1.HTTPGetAction{
+					Path:   "/healthz",
+					Port:   intstr.FromString("health"),
+					Scheme: corev1.URISchemeHTTP,
+				},
+			},
+			InitialDelaySeconds: 10,
+		},
+		ReadinessProbe: &corev1.Probe{
+			ProbeHandler: corev1.ProbeHandler{
+				HTTPGet: &corev1.HTTPGetAction{
+					Path:   "/healthz",
+					Port:   intstr.FromString("health"),
+					Scheme: corev1.URISchemeHTTP,
+				},
+			},
+			InitialDelaySeconds: 30,
 		},
 	}
 }

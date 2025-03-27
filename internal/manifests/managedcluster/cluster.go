@@ -12,19 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package version
+package managedcluster
 
 import (
-	"testing"
+	controlplanev1alpha1 "github.com/anza-labs/kink/api/controlplane/v1alpha1"
 
-	"github.com/stretchr/testify/assert"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func TestSmoke(t *testing.T) {
-	assert.Regexp(t, "^registry.k8s.io/kube-apiserver:v.+$", APIServer())
-	assert.Regexp(t, "^registry.k8s.io/kube-controller-manager:v.+$", ControllerManager())
-	assert.Regexp(t, "^registry.k8s.io/kube-scheduler:v.+$", Scheduler())
-	assert.Regexp(t, "^ghcr.io/anza-labs/library/kine:.+$", Kine())
-	assert.Regexp(t, "^registry.k8s.io/kas-network-proxy/proxy-server:v.+$", KonnectivityServer())
-	assert.Regexp(t, "^registry.k8s.io/kas-network-proxy/proxy-agent:v.+$", KonnectivityAgent())
+const (
+	ConceptControlPlane = "kink-control-plane"
+
+	ComponentKonnectivity = "konnectivity"
+)
+
+type Builder struct{}
+
+func (b *Builder) Build(kcp *controlplanev1alpha1.KinkControlPlane) ([]client.Object, error) {
+	objects := []client.Object{}
+
+	objects = append(objects, (&Konnectivity{KinkControlPlane: kcp}).Build()...)
+
+	return objects, nil
 }

@@ -30,7 +30,7 @@ metadata:
   name: test
 spec:
   version: v1.32.3
-  controlPlaneEndpoint: {}
+  endpointsTemplate: {}
 ---
 apiVersion: cluster.x-k8s.io/v1beta1
 kind: MachineDeployment

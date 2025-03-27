@@ -56,7 +56,7 @@ func (b *Certificates) Build() []client.Object {
 		b.RootCA(),
 		b.ClusterCA(), b.ClusterCAIssuer(),
 		b.APIServer(), b.ServiceAccountCertificate(),
-		b.AdminCertificate(), b.SchedulerCertificate(), b.ControllerManagerCertificate(),
+		b.AdminCertificate(), b.SchedulerCertificate(), b.ControllerManagerCertificate(), b.KonnectivityCertificate(),
 		b.FrontProxyCA(),
 		b.KineCA(),
 		b.KineCAIssuer(), b.KineServer(), b.KineAPIServerClient(),
@@ -157,6 +157,9 @@ func (b *Certificates) APIServer() *cmv1.Certificate {
 	name := naming.APIServerCertificate(b.KinkControlPlane.Name)
 
 	ipAddresses := []string{"127.0.0.1"}
+	if b.KinkControlPlane.Status.IP != "" {
+		ipAddresses = append(ipAddresses, b.KinkControlPlane.Status.IP)
+	}
 
 	host := b.KinkControlPlane.Spec.ControlPlaneEndpoint.Host
 	if host.IsIP() {
@@ -168,6 +171,11 @@ func (b *Certificates) APIServer() *cmv1.Certificate {
 		ComponentCertificates, ConceptControlPlane,
 	)
 	annotations := manifestutils.Annotations(b.KinkControlPlane, nil)
+
+	public := ""
+	if b.KinkControlPlane.Spec.ControlPlaneEndpoint.Host.IsHostname() {
+		public = string(b.KinkControlPlane.Spec.ControlPlaneEndpoint.Host)
+	}
 
 	return &cmv1.Certificate{
 		ObjectMeta: metav1.ObjectMeta{
@@ -199,7 +207,7 @@ func (b *Certificates) APIServer() *cmv1.Certificate {
 			DNSNames: naming.KubernetesDNSNames(
 				b.KinkControlPlane.Name,
 				b.KinkControlPlane.Namespace,
-				string(b.KinkControlPlane.Spec.ControlPlaneEndpoint.Host),
+				public,
 			),
 			IPAddresses: ipAddresses,
 		},
@@ -306,6 +314,46 @@ func (b *Certificates) ControllerManagerCertificate() *cmv1.Certificate {
 			CommonName: "system:kube-controller-manager",
 			Subject: &cmv1.X509Subject{
 				Organizations: []string{"system:kube-controller-manager"},
+			},
+			Duration:    &defaultCertResidualTime,
+			RenewBefore: &defaultRenewBefore,
+			IssuerRef: cmmetav1.ObjectReference{
+				Name: naming.ClusterCA(b.KinkControlPlane.Name),
+				Kind: IssuerKind,
+			},
+			SecretName: name,
+			SecretTemplate: &cmv1.CertificateSecretTemplate{
+				Labels: selectorLabels,
+			},
+			Usages: []cmv1.KeyUsage{
+				cmv1.UsageDigitalSignature,
+				cmv1.UsageKeyEncipherment,
+				cmv1.UsageClientAuth,
+			},
+		},
+	}
+}
+
+func (b *Certificates) KonnectivityCertificate() *cmv1.Certificate {
+	name := naming.KonnectivityCertificate(b.KinkControlPlane.Name)
+
+	selectorLabels := manifestutils.SelectorLabels(
+		b.KinkControlPlane.ObjectMeta,
+		ComponentCertificates, ConceptControlPlane,
+	)
+	annotations := manifestutils.Annotations(b.KinkControlPlane, nil)
+
+	return &cmv1.Certificate{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:        name,
+			Namespace:   b.KinkControlPlane.Namespace,
+			Labels:      selectorLabels,
+			Annotations: annotations,
+		},
+		Spec: cmv1.CertificateSpec{
+			CommonName: "system:konnectivity-server",
+			Subject: &cmv1.X509Subject{
+				Organizations: []string{"system:konnectivity-server"},
 			},
 			Duration:    &defaultCertResidualTime,
 			RenewBefore: &defaultRenewBefore,

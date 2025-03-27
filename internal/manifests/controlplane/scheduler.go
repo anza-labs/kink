@@ -203,7 +203,7 @@ func (b *Scheduler) container(image string, ha bool) corev1.Container {
 		Name:      naming.SchedulerContainer(),
 		Image:     image,
 		Command:   []string{"kube-scheduler"},
-		Args:      buildArgs(args),
+		Args:      manifestutils.BuildKubernetesArgs(args),
 		Resources: resources,
 		Ports: []corev1.ContainerPort{
 			{

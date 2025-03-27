@@ -30,10 +30,12 @@ var (
 	//go:embed values.yaml
 	rawValues []byte
 
-	apiServer         string
-	controllerManager string
-	scheduler         string
-	kine              string
+	apiServer          string
+	controllerManager  string
+	scheduler          string
+	kine               string
+	konnectivityServer string
+	konnectivityAgent  string
 )
 
 const (
@@ -45,11 +47,13 @@ const (
 
 func init() {
 	vals := loadValues(bytes.NewReader(rawValues))
-	apiServer = initAPIServer(vals.APIServer.Image)
-	controllerManager = initControllerManager(vals.ControllerManager.Image)
-	scheduler = initScheduler(vals.Scheduler.Image)
-	kine = initKine(vals.Kine.Image)
 
+	apiServer = initVersion(vals["apiServer"].Image, k8sRegistry)
+	controllerManager = initVersion(vals["controllerManager"].Image, k8sRegistry)
+	scheduler = initVersion(vals["scheduler"].Image, k8sRegistry)
+	kine = initVersion(vals["kine"].Image, ghcrRegistry)
+	konnectivityServer = initVersion(vals["konnectivityServer"].Image, k8sRegistry)
+	konnectivityAgent = initVersion(vals["konnectivityAgent"].Image, k8sRegistry)
 }
 
 func loadValues(r io.Reader) values.Values {
@@ -60,40 +64,10 @@ func loadValues(r io.Reader) values.Values {
 	return v
 }
 
-func initAPIServer(image values.Image) string {
+func initVersion(image values.Image, defaultRegistry string) string {
 	registry := image.Registry
 	if registry == "" {
-		registry = k8sRegistry
-	}
-	repository := image.Repository
-	tag := image.Tag
-	return fmt.Sprintf("%s/%s:%s", registry, repository, tag)
-}
-
-func initControllerManager(image values.Image) string {
-	registry := image.Registry
-	if registry == "" {
-		registry = k8sRegistry
-	}
-	repository := image.Repository
-	tag := image.Tag
-	return fmt.Sprintf("%s/%s:%s", registry, repository, tag)
-}
-
-func initScheduler(image values.Image) string {
-	registry := image.Registry
-	if registry == "" {
-		registry = k8sRegistry
-	}
-	repository := image.Repository
-	tag := image.Tag
-	return fmt.Sprintf("%s/%s:%s", registry, repository, tag)
-}
-
-func initKine(image values.Image) string {
-	registry := image.Registry
-	if registry == "" {
-		registry = ghcrRegistry
+		registry = defaultRegistry
 	}
 	repository := image.Repository
 	tag := image.Tag
@@ -117,4 +91,12 @@ func Scheduler() string {
 
 func Kine() string {
 	return kine
+}
+
+func KonnectivityServer() string {
+	return konnectivityServer
+}
+
+func KonnectivityAgent() string {
+	return konnectivityAgent
 }

@@ -78,6 +78,22 @@ func KineContainer() string {
 	return "kine"
 }
 
+func KonnectivityAgent() string {
+	return "konnectivity-agent"
+}
+
+func KonnectivityCertificate(base string) string {
+	return DNSName(Truncate("%s-konnectivity-cert", 63, base))
+}
+
+func KonnectivityContainer() string {
+	return "konnectivity"
+}
+
+func KonnectivityServer(base string) string {
+	return DNSName(Truncate("%s-konnectivity", 63, base))
+}
+
 func Kubeconfig(base string) string {
 	return DNSName(Truncate("%s-kubeconfig", 63, base))
 }

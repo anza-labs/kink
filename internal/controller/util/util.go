@@ -90,12 +90,14 @@ func FindOwnedObjects(
 	scheme *runtime.Scheme,
 	owner metav1.Object,
 	ownedObjectTypes []client.Object,
+	opts ...client.ListOption,
 ) (map[types.UID]client.Object, error) {
 	ownedObjects := map[types.UID]client.Object{}
 
 	listOpts := []client.ListOption{
 		client.InNamespace(owner.GetNamespace()),
 	}
+	listOpts = append(listOpts, opts...)
 
 	for _, objectType := range ownedObjectTypes {
 		objs, err := getList(ctx, kubeClient, scheme, objectType, listOpts...)
@@ -203,7 +205,7 @@ func DeleteObjects(
 ) error {
 	log := log.FromContext(ctx)
 
-	// Pruning owned objects in the cluster which are not should not be present after the reconciliation.
+	// Pruning owned objects in the cluster which should not be present after the reconciliation.
 	pruneErrs := []error{}
 	for _, obj := range objects {
 		l := log.WithValues(

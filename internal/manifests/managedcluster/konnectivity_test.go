@@ -12,19 +12,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package version
-
-import (
-	"testing"
-
-	"github.com/stretchr/testify/assert"
-)
-
-func TestSmoke(t *testing.T) {
-	assert.Regexp(t, "^registry.k8s.io/kube-apiserver:v.+$", APIServer())
-	assert.Regexp(t, "^registry.k8s.io/kube-controller-manager:v.+$", ControllerManager())
-	assert.Regexp(t, "^registry.k8s.io/kube-scheduler:v.+$", Scheduler())
-	assert.Regexp(t, "^ghcr.io/anza-labs/library/kine:.+$", Kine())
-	assert.Regexp(t, "^registry.k8s.io/kas-network-proxy/proxy-server:v.+$", KonnectivityServer())
-	assert.Regexp(t, "^registry.k8s.io/kas-network-proxy/proxy-agent:v.+$", KonnectivityAgent())
-}
+package managedcluster
