@@ -12,19 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package version
+package manifestutils
 
 import (
-	"testing"
-
-	"github.com/stretchr/testify/assert"
+	"fmt"
+	"slices"
 )
 
-func TestSmoke(t *testing.T) {
-	assert.Regexp(t, "^registry.k8s.io/kube-apiserver:v.+$", APIServer())
-	assert.Regexp(t, "^registry.k8s.io/kube-controller-manager:v.+$", ControllerManager())
-	assert.Regexp(t, "^registry.k8s.io/kube-scheduler:v.+$", Scheduler())
-	assert.Regexp(t, "^ghcr.io/anza-labs/library/kine:.+$", Kine())
-	assert.Regexp(t, "^registry.k8s.io/kas-network-proxy/proxy-server:v.+$", KonnectivityServer())
-	assert.Regexp(t, "^registry.k8s.io/kas-network-proxy/proxy-agent:v.+$", KonnectivityAgent())
+func BuildKubernetesArgs(args map[string]string) []string {
+	cmd := []string{}
+	for arg, val := range args {
+		cmd = append(cmd, fmt.Sprintf("--%s=%s", arg, val))
+	}
+	slices.Sort(cmd)
+	return cmd
 }

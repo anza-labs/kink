@@ -24,10 +24,4 @@ type Image struct {
 	Tag        string `yaml:"tag"`
 }
 
-type Values struct {
-	APIServer         Config `yaml:"apiServer"`
-	ControllerManager Config `yaml:"controllerManager"`
-	Scheduler         Config `yaml:"scheduler"`
-	NodeVM            Config `yaml:"nodeVM"`
-	Kine              Config `yaml:"kine"`
-}
+type Values map[string]Config

@@ -47,8 +47,8 @@ func (b *Kine) Build() []client.Object {
 	svc := b.Service()
 	objects = append(objects, svc)
 
-	ss := b.Deployment()
-	objects = append(objects, ss)
+	dpel := b.Deployment()
+	objects = append(objects, dpel)
 
 	return objects
 }

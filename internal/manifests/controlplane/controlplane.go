@@ -16,7 +16,6 @@ package controlplane
 
 import (
 	"fmt"
-	"slices"
 
 	controlplanev1alpha1 "github.com/anza-labs/kink/api/controlplane/v1alpha1"
 
@@ -28,6 +27,7 @@ const (
 
 	ComponentCertificates      = "certificates"
 	ComponentAPIServer         = "api-server"
+	ComponentKonnectivityAgent = "konnectivity-agent"
 	ComponentControllerManager = "controller-manager"
 	ComponentKine              = "kine"
 	ComponentScheduler         = "scheduler"
@@ -37,6 +37,9 @@ const (
 	rootCertFile = "tls.crt"
 	rootKeyFile  = "tls.key"
 
+	udsPath = "/etc/kubernetes/konnectivity-server"
+	udsName = "konnectivity-server.socket"
+
 	kubeconfigPath = "/etc/kubernetes"
 	kubeconfigName = "value"
 
@@ -44,15 +47,6 @@ const (
 	serviceAccountsCertificateFile = "tls.crt"
 	serviceAccountsKeyFile         = "tls.key"
 )
-
-func buildArgs(args map[string]string) []string {
-	cmd := []string{}
-	for arg, val := range args {
-		cmd = append(cmd, fmt.Sprintf("--%s=%s", arg, val))
-	}
-	slices.Sort(cmd)
-	return cmd
-}
 
 type Builder struct{}
 

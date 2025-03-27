@@ -30,8 +30,13 @@ type KinkControlPlaneSpec struct {
 	// does not start with the v prefix, it must be added.
 	Version string `json:"version"`
 
+	// EndpointsTemplate.
+	EndpointsTemplate EndpointsTemplate `json:"endpointsTemplate"`
+
 	// ControlPlaneEndpoint represents the endpoint used to communicate with the control plane.
 	// Based on it, an ingress will be provisioned.
+	// This field is set by the controller.
+	// +optional
 	ControlPlaneEndpoint APIEndpoint `json:"controlPlaneEndpoint,omitempty"`
 
 	// Number of desired ControlPlane replicas. Defaults to 1.
@@ -55,6 +60,12 @@ type KinkControlPlaneSpec struct {
 	// APIServer defines the configuration for the Kubernetes API server.
 	APIServer APIServer `json:"apiServer"`
 
+	// KonnectivityServer defines the configuration for the API Proxy server.
+	KonnectivityServer KonnectivityServer `json:"konnectivityServer"`
+
+	// KonnectivityAgent defines the configuration for the API Proxy agent.
+	KonnectivityAgent KonnectivityAgent `json:"konnectivityAgent"`
+
 	// Kine defines the configuration for the Kine component.
 	Kine Kine `json:"kine"`
 
@@ -72,20 +83,6 @@ type APIEndpoint struct {
 
 	// port is the port on which the API server is serving.
 	Port int32 `json:"port"`
-
-	// ServiceType
-	// +optional
-	// +default="LoadBalancer"
-	// +kubebuilder:default="LoadBalancer"
-	ServiceType corev1.ServiceType `json:"serviceType"`
-
-	// Gateway.
-	// +optional
-	Gateway *Gateway `json:"gateway,omitempty"`
-
-	// Ingress.
-	// +optional
-	Ingress *Ingress `json:"ingress,omitempty"`
 }
 
 // HostnameOrIP.
@@ -99,6 +96,28 @@ func (h HostnameOrIP) IsIP() bool {
 // IsHostname checks if the value is a valid hostname.
 func (h HostnameOrIP) IsHostname() bool {
 	return !h.IsIP()
+}
+
+// EndpointsTemplate.
+type EndpointsTemplate struct {
+	// Domain.
+	// +optional
+	Domain string `json:"domain"`
+
+	// ServiceType
+	// +optional
+	// +default="LoadBalancer"
+	// +kubebuilder:default="LoadBalancer"
+	// +kubebuilder:validation:Enum=LoadBalancer;NodePort
+	ServiceType corev1.ServiceType `json:"serviceType"`
+
+	// Gateway.
+	// +optional
+	Gateway *Gateway `json:"gateway,omitempty"`
+
+	// Ingress.
+	// +optional
+	Ingress *Ingress `json:"ingress,omitempty"`
 }
 
 // Kine represents ETCD-shim container.
@@ -135,6 +154,22 @@ type ControllerManager struct {
 //   - If specified image contains tag or sha, those are ignored.
 //   - Defaults to registry.k8s.io/kube-apiserver
 type APIServer struct {
+	KubeComponent `json:",inline"`
+}
+
+// KonnectivityServer represents a API Proxy server.
+//
+// Image:
+//   - Defaults to registry.k8s.io/kas-network-proxy/proxy-server
+type KonnectivityServer struct {
+	KubeComponent `json:",inline"`
+}
+
+// KonnectivityAgent represents a API Proxy agent.
+//
+// Image:
+//   - Defaults to registry.k8s.io/kas-network-proxy/proxy-agent
+type KonnectivityAgent struct {
 	KubeComponent `json:",inline"`
 }
 
@@ -223,6 +258,10 @@ type KinkControlPlaneStatus struct {
 	// Ready denotes that the kink control plane is ready to serve requests.
 	// +optional
 	Ready bool `json:"ready"`
+
+	// IP denotes the address on which the API Service endpoint is reachable.
+	// +optional
+	IP string `json:"ip,omitempty"`
 }
 
 // +kubebuilder:object:root=true

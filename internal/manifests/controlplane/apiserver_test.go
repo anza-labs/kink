@@ -18,6 +18,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	controlplanev1alpha1 "github.com/anza-labs/kink/api/controlplane/v1alpha1"
 
@@ -88,4 +89,11 @@ func TestAPIServer(t *testing.T) {
 			})
 		}
 	})
+}
+
+func TestEgressSelectorConfiguration(t *testing.T) {
+	t.Parallel()
+
+	_, err := egressSelectorConfiguration()
+	require.NoError(t, err)
 }

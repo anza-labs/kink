@@ -28,14 +28,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	clientcmdapilatest "k8s.io/client-go/tools/clientcmd/api/latest"
-	clientcmdapiv1 "k8s.io/client-go/tools/clientcmd/api/v1"
 	capiv1beta1 "sigs.k8s.io/cluster-api/api/v1beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
-)
-
-var (
-	ErrRequiredFieldMissing = errors.New("secret is missing required field")
 )
 
 type Kubeconfig struct {
@@ -73,16 +68,25 @@ func (b *Kubeconfig) Build(ctx context.Context) ([]client.Object, error) {
 		obj = append(obj, kcS)
 	}
 
+	log.V(4).Info("Building Konnectivity kubeconfig")
+	if kcK, err := b.Konnectivity(ctx); err != nil {
+		errs = errors.Join(errs, fmt.Errorf("error bulding secret for Konnectivity: %w", err))
+	} else {
+		log.V(4).Info("Created kubeconfig for Konnectivity")
+		obj = append(obj, kcK)
+	}
+
 	return obj, errs
 }
 
 func (b *Kubeconfig) ClusterAPI(ctx context.Context) (*corev1.Secret, error) {
 	endpoint := naming.PublicAPIServerEndpoint(
+		b.KinkControlPlane.Name,
 		b.KinkControlPlane.Spec.ControlPlaneEndpoint.Host,
 		b.KinkControlPlane.Spec.ControlPlaneEndpoint.Port,
 	)
 
-	selectorLabels := manifestutils.SelectorLabels(
+	selectorLabels := manifestutils.KubeconfigLabels(
 		b.KinkControlPlane.ObjectMeta,
 		ComponentCertificates, ConceptControlPlane,
 	)
@@ -92,7 +96,7 @@ func (b *Kubeconfig) ClusterAPI(ctx context.Context) (*corev1.Secret, error) {
 		Name:      naming.AdminCertificate(b.KinkControlPlane.Name),
 		Namespace: b.KinkControlPlane.Namespace,
 	}
-	config, err := b.newFor(ctx, b.KinkControlPlane.Name, endpoint, key)
+	config, err := manifestutils.NewKubeconfigFor(ctx, b.Client, b.KinkControlPlane.Name, endpoint, key)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate kubeconfig: %w", err)
 	}
@@ -119,7 +123,7 @@ func (b *Kubeconfig) ClusterAPI(ctx context.Context) (*corev1.Secret, error) {
 func (b *Kubeconfig) Scheduler(ctx context.Context) (*corev1.Secret, error) {
 	endpoint := naming.LocalAPIServerEndpoint(b.KinkControlPlane.Name, b.KinkControlPlane.Namespace)
 
-	selectorLabels := manifestutils.SelectorLabels(
+	selectorLabels := manifestutils.KubeconfigLabels(
 		b.KinkControlPlane.ObjectMeta,
 		ComponentCertificates, ConceptControlPlane,
 	)
@@ -129,7 +133,7 @@ func (b *Kubeconfig) Scheduler(ctx context.Context) (*corev1.Secret, error) {
 		Name:      naming.SchedulerCertificate(b.KinkControlPlane.Name),
 		Namespace: b.KinkControlPlane.Namespace,
 	}
-	config, err := b.newFor(ctx, b.KinkControlPlane.Name, endpoint, key)
+	config, err := manifestutils.NewKubeconfigFor(ctx, b.Client, b.KinkControlPlane.Name, endpoint, key)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate kubeconfig: %w", err)
 	}
@@ -156,7 +160,7 @@ func (b *Kubeconfig) Scheduler(ctx context.Context) (*corev1.Secret, error) {
 func (b *Kubeconfig) ControllerManager(ctx context.Context) (*corev1.Secret, error) {
 	endpoint := naming.LocalAPIServerEndpoint(b.KinkControlPlane.Name, b.KinkControlPlane.Namespace)
 
-	selectorLabels := manifestutils.SelectorLabels(
+	selectorLabels := manifestutils.KubeconfigLabels(
 		b.KinkControlPlane.ObjectMeta,
 		ComponentCertificates, ConceptControlPlane,
 	)
@@ -166,7 +170,7 @@ func (b *Kubeconfig) ControllerManager(ctx context.Context) (*corev1.Secret, err
 		Name:      naming.ControllerManagerCertificate(b.KinkControlPlane.Name),
 		Namespace: b.KinkControlPlane.Namespace,
 	}
-	config, err := b.newFor(ctx, b.KinkControlPlane.Name, endpoint, key)
+	config, err := manifestutils.NewKubeconfigFor(ctx, b.Client, b.KinkControlPlane.Name, endpoint, key)
 	if err != nil {
 		return nil, fmt.Errorf("failed to generate kubeconfig: %w", err)
 	}
@@ -190,54 +194,39 @@ func (b *Kubeconfig) ControllerManager(ctx context.Context) (*corev1.Secret, err
 	}, nil
 }
 
-func (b *Kubeconfig) newFor(
-	ctx context.Context,
-	name, endpoint string,
-	secretRef types.NamespacedName,
-) (*clientcmdapiv1.Config, error) {
-	secret := &corev1.Secret{}
-	if err := b.Get(ctx, secretRef, secret); err != nil {
-		return nil, fmt.Errorf("failed to fetch secret %s: %w", secretRef, err)
+func (b *Kubeconfig) Konnectivity(ctx context.Context) (*corev1.Secret, error) {
+	endpoint := naming.LocalAPIServerEndpoint(b.KinkControlPlane.Name, b.KinkControlPlane.Namespace)
+
+	selectorLabels := manifestutils.KubeconfigLabels(
+		b.KinkControlPlane.ObjectMeta,
+		ComponentCertificates, ConceptControlPlane,
+	)
+	annotations := manifestutils.Annotations(b.KinkControlPlane, nil)
+
+	key := types.NamespacedName{
+		Name:      naming.KonnectivityCertificate(b.KinkControlPlane.Name),
+		Namespace: b.KinkControlPlane.Namespace,
+	}
+	config, err := manifestutils.NewKubeconfigFor(ctx, b.Client, b.KinkControlPlane.Name, endpoint, key)
+	if err != nil {
+		return nil, fmt.Errorf("failed to generate kubeconfig: %w", err)
 	}
 
-	caCert, caExists := secret.Data["ca.crt"]
-	clientCert, certExists := secret.Data["tls.crt"]
-	clientKey, keyExists := secret.Data["tls.key"]
-
-	if !caExists || !certExists || !keyExists {
-		return nil, fmt.Errorf("%s: %w", secretRef, ErrRequiredFieldMissing)
+	buf := new(bytes.Buffer)
+	if err := clientcmdapilatest.Codec.Encode(config, buf); err != nil {
+		return nil, fmt.Errorf("failed to serialize kubeconfig: %w", err)
 	}
 
-	return &clientcmdapiv1.Config{
-		APIVersion: clientcmdapilatest.Version,
-		Kind:       "Config",
-		Clusters: []clientcmdapiv1.NamedCluster{
-			{
-				Name: name,
-				Cluster: clientcmdapiv1.Cluster{
-					Server:                   endpoint,
-					CertificateAuthorityData: caCert,
-				},
-			},
+	return &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:        naming.Kubeconfig(naming.KonnectivityServer(b.KinkControlPlane.Name)),
+			Namespace:   b.KinkControlPlane.Namespace,
+			Labels:      selectorLabels,
+			Annotations: annotations,
 		},
-		AuthInfos: []clientcmdapiv1.NamedAuthInfo{
-			{
-				Name: name,
-				AuthInfo: clientcmdapiv1.AuthInfo{
-					ClientCertificateData: clientCert,
-					ClientKeyData:         clientKey,
-				},
-			},
+		Type: capiv1beta1.ClusterSecretType,
+		Data: map[string][]byte{
+			kubeconfigName: buf.Bytes(),
 		},
-		Contexts: []clientcmdapiv1.NamedContext{
-			{
-				Name: name,
-				Context: clientcmdapiv1.Context{
-					Cluster:  name,
-					AuthInfo: name,
-				},
-			},
-		},
-		CurrentContext: name,
 	}, nil
 }

@@ -17,6 +17,7 @@ package naming
 import (
 	"fmt"
 	"net"
+	"strings"
 
 	"github.com/anza-labs/kink/api/controlplane/v1alpha1"
 )
@@ -67,11 +68,29 @@ func KubernetesDNSNames(name, namespace, publicDNSName string) []string {
 	return dnsNames
 }
 
-func PublicAPIServerEndpoint(host v1alpha1.HostnameOrIP, port int32) string {
+func PublicAPIServerEndpoint(cluster string, host v1alpha1.HostnameOrIP, port int32) string {
 	if port == 0 {
 		port = 6443
 	}
-	return fmt.Sprintf("https://%s", net.JoinHostPort(string(host), fmt.Sprint(port)))
+	if host.IsIP() {
+		return fmt.Sprintf("https://%s", net.JoinHostPort(string(host), fmt.Sprint(port)))
+	}
+	return fmt.Sprintf("https://%s", net.JoinHostPort(
+		JoinDomainPrefix(cluster, string(host)),
+		fmt.Sprint(port),
+	))
+}
+
+func JoinDomainPrefix(prefix, domain string) string {
+	cleanPrefix := strings.Trim(prefix, ".")
+	cleanDomain := strings.Trim(domain, ".")
+	if cleanPrefix == "" {
+		return cleanDomain
+	}
+	if cleanDomain == "" {
+		return cleanPrefix
+	}
+	return cleanPrefix + "." + cleanDomain
 }
 
 func LocalAPIServerEndpoint(name, namespace string) string {

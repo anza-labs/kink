@@ -30,12 +30,14 @@ import (
 )
 
 const (
-	LabelComponent   = "app.kubernetes.io/component"
-	LabelVersion     = "app.kubernetes.io/version"
-	LabelManagedBy   = "app.kubernetes.io/managed-by"
-	LabelInstance    = "app.kubernetes.io/instance"
-	LabelPartOf      = "app.kubernetes.io/part-of"
-	LabelClusterName = "cluster.x-k8s.io/cluster-name"
+	LabelComponent       = "app.kubernetes.io/component"
+	LabelVersion         = "app.kubernetes.io/version"
+	LabelManagedBy       = "app.kubernetes.io/managed-by"
+	LabelInstance        = "app.kubernetes.io/instance"
+	LabelPartOf          = "app.kubernetes.io/part-of"
+	LabelClusterName     = "cluster.x-k8s.io/cluster-name"
+	LabelSecret          = "kink.anza-labs.dev/secret"
+	LabelValueKubeconfig = "kubeconfig"
 )
 
 func IsFilteredSet(sourceSet string, filterSet []string) bool {
@@ -105,6 +107,19 @@ func SelectorLabels(instance metav1.ObjectMeta, component, concept string) map[s
 		LabelComponent:   component,
 		LabelClusterName: instance.Name,
 	}
+}
+
+// KubeconfigLabels return the common labels to Kubeconfig secrets that are part of a managed CR.
+func KubeconfigLabels(instance metav1.ObjectMeta, component, concept string) map[string]string {
+	base := map[string]string{
+		LabelSecret: LabelValueKubeconfig,
+	}
+
+	for k, v := range SelectorLabels(instance, component, concept) {
+		base[k] = v
+	}
+
+	return base
 }
 
 // GetConfigMapSHA computes a SHA256 checksum for a ConfigMap object.
