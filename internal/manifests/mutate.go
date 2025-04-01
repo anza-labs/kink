@@ -26,6 +26,7 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	rbacv1 "k8s.io/api/rbac/v1"
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
@@ -82,10 +83,20 @@ func MutateFuncFor(existing, desired client.Object) controllerutil.MutateFn {
 			wantDpl := desired.(*appsv1.Deployment)
 			return mutateDeployment(dpl, wantDpl)
 
+		case *appsv1.DaemonSet:
+			ds := existing.(*appsv1.DaemonSet)
+			wantDs := desired.(*appsv1.DaemonSet)
+			return mutateDaemonSet(ds, wantDs)
+
 		case *appsv1.StatefulSet:
 			sts := existing.(*appsv1.StatefulSet)
 			wantSts := desired.(*appsv1.StatefulSet)
 			return mutateStatefulSet(sts, wantSts)
+
+		case *rbacv1.ClusterRoleBinding:
+			crb := existing.(*rbacv1.ClusterRoleBinding)
+			wantCrb := desired.(*rbacv1.ClusterRoleBinding)
+			mutateClusterRoleBinding(crb, wantCrb)
 
 		case *gatewayapiv1.Gateway:
 			gw := existing.(*gatewayapiv1.Gateway)
@@ -160,6 +171,12 @@ func mutateService(existing, desired *corev1.Service) {
 	existing.Spec.Selector = desired.Spec.Selector
 }
 
+func mutateClusterRoleBinding(existing, desired *rbacv1.ClusterRoleBinding) {
+	existing.Annotations = desired.Annotations
+	existing.Labels = desired.Labels
+	existing.Subjects = desired.Subjects
+}
+
 func mutateDeployment(existing, desired *appsv1.Deployment) error {
 	if !existing.CreationTimestamp.IsZero() {
 		if !apiequality.Semantic.DeepEqual(desired.Spec.Selector, existing.Spec.Selector) {
@@ -176,6 +193,27 @@ func mutateDeployment(existing, desired *appsv1.Deployment) error {
 	existing.Spec.Replicas = desired.Spec.Replicas
 	existing.Spec.RevisionHistoryLimit = desired.Spec.RevisionHistoryLimit
 	existing.Spec.Strategy = desired.Spec.Strategy
+
+	if err := mutatePodTemplate(&existing.Spec.Template, &desired.Spec.Template); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func mutateDaemonSet(existing, desired *appsv1.DaemonSet) error {
+	if !existing.CreationTimestamp.IsZero() {
+		if !apiequality.Semantic.DeepEqual(desired.Spec.Selector, existing.Spec.Selector) {
+			return &ImmutableFieldChangeErr{Field: "Spec.Selector"}
+		}
+		if err := hasImmutableLabelChange(existing.Spec.Selector.MatchLabels, desired.Spec.Template.Labels); err != nil {
+			return err
+		}
+	}
+
+	existing.Spec.MinReadySeconds = desired.Spec.MinReadySeconds
+	existing.Spec.RevisionHistoryLimit = desired.Spec.RevisionHistoryLimit
+	existing.Spec.UpdateStrategy = desired.Spec.UpdateStrategy
 
 	if err := mutatePodTemplate(&existing.Spec.Template, &desired.Spec.Template); err != nil {
 		return err

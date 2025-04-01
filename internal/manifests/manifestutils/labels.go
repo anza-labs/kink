@@ -36,6 +36,7 @@ const (
 	LabelInstance        = "app.kubernetes.io/instance"
 	LabelPartOf          = "app.kubernetes.io/part-of"
 	LabelClusterName     = "cluster.x-k8s.io/cluster-name"
+	LabelManagedCluster  = "kink.anza-labs.dev/managed-cluster"
 	LabelSecret          = "kink.anza-labs.dev/secret"
 	LabelValueKubeconfig = "kubeconfig"
 )
@@ -102,7 +103,7 @@ func Labels(
 func SelectorLabels(instance metav1.ObjectMeta, component, concept string) map[string]string {
 	return map[string]string{
 		LabelManagedBy:   "kink",
-		LabelInstance:    naming.Truncate("%s.%s", 63, instance.Namespace, instance.Name),
+		LabelInstance:    naming.Label("%s.%s", instance.Namespace, instance.Name),
 		LabelPartOf:      concept,
 		LabelComponent:   component,
 		LabelClusterName: instance.Name,

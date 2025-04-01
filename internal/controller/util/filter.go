@@ -66,3 +66,28 @@ func (Exclude[T]) Filter(list []client.Object) []client.Object {
 	}
 	return objs
 }
+
+// Include is a generic filter that adds objects of type T to a list.
+type Include[T client.Object] struct{}
+
+// interface guard.
+var _ Filterer = (*Include[*corev1.Pod])(nil)
+
+// Filter returns a new list including new zero objects of type T.
+// If there are objects in the input list that match type T, this is no-op.
+func (Include[T]) Filter(list []client.Object) []client.Object {
+	found := false
+	for _, item := range list {
+		switch item.(type) {
+		case T:
+			found = true
+		default:
+			// no-op
+		}
+	}
+	if !found {
+		var zero T
+		list = append(list, zero)
+	}
+	return list
+}

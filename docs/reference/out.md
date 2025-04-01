@@ -259,6 +259,7 @@ _Appears in:_
 | `conditions` _[Condition](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.32/#condition-v1-meta) array_ | Conditions defines current service state of the KinkControlPlane. |  |  |
 | `initialized` _boolean_ | Initialized denotes that the kink control plane API Server is initialized and thus<br />it can accept requests. |  |  |
 | `ready` _boolean_ | Ready denotes that the kink control plane is ready to serve requests. |  |  |
+| `ip` _string_ | IP denotes the address on which the API Service endpoint is reachable. |  |  |
 
 
 #### KinkControlPlaneTemplate

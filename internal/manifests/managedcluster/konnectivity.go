@@ -44,12 +44,15 @@ func (b *Konnectivity) Build() []client.Object {
 	objects := []client.Object{}
 
 	ds := b.DaemonSet()
+	ds.Labels[manifestutils.LabelManagedCluster] = b.KinkControlPlane.Name
 	objects = append(objects, ds)
 
 	crb := b.ClusterRoleBinding()
+	crb.Labels[manifestutils.LabelManagedCluster] = b.KinkControlPlane.Name
 	objects = append(objects, crb)
 
 	sa := b.ServiceAccount()
+	sa.Labels[manifestutils.LabelManagedCluster] = b.KinkControlPlane.Name
 	objects = append(objects, sa)
 
 	return objects

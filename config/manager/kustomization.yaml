@@ -5,4 +5,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: localhost:5005/kink-controller
-  newTag: dev-8bde00
+  newTag: dev-833d53

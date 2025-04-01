@@ -14,6 +14,10 @@
 
 package naming
 
+func Label(format string, values ...interface{}) string {
+	return DNSName(Truncate(format, 63, values...))
+}
+
 func AdminCertificate(base string) string {
 	return DNSName(Truncate("%s-admin-cert", 63, base))
 }

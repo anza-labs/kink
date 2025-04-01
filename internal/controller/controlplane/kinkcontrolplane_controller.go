@@ -298,7 +298,16 @@ func (r *KinkControlPlaneReconciler) reconcileManagedClusterResources(
 		cli,
 		r.Scheme,
 		kinkCP,
-		r.GetOwnedResourceTypes(util.Exclude[*corev1.Secret]{}),
+		r.GetOwnedResourceTypes(
+			// This should exclude any custom resources,
+			// as child clusters do not have them installed.
+			util.Exclude[*corev1.Secret]{},
+			util.Exclude[*cmv1.Issuer]{},
+			util.Exclude[*cmv1.Certificate]{},
+			util.Exclude[*netv1.Ingress]{},
+			util.Exclude[*gatewayapiv1.Gateway]{},
+			util.Exclude[*gatewayapiv1.HTTPRoute]{},
+		),
 	)
 	if err != nil {
 		return fmt.Errorf("failed to find owned objects: %w", err)
@@ -308,7 +317,7 @@ func (r *KinkControlPlaneReconciler) reconcileManagedClusterResources(
 	log.V(2).Info("Reconciling components", "object_count", len(ownedObjects), "expected_count", len(obj))
 	if err := util.ReconcileDesiredObjects(
 		ctx,
-		r.Client,
+		cli,
 		kinkCP,
 		r.Scheme,
 		obj,

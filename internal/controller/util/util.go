@@ -25,6 +25,7 @@ import (
 	cmv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 
 	"github.com/anza-labs/kink/internal/manifests"
+	"github.com/anza-labs/kink/internal/manifests/manifestutils"
 
 	rbacv1 "k8s.io/api/rbac/v1"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
@@ -130,6 +131,11 @@ func isNamespaceScoped(obj client.Object) bool {
 	}
 }
 
+func isChildComponent(obj client.Object) bool {
+	_, isChild := obj.GetLabels()[manifestutils.LabelManagedCluster]
+	return isChild
+}
+
 // ReconcileDesiredObjects runs the reconcile process using the mutateFn over the given list of objects.
 func ReconcileDesiredObjects(
 	ctx context.Context,
@@ -147,7 +153,7 @@ func ReconcileDesiredObjects(
 			"object_name", desired.GetName(),
 			"object_kind", ShouldGVK(desired, scheme),
 		)
-		if isNamespaceScoped(desired) {
+		if isNamespaceScoped(desired) && !isChildComponent(desired) {
 			if setErr := ctrl.SetControllerReference(owner, desired, scheme); setErr != nil {
 				l.Error(setErr, "Failed to set controller owner reference to desired")
 				errs = append(errs, setErr)

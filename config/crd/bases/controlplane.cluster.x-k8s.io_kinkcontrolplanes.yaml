@@ -2158,6 +2158,10 @@ spec:
                   Initialized denotes that the kink control plane API Server is initialized and thus
                   it can accept requests.
                 type: boolean
+              ip:
+                description: IP denotes the address on which the API Service endpoint
+                  is reachable.
+                type: string
               ready:
                 description: Ready denotes that the kink control plane is ready to
                   serve requests.
