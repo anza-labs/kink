@@ -177,7 +177,7 @@ endif
 
 .PHONY: cluster
 cluster: kind ctlptl clusterctl kustomize
-	@PATH=${LOCALBIN}:$(PATH) $(CTLPTL) apply -f hack/kind.yaml
+	@PATH="${LOCALBIN}:$(PATH)" $(CTLPTL) apply -f hack/kind.yaml
 	$(CLUSTERCTL) init \
 		--core=cluster-api:$(CLUSTER_API_VERSION) \
 		--bootstrap=kubeadm:$(CLUSTER_API_VERSION) \
@@ -204,7 +204,7 @@ cluster: kind ctlptl clusterctl kustomize
 
 .PHONY: cluster-reset
 cluster-reset: kind ctlptl
-	@PATH=${LOCALBIN}:$(PATH) $(CTLPTL) delete -f hack/kind.yaml
+	@PATH="${LOCALBIN}:$(PATH)" $(CTLPTL) delete -f hack/kind.yaml
 
 .PHONY: deploy
 deploy: manifests kustomize build-installer ## Deploy controller to the K8s cluster specified in ~/.kube/config.
