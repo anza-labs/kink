@@ -94,7 +94,7 @@ func (v *KinkControlPlaneCustomValidator) ValidateCreate(
 // ValidateUpdate implements webhook.CustomValidator so a webhook will be registered for the type KinkControlPlane.
 func (v *KinkControlPlaneCustomValidator) ValidateUpdate(
 	ctx context.Context,
-	oldObj, newObj runtime.Object,
+	_, newObj runtime.Object,
 ) (admission.Warnings, error) {
 	log := log.FromContext(ctx)
 

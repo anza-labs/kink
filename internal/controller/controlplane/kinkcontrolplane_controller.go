@@ -461,8 +461,8 @@ func (r *KinkControlPlaneReconciler) reconcileEndpoint(
 	kinkCP *controlplanev1alpha1.KinkControlPlane,
 ) error {
 	var (
-		host       = ""
-		port int32 = 0
+		host string
+		port int32
 	)
 
 	svc := &corev1.Service{}

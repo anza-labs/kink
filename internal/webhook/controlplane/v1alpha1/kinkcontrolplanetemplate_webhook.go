@@ -97,7 +97,7 @@ func (v *KinkControlPlaneTemplateCustomValidator) ValidateCreate(
 // for the type KinkControlPlaneTemplate.
 func (v *KinkControlPlaneTemplateCustomValidator) ValidateUpdate(
 	ctx context.Context,
-	oldObj, newObj runtime.Object,
+	_, newObj runtime.Object,
 ) (admission.Warnings, error) {
 	log := log.FromContext(ctx)
 

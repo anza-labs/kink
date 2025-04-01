@@ -136,6 +136,7 @@ func (b *Konnectivity) volumeMounts() []corev1.VolumeMount {
 	return []corev1.VolumeMount{
 		{
 			Name:      "konnectivity-token",
+			ReadOnly:  true,
 			MountPath: "/var/run/secrets/tokens",
 		},
 	}
@@ -156,12 +157,18 @@ func (b *Konnectivity) container(image string) corev1.Container {
 	}
 
 	return corev1.Container{
-		Name:            naming.KonnectivityContainer(),
-		Image:           image,
-		Command:         []string{"/proxy-agent"},
-		Args:            manifestutils.BuildKubernetesArgs(args),
-		Resources:       resources,
-		Ports:           []corev1.ContainerPort{},
+		Name:      naming.KonnectivityContainer(),
+		Image:     image,
+		Command:   []string{"/proxy-agent"},
+		Args:      manifestutils.BuildKubernetesArgs(args),
+		Resources: resources,
+		Ports: []corev1.ContainerPort{
+			{
+				Name:          "health",
+				ContainerPort: 8093,
+				Protocol:      corev1.ProtocolTCP,
+			},
+		},
 		VolumeMounts:    b.volumeMounts(),
 		ImagePullPolicy: cfg.ImagePullPolicy,
 		SecurityContext: nil,
