@@ -24,7 +24,8 @@ func TestSmoke(t *testing.T) {
 	assert.Regexp(t, "^registry.k8s.io/kube-apiserver:v.+$", APIServer())
 	assert.Regexp(t, "^registry.k8s.io/kube-controller-manager:v.+$", ControllerManager())
 	assert.Regexp(t, "^registry.k8s.io/kube-scheduler:v.+$", Scheduler())
-	assert.Regexp(t, "^ghcr.io/anza-labs/library/kine:.+$", Kine())
+	assert.Regexp(t, "^docker.io/rancher/kine:.+$", Kine())
 	assert.Regexp(t, "^registry.k8s.io/kas-network-proxy/proxy-server:v.+$", KonnectivityServer())
 	assert.Regexp(t, "^registry.k8s.io/kas-network-proxy/proxy-agent:v.+$", KonnectivityAgent())
+	assert.Regexp(t, "^ghcr.io/grpc-ecosystem/grpc-health-probe:v.+$", GRPCHealthProbe())
 }

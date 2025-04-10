@@ -36,6 +36,7 @@ var (
 	kine               string
 	konnectivityServer string
 	konnectivityAgent  string
+	grpcHealthProbe    string
 )
 
 const (
@@ -51,9 +52,10 @@ func init() {
 	apiServer = initVersion(vals["apiServer"].Image, k8sRegistry)
 	controllerManager = initVersion(vals["controllerManager"].Image, k8sRegistry)
 	scheduler = initVersion(vals["scheduler"].Image, k8sRegistry)
-	kine = initVersion(vals["kine"].Image, ghcrRegistry)
+	kine = initVersion(vals["kine"].Image, dockerRegistry)
 	konnectivityServer = initVersion(vals["konnectivityServer"].Image, k8sRegistry)
 	konnectivityAgent = initVersion(vals["konnectivityAgent"].Image, k8sRegistry)
+	grpcHealthProbe = initVersion(vals["grpcHealthProbe"].Image, ghcrRegistry)
 }
 
 func loadValues(r io.Reader) values.Values {
@@ -99,4 +101,8 @@ func KonnectivityServer() string {
 
 func KonnectivityAgent() string {
 	return konnectivityAgent
+}
+
+func GRPCHealthProbe() string {
+	return grpcHealthProbe
 }

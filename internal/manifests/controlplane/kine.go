@@ -32,9 +32,10 @@ import (
 )
 
 const (
-	kineDataMountPoint = "/etc/kine/db"
-	kineTLSMountPoint  = "/etc/kine/tls"
-	kineEndpoint       = "sqlite://%s/db.sqlite"
+	grpcHealthProbeMountPoint = "/opt/grpc"
+	kineDataMountPoint        = "/etc/kine/db"
+	kineTLSMountPoint         = "/etc/kine/tls"
+	kineEndpoint              = "sqlite://%s/db.sqlite"
 )
 
 type Kine struct {
@@ -181,6 +182,15 @@ func (b *Kine) volumes() []corev1.Volume {
 			VolumeSource: source,
 		},
 		{
+			Name: "grpc-health-probe",
+			VolumeSource: corev1.VolumeSource{
+				Image: &corev1.ImageVolumeSource{
+					Reference:  version.GRPCHealthProbe(),
+					PullPolicy: corev1.PullIfNotPresent,
+				},
+			},
+		},
+		{
 			Name: "tls",
 			VolumeSource: corev1.VolumeSource{
 				Secret: &corev1.SecretVolumeSource{
@@ -200,6 +210,11 @@ func (b *Kine) volumeMounts() []corev1.VolumeMount {
 			MountPath: kineDataMountPoint,
 		},
 		{
+			Name:      "grpc-health-probe",
+			ReadOnly:  false,
+			MountPath: grpcHealthProbeMountPoint,
+		},
+		{
 			Name:      "tls",
 			ReadOnly:  true,
 			MountPath: kineTLSMountPoint,
@@ -211,7 +226,7 @@ func (b *Kine) container(image string) corev1.Container {
 	resources := b.KinkControlPlane.Spec.Kine.Resources
 
 	probe := []string{
-		"grpc_health_probe",
+		path.Join(grpcHealthProbeMountPoint, "/ko-app/grpc-health-probe"),
 		"-addr", "127.0.0.1:2379",
 		"-tls",
 		"-tls-ca-cert", path.Join(kineTLSMountPoint, "ca.crt"),

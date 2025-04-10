@@ -15,8 +15,8 @@ scheduler:
     tag: "v1.32.3"
 kine:
   image:
-    registry: "ghcr.io"
-    repository: "anza-labs/library/kine"
+    registry: "docker.io"
+    repository: "rancher/kine"
     tag: "0.13.10"
 konnectivityServer:
   image:
@@ -28,3 +28,8 @@ konnectivityAgent:
     registry: "registry.k8s.io"
     repository: "kas-network-proxy/proxy-agent"
     tag: "v0.32.0"
+grpcHealthProbe:
+  image:
+    registry: "ghcr.io"
+    repository: "grpc-ecosystem/grpc-health-probe"
+    tag: "v0.4.37"
