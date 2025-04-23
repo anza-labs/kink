@@ -8,9 +8,9 @@ require (
 	github.com/cert-manager/cert-manager v1.17.1
 	github.com/distribution/reference v0.6.0
 	github.com/stretchr/testify v1.10.0
-	k8s.io/api v0.32.3
-	k8s.io/apimachinery v0.32.3
-	k8s.io/client-go v0.32.3
+	k8s.io/api v0.32.4
+	k8s.io/apimachinery v0.32.4
+	k8s.io/client-go v0.32.4
 	k8s.io/klog/v2 v2.130.1
 	k8s.io/utils v0.0.0-20250321185631-1f6e0b77f77e
 	sigs.k8s.io/cluster-api v1.10.0
