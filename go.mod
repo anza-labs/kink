@@ -3,7 +3,7 @@ module github.com/anza-labs/kink
 go 1.24.0
 
 require (
-	dario.cat/mergo v1.0.1
+	dario.cat/mergo v1.0.2
 	github.com/Masterminds/semver/v3 v3.3.1
 	github.com/cert-manager/cert-manager v1.17.2
 	github.com/distribution/reference v0.6.0
