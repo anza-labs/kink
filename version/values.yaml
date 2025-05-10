@@ -17,4 +17,4 @@ kine:
   image:
     registry: "ghcr.io"
     repository: "anza-labs/library/kine"
-    tag: "0.13.10"
+    tag: "v0.13.15"
