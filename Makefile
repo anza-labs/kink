@@ -248,7 +248,7 @@ CLOUD_PROVIDER_KIND_VERSION ?= v0.6.0
 CLUSTER_API_VERSION ?= $(shell grep 'sigs.k8s.io/cluster-api ' ./go.mod | cut -d ' ' -f 2)
 
 # renovate: datasource=github-tags depName=kubernetes-sigs/controller-tools
-CONTROLLER_TOOLS_VERSION ?= v0.17.2
+CONTROLLER_TOOLS_VERSION ?= v0.18.0
 
 # renovate: datasource=github-tags depName=elastic/crd-ref-docs
 CRD_REF_DOCS_VERSION ?= v0.1.0
