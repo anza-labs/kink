@@ -254,7 +254,7 @@ CONTROLLER_TOOLS_VERSION ?= v0.17.2
 CRD_REF_DOCS_VERSION ?= v0.1.0
 
 # renovate: datasource=github-tags depName=tilt-dev/ctlptl
-CTLPTL_VERSION ?= v0.8.40
+CTLPTL_VERSION ?= v0.8.41
 
 # renovate: datasource=github-tags depName=kubernetes-sigs/gateway-api
 GATEWAY_API_VERSION ?= v1.3.0
