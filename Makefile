@@ -269,7 +269,7 @@ NGINX_GATEWAY_FABRIC_VERSION ?= v1.6.2
 NGINX_INGRESS_VERSION ?= v1.12.0
 
 # renovate: datasource=github-tags depName=kubernetes-sigs/kind
-KIND_VERSION ?= v0.27.0
+KIND_VERSION ?= v0.28.0
 
 # renovate: datasource=github-tags depName=stackrox/kube-linter
 KUBE_LINTER_VERSION ?= v0.7.2
