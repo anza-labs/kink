@@ -263,7 +263,7 @@ GATEWAY_API_VERSION ?= v1.3.0
 GOLANGCI_LINT_VERSION ?= v2.1.6
 
 # renovate: datasource=github-tags depName=nginx/nginx-gateway-fabric
-NGINX_GATEWAY_FABRIC_VERSION ?= v1.6.2
+NGINX_GATEWAY_FABRIC_VERSION ?= v2.0.1
 
 # renovate: datasource=github-tags depName=kubernetes/ingress-nginx
 NGINX_INGRESS_VERSION ?= v1.12.0
